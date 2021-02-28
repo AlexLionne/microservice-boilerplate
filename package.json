@@ -2,7 +2,7 @@
   "name": "microservice",
   "version": "1.1.3",
   "description": "Microservice Boilerplate",
-  "main": "dist/index.js",
+  "main": "module/microservice.js",
   "scripts": {
     "prestart": "npm run lint",
     "start": "node .",
