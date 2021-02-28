@@ -16,7 +16,7 @@
     "node": ">=10.6.0"
   },
   "keywords": [],
-  "author": "AlexandreLionne@Kinora",
+  "author": "AlexandreLionne@Nesga",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.2",
