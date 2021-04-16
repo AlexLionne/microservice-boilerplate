@@ -33,6 +33,6 @@ module.exports = Accessory.bindKnex(knex({
     user: 'root',
     password: 'root',
     database: 'nesga',
-    port: 8889,
+    port: 3306,
   }
 }))
