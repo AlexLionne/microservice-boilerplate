@@ -1,33 +1,32 @@
 const {Model} = require('objection')
 const knex = require('knex')
 const guid = require('objection-guid')({
-  field: 'finisherTaskId',
+  field: 'skinId',
 });
 
-class FinisherTask extends guid(Model) {
+class Skin extends guid(Model) {
   static get tableName() {
-    return 'finisherTask';
+    return 'skin';
   }
 
   static get idColumn() {
-    return 'finisherTaskId';
+    return 'skinId';
   }
 
   static get jsonSchema() {
     return {
       type: 'object',
       properties: {
-        finisherTaskId: {type: 'string'},
-        finisherId: {type: 'string'},
-        taskId: {type: 'string'},
-        repetition: {type: 'int'},
-        repetitionType: {type: 'string'}
+        skinId: {type: 'string'},
+        skinCollectionId: {type: 'string'},
+        name: {type: 'string'},
+        properties: {type: 'string'},
       }
     };
   }
 }
 
-module.exports = FinisherTask.bindKnex(knex({
+module.exports = Skin.bindKnex(knex({
   client: 'mysql',
   connection: {
     host: '127.0.0.1',

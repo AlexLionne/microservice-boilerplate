@@ -32,7 +32,7 @@ module.exports = Level.bindKnex(knex({
     host: '127.0.0.1',
     user: 'root',
     password: 'root',
-    database: 'data',
+    database: 'nesga',
     port: 8889,
   }
 }))

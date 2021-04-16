@@ -24,6 +24,14 @@ class Token extends Model {
   }
 }
 
-const server = process.env.NODE_ENV === 'production' ? 'nesga.fr' : 'nesga.fr'
 
-module.exports = Token.bindKnex(knex('mysql', 'eventdesk', 'nesga', 'pwd', server, 8701))
+module.exports = Token.bindKnex(knex({
+  client: 'mysql',
+  connection: {
+    host: '127.0.0.1',
+    user: 'root',
+    password: 'root',
+    database: 'nesga',
+    port: 8889,
+  }
+}))

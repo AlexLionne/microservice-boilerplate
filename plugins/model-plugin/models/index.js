@@ -11,4 +11,6 @@ module.exports = {
   Accessory: require('./accessory'),
   Awaking: require('./awaking'),
   AwakingTask: require('./awakingTask'),
+  Skin: require('./skin'),
+  SkinCollection: require('./skinCollection'),
 }

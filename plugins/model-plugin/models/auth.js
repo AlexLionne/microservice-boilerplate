@@ -20,6 +20,13 @@ class Auth extends Model {
   }
 }
 
-const server = process.env.NODE_ENV === 'production' ? '10.0.0.21' : 'kinora.io'
-
-module.exports = Auth.bindKnex(knex('mysql', 'eventdesk', 'kinora', 'E2KqYT9w9qvhKHGK', server, 8701))
+module.exports = Auth.bindKnex(knex({
+  client: 'mysql',
+  connection: {
+    host: '127.0.0.1',
+    user: 'root',
+    password: 'root',
+    database: 'nesga',
+    port: 8889,
+  }
+}))
