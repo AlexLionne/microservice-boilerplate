@@ -33,7 +33,7 @@ const {
 } = require('./functions')
 
 _compression(microserver)
-_requestLogger(microserver)
+//_requestLogger(microserver)
 _currentRoute(microserver)
 
 const {handleRequests} = require('./http')
