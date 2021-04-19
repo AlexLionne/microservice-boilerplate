@@ -1,16 +1,28 @@
+const knex = require('knex')
 
+const {DATABASE_URL, DATABASE_USER, DATABASE_PORT, DATABASE_PASSWORD, DATABASE} = process.env
 
+const connection =
+    {
+        host: DATABASE_URL,
+        user: DATABASE_USER,
+        password: DATABASE_PASSWORD,
+        database: DATABASE,
+        port: DATABASE_PORT,
+    }
+
+const knexConfig = knex({client: 'mysql', connection})
 
 module.exports = {
-  Task: require('./task'),
-  WorkoutTask: require('./workoutTask'),
-  Workout: require('./workout'),
-  Finisher: require('./finisher'),
-  FinisherTask: require('./finisherTask'),
-  Level: require('./level'),
-  Accessory: require('./accessory'),
-  Awaking: require('./awaking'),
-  AwakingTask: require('./awakingTask'),
-  Skin: require('./skin'),
-  SkinCollection: require('./skinCollection'),
+    Task: require('./task').bindKnex(knexConfig),
+    WorkoutTask: require('./workoutTask').bindKnex(knexConfig),
+    Workout: require('./workout').bindKnex(knexConfig),
+    Finisher: require('./finisher').bindKnex(knexConfig),
+    FinisherTask: require('./finisherTask').bindKnex(knexConfig),
+    Level: require('./level').bindKnex(knexConfig),
+    Accessory: require('./accessory').bindKnex(knexConfig),
+    Awaking: require('./awaking').bindKnex(knexConfig),
+    AwakingTask: require('./awakingTask').bindKnex(knexConfig),
+    Skin: require('./skin').bindKnex(knexConfig),
+    SkinCollection: require('./skinCollection').bindKnex(knexConfig),
 }

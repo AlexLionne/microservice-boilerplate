@@ -58,17 +58,6 @@ function _resources(microservice, express, resources) {
   if (!resources || !microservice || !express)
     return
 
-  const {databases, storage} = resources
-  if (databases) {
-    let databases = databases;
-    // get databases access
-    Object.keys(databases).forEach(key => {
-      // log(key,databases[key]);
-      // exported configuration ( can be used by microservice )
-      module.exports[key] = databases[key]
-    })
-  }
-
   if (storage) {
     Object.keys(storage).forEach(key => {
       microservice.use(storage[key], express.static(path.join(process.mainModule.filename, '..', key)))
