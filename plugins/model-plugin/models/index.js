@@ -1,6 +1,9 @@
 const knex = require('knex')
+const path = require("path");
 
-const {DATABASE_URL, DATABASE_USER, DATABASE_PORT, DATABASE_PASSWORD, DATABASE} = process.env
+const env = require('dotenv').config({path: path.join(process.mainModule.filename, '../', '.env')})
+
+const {DATABASE_URL, DATABASE_USER, DATABASE_PORT, DATABASE_PASSWORD, DATABASE} = env.parsed
 
 const connection =
     {

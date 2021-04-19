@@ -26,6 +26,7 @@
     "config-yml": "latest",
     "cors": "^2.8.5",
     "cron": "^1.8.2",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-form-data": "^2.0.14",
     "graphql": "^15.3.0",
