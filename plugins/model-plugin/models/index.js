@@ -11,7 +11,7 @@ const connection =
         user: DATABASE_USER,
         password: DATABASE_PASSWORD,
         database: DATABASE,
-        port: DATABASE_PORT,
+        port: parseInt(DATABASE_PORT),
     }
 
 const knexConfig = knex({client: 'mysql', connection})
