@@ -1,18 +1,18 @@
 const knex = require('knex')
-const path = require("path");
 
-const env = require('dotenv').config({path: path.join(process.mainModule.filename, '../', '.env')})
-
-const {DATABASE_URL, DATABASE_USER, DATABASE_PORT, DATABASE_PASSWORD, DATABASE} = env.parsed
+const {DB_URL, DB_USER, DB_PASSWORD, DB, DB_PORT} = process.env
 
 const connection =
     {
-        host: DATABASE_URL,
-        user: DATABASE_USER,
-        password: DATABASE_PASSWORD,
-        database: DATABASE,
-        port: parseInt(DATABASE_PORT),
+        host: DB_URL,
+        user: DB_USER,
+        password: DB_PASSWORD,
+        database: DB,
+        port: parseInt(DB_PORT),
     }
+
+
+console.log(connection)
 
 const knexConfig = knex({client: 'mysql', connection})
 
