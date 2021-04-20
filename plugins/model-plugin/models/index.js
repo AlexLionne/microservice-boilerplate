@@ -2,11 +2,11 @@ const knex = require('knex')
 
 const dbSocketPath = process.env.DB_SOCKET_PATH || '/cloudsql'
 
-const {DB_USER, DB_PASSWORD, DB} = process.env
+const {DB_USER, DB_PASSWORD, DB, DB_URL, ENV} = process.env
 
 const connection =
     {
-        host: `${dbSocketPath}/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
+        host: ENV === "prod" ? `${dbSocketPath}/${process.env.CLOUD_SQL_CONNECTION_NAME}` : DB_URL,
         user: DB_USER,
         password: DB_PASSWORD,
         database: DB,
