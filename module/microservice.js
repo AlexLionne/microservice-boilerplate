@@ -24,6 +24,7 @@ moment = require('moment')
 io = require('socket.io')(server)
 
 const {
+    _rateLimit,
     _plugins,
     _routingTree,
     _scheduledFunctions,
@@ -73,6 +74,7 @@ class Microservice {
     start() {
         let {resources, routes, port, scheduledFunctions} = config
 
+        _rateLimit(microserver)
         _resources(resources)
         _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
         _events(handler, io)
