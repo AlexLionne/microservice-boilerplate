@@ -249,12 +249,8 @@ function _plugin(name, plugins) {
   return plugins.filter(plugin => plugin.name === name)[0].plugin
 }
 
-function _passport(microserver) {
-  microserver.use(session({ secret: 'nesga-services', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
-  require('../passport/passport');
-}
+
 module.exports = {
-  _passport,
   _compression,
   _routes,
   _requestLogger,

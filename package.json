@@ -20,6 +20,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.2",
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "chalk": "^2.4.2",
     "compression": "^1.7.4",
@@ -29,6 +31,8 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-form-data": "^2.0.14",
+    "express-jwt": "^5.3.1",
+    "express-session": "^1.17.1",
     "graphql": "^15.3.0",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.4",
@@ -40,6 +44,9 @@
     "objection": "^1.6.11",
     "objection-graphql": "^0.4.5",
     "objection-guid": "^3.0.2",
+    "objection-password": "^3.0.0",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
     "socket.io": "^3.1.1",
     "sqlite3": "5.0.2"
   },
