@@ -13,11 +13,18 @@ const connection = ENV === "prod" ?
     }
     :
     {
+        host: "127.0.0.1",
+        user: "root",
+        password: "root",
+        database: "nesga",
+        port: 3306
+    }
+    /*{
         host: DB_URL,
         user: DB_USER,
         password: DB_PASSWORD,
         database: DB,
-    }
+    }*/
 
 const knexConfig = knex({client: 'mysql', connection})
 
@@ -33,4 +40,5 @@ module.exports = {
     AwakingTask: require('./awakingTask').bindKnex(knexConfig),
     Skin: require('./skin').bindKnex(knexConfig),
     SkinCollection: require('./skinCollection').bindKnex(knexConfig),
+    Auth: require('./auth').bindKnex(knexConfig),
 }

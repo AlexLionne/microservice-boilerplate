@@ -1,5 +1,4 @@
 const {Model} = require('objection')
-const knex = require('knex')
 const guid = require('objection-guid')({
   field: 'taskId',
 });
@@ -29,13 +28,4 @@ class Task extends guid(Model) {
 }
 
 
-module.exports = Task.bindKnex(knex({
-  client: 'mysql',
-  connection: {
-    host: '127.0.0.1',
-    user: 'root',
-    password: 'root',
-    database: 'nesga',
-    port: 3306,
-  }
-}))
+module.exports = Task

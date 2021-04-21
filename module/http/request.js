@@ -1,8 +1,9 @@
 const chalk = require('chalk')
+const auth = require("../../plugins/model-plugin/config/auth");
 
 module.exports = function request(microservice, handler, plugins, route, log, dispatcher) {
 
-  const {endpoint, method, cors} = route
+  const {endpoint, method, cors, logged} = route
 
   if (!endpoint || !endpoint.includes('/') || (!['get', 'post', 'put', 'delete', 'options', 'option'].includes(method.toLowerCase())))
     return log(chalk.red('Check endpoint configuration nor method used in the configuration file'))
@@ -35,10 +36,12 @@ module.exports = function request(microservice, handler, plugins, route, log, di
   }
 
   try {
-    if (method.toLowerCase() === 'get') return microservice.route(endpoint).get(middleware)
-    if (method.toLowerCase() === 'post') return microservice.route(endpoint).post(middleware)
-    if (method.toLowerCase() === 'put') return microservice.route(endpoint).put(middleware)
-    if (method.toLowerCase() === 'delete') return microservice.route(endpoint).delete(middleware)
+    const passport = logged ? auth.required : auth.optional
+
+    if (method.toLowerCase() === 'get') return microservice.get(endpoint, passport, middleware)
+    if (method.toLowerCase() === 'post') microservice.post(endpoint, passport, middleware)
+    if (method.toLowerCase() === 'put') microservice.put(endpoint, passport, middleware)
+    if (method.toLowerCase() === 'delete') microservice.delete(endpoint, passport, middleware)
 
   } catch (e) {
     return e.message

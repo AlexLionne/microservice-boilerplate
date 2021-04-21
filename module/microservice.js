@@ -28,7 +28,7 @@ const {
   _port,
   _routes,
   _events,
-  _requestLogger,
+  _passport,
   _compression
 } = require('./functions')
 
@@ -71,6 +71,7 @@ class Microservice {
     let {resources, routes, port, scheduledFunctions} = config
 
     _resources(resources)
+    _passport(microserver)
     _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
     _events(handler, io)
 

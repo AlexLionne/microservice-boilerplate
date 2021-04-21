@@ -6,7 +6,7 @@ const path = require('path')
 const fs = require('fs')
 const morgan = require('morgan')
 const compression = require('compression')
-
+const session = require('express-session');
 /**
  * Setup the port if needed
  * @param config yaml config
@@ -249,7 +249,12 @@ function _plugin(name, plugins) {
   return plugins.filter(plugin => plugin.name === name)[0].plugin
 }
 
+function _passport(microserver) {
+  microserver.use(session({ secret: 'nesga-services', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
+  require('../passport/passport');
+}
 module.exports = {
+  _passport,
   _compression,
   _routes,
   _requestLogger,

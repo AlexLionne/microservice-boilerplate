@@ -25,13 +25,4 @@ class WorkoutTask extends guid(Model) {
   }
 }
 
-module.exports = WorkoutTask.bindKnex(knex({
-  client: 'mysql',
-  connection: {
-    host: '127.0.0.1',
-    user: 'root',
-    password: 'root',
-    database: 'nesga',
-    port: 3306,
-  }
-}))
+module.exports = WorkoutTask
