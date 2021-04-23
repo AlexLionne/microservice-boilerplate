@@ -1,25 +1,27 @@
 const { Model } = require('objection');
-const knex = require('knex')
 
-class User extends Model {
+const guid = require('objection-guid')({
+  field: 'userId',
+});
+
+
+class User extends guid(Model) {
 
   static get tableName() {
-    return 'users';
+    return 'user';
   }
   static get idColumn() {
-    return 'userID';
+    return 'userId';
   }
 
   static get jsonSchema () {
     return {
       type: 'object',
       properties: {
-        userID: {type: 'string'},
-        email: {type: 'string', minLength: 1, maxLength: 30},
-        firstConnectionDate: {type: 'string', format: 'date' },
-        lastConnectionDate:{type: 'string', format: 'date' },
-        creationDate: {type: 'string', format: 'date' },
-        isAdmin: {type: 'integer'}
+        userId: {type: 'string'},
+        authId: {type: 'string'},
+        firstConnectionDate: {type: 'string'},
+        lastConnectionDate:{type: 'string'},
       }
     };
   }

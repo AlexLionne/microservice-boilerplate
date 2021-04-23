@@ -1,31 +1,39 @@
 const passport = require('passport');
-const LocalStrategy = require('passport-local');
-const {Auth} = require("../../plugins/model-plugin/models");
-
-require('../passport/passport');
+const LocalStrategy = require("passport-local");
+const {Auth, User, UserData} = require('../../plugins/model-plugin/models')
 
 passport.use('local', new LocalStrategy({
-    usernameField: 'email',
-    passwordField: 'password',
+        usernameField: 'email',
+        passwordField: 'password'
+    },
+    async function (email, password, done) {
+        const auth = await Auth
+            .query()
+            .where('email', email).first()
 
-}, async (email, password, done) => {
+        if (!auth) return done(null, false, {message: 'Unknown user'})
 
-    try{
-        const auth = await Auth.query()
-            .select('email')
-            .where('email', '=', email)
+        const result = await auth.verifyPassword(password)
 
-        const passwordValid = await auth.verifyPassword(password);
-
-        if(!auth || !passwordValid) {
-            //Email or Password is Invalid
-            return done(null, false, { error: 'EOPI'  });
+        if (result) {
+            done(null, auth)
         }
 
-        return done(null, auth);
-    } catch (e) {
-        done(null, false, { error: 'EOPI'  });
+        done(null, false)
     }
+))
+
+passport.serializeUser(function (auth, done) {
+    done(null, auth.id)
+})
+
+passport.deserializeUser(async function (id, done) {
+    const auth = await Auth
+        .query()
+        .where('authId', '=', id).first()
+
+    done(null, auth)
+})
 
 
-}));
+module.exports = passport

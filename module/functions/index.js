@@ -192,10 +192,7 @@ function _params(params) {
 function _events(handler, io) {
     log(chalk.yellow("Socket.io events"))
 
-
-    console.log('pre connect')
     io.on('connection', (socket) => {
-        console.log('connect')
         console.log(handler.connect(socket))
     })
     io.on('error', (error) => {

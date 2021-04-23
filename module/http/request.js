@@ -1,5 +1,8 @@
 const chalk = require('chalk')
 const auth = require("../../plugins/model-plugin/config/auth");
+const {User} = require("../../plugins/model-plugin/models");
+const logger = require("../../plugins/logger/logger")
+const passport = require("../../module/passport/passport")
 
 module.exports = function request(microservice, handler, plugins, route, log, dispatcher) {
 
@@ -9,8 +12,13 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         return log(chalk.red('Check endpoint configuration nor method used in the configuration file'))
 
     async function middleware(req, res, next) {
+
         let response
         try {
+            //pass the logger
+            req.logger = logger
+            req.passport = passport
+
             response = await dispatcher(plugins, handler, req, res, next, route)
         } catch (e) {
             res.sendStatus(500)

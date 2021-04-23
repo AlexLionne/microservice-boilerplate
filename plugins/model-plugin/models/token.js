@@ -1,23 +1,25 @@
 const { Model } = require('objection');
-const knex = require('knex')
 
-class Token extends Model {
+const guid = require('objection-guid')({
+  field: 'userTokenId',
+});
+
+class Token extends guid(Model) {
 
   static get tableName() {
-    return 'users_tokens';
+    return 'userToken';
   }
 
   static get idColumn() {
-    return 'tokenID';
+    return 'userTokenId';
   }
 
   static get jsonSchema() {
     return {
       type: 'object',
       properties: {
-        tokenID: {type: 'string', maxLength: 36},
-        userID: {type: 'string', maxLength: 36},
-        expirationDate:{type: 'string', format: 'date' },
+        userTokenId: {type: 'string', maxLength: 36},
+        userId: {type: 'string', maxLength: 36},
         token: {type: 'string'}
       }
     }

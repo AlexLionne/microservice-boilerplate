@@ -79,7 +79,6 @@ class Microservice {
         _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
         _events(handler, io)
 
-
         port = _port(config)
         jobs = _scheduledFunctions(scheduledFunctions, handler)
 
