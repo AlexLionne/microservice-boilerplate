@@ -79,12 +79,6 @@ class Auth extends guid(Model) {
         const expirationDate = new Date(today);
         expirationDate.setDate(today.getDate() + 60);
 
-        console.log("generateJWT", {
-            email: this.email,
-            authId: this.authId,
-            exp: parseInt(expirationDate.getTime() / 1000, 10),
-        })
-
         return jwt.sign({
             email: this.email,
             authId: this.authId,
@@ -93,11 +87,6 @@ class Auth extends guid(Model) {
     }
 
     toAuthJSON() {
-        console.log("toAuthJSON", {
-            authId: this.authId,
-            email: this.email,
-            token: this.generateJWT(),
-        })
         return {
             authId: this.authId,
             email: this.email,
