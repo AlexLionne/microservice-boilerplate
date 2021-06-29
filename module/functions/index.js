@@ -77,14 +77,15 @@ function _resources(microservice, express, resources) {
  */
 
 function _scheduledFunctions(scheduledFunctions, handler) {
-    if (!scheduledFunctions || !scheduledFunctions.length)
+    if (!scheduledFunctions || !Object.keys(scheduledFunctions).length)
         return
 
     let jobs = []
 
-    scheduledFunctions.map(({cronExpression, functionName}) => {
+    console.log(scheduledFunctions)
+    Object.keys(scheduledFunctions).map((functionName) => {
         try {
-            const job = new CronJob(cronExpression, async () => {
+            const job = new CronJob(scheduledFunctions[functionName].cronExpression, async () => {
                 await handler[functionName]()
             })
             jobs.push({name: functionName, job})
@@ -148,20 +149,20 @@ function _routingTree(config) {
 
     if (scheduledFunctions) {
         scheduledFunctions.length > 0 ? log(chalk.blue.yellow('Available scheduled Functions (' + scheduledFunctions.length + ')')) : null
-        scheduledFunctions.map(({description, functionName}) => {
+        Object.keys(scheduledFunctions).map((functionName) => {
                 if (!functionName)
                     throw 'No name specified for scheduled Function !'
 
                 log(
                     chalk.blue('SCD'),
                     chalk.blue(functionName),
-                    description ? chalk.green(description) : chalk.grey('No description provided'),
                 )
+                log(scheduledFunctions[functionName].description ? chalk.green(scheduledFunctions[functionName].description) : chalk.grey('No description provided'),)
             }
         )
     }
-
-    log(chalk.blue.yellow('Available routes (' + Object.keys(routes).length + ')'))
+    routes ?
+        log(chalk.blue.yellow('Available routes (' + Object.keys(routes).length + ')')) : null
 
     routes ?
         Object.keys(routes)
