@@ -1,8 +1,6 @@
 const chalk = require('chalk')
-const auth = require("../../plugins/model-plugin/config/auth");
-const {User} = require("../../plugins/model-plugin/models");
+const {Token} = require("../../plugins/model-plugin/models");
 const logger = require("../../plugins/logger/logger")
-const passport = require("../../module/passport/passport")
 
 module.exports = function request(microservice, handler, plugins, route, log, dispatcher) {
 
@@ -17,7 +15,14 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         try {
             //pass the logger
             req.logger = logger
-            req.passport = passport
+
+            if (logged) {
+                //authenticate the user with jwt
+                const jwt = await Token.handleToken(req, res)
+
+                if (!jwt)
+                    return res.status(403).send()
+            }
 
             response = await dispatcher(plugins, handler, req, res, next, route)
         } catch (e) {
@@ -44,12 +49,11 @@ module.exports = function request(microservice, handler, plugins, route, log, di
     }
 
     try {
-        const passport = logged ? auth.required : auth.optional
 
-        if (method.toLowerCase() === 'get') microservice.get(endpoint, passport, middleware)
-        if (method.toLowerCase() === 'post') microservice.post(endpoint, passport, middleware)
-        if (method.toLowerCase() === 'put') microservice.put(endpoint, passport, middleware)
-        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, passport, middleware)
+        if (method.toLowerCase() === 'get') microservice.get(endpoint, middleware)
+        if (method.toLowerCase() === 'post') microservice.post(endpoint, middleware)
+        if (method.toLowerCase() === 'put') microservice.put(endpoint, middleware)
+        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, middleware)
 
     } catch (e) {
         return e.message
