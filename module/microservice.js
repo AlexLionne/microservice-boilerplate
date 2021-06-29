@@ -14,14 +14,18 @@ microserver.use(formData.format());
 microserver.use(formData.stream());
 microserver.use(formData.union());
 microserver.use(session({secret: 'secret', cookie: {maxAge: 60000}, resave: false, saveUninitialized: false}));
-require('./passport/passport')
-
+require('dotenv').config()
 
 const server = require('http').createServer(microserver);
 log = console.log;
 chalk = require('chalk')
 moment = require('moment')
-io = require('socket.io')(server)
+io = require('socket.io')(server, {
+    cors: {
+        origin: "http://localhost:3001",
+        methods: ["GET", "POST"]
+    }
+})
 
 const {
     _rateLimit,
@@ -72,12 +76,22 @@ class Microservice {
 
 
     start() {
-        let {resources, routes, port, scheduledFunctions} = config
+        let {resources, routes, port, scheduledFunctions, events} = config
 
         _rateLimit(microserver)
         _resources(resources)
         _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
-        _events(handler, io)
+
+        io.on('connection', (client) => {
+            handler['connection'](client)
+            Object.keys(events).map(key => {
+                const name = events[key].name
+                io.on(name, (data) => {
+                    handler[name](client, data)
+                })
+            })
+        })
+
 
         port = _port(config)
         jobs = _scheduledFunctions(scheduledFunctions, handler)
@@ -96,7 +110,10 @@ class Microservice {
                 chalk.bold.green(config.name) + chalk.reset(' running on ') + port
             )
         })
+
+        return {jobs}
     }
+
 
     startJob(name, req, res) {
 
@@ -118,6 +135,10 @@ class Microservice {
 
             res.status(500).send()
         }
+    }
+
+    getJobs() {
+        return jobs
     }
 
     stopJob(req, res) {
