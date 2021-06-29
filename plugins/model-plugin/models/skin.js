@@ -19,6 +19,8 @@ class Skin extends guid(Model) {
       properties: {
         skinId: {type: 'string'},
         skinCollectionId: {type: 'string'},
+        releaseDate: {type: 'datetime'},
+        updateDate: {type: 'datetime'},
         name: {type: 'string'},
         properties: {type: 'string'},
       }

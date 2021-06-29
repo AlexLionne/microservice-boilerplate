@@ -20,21 +20,38 @@ class UserData extends guid(Model) {
             properties: {
                 userDataId: {type: 'string'},
                 userId: {type: 'string'},
-                firstName: {type: 'string'},
-                lastName: {type: 'string'},
-                birthDate: {type: 'string', format: 'date'},
+                firstname: {type: 'string'},
+                lastname: {type: 'string'},
+                username: {type: 'string'},
+                birthdate: {type: 'string'},
                 gender: {type: 'string'},
                 weight: {type: 'string'},
                 tall: {type: 'string'},
                 experience: {type: 'long'},
-                lastWorkoutDate: {type: 'string', format: 'date'},
+                lastSportDate: {type: 'string'},
                 workoutsCount: {type: 'int'},
-                avatarProperties: {type: 'string'},
+                deviceInfo: {type: 'string'},
+                sportRecurrence: {type: 'string'},
                 level: {type: 'int'},
                 seriesCount: {type: 'int'},
-                nesgaPassLicenseKey: {type: 'string'},
+                nesPass: {type: 'string'},
+                nescoins: {type: 'long'},
             }
         };
+    }
+    static get relationMappings() {
+        const UserAvatar = require('./userAvatar');
+
+        return {
+            avatars: {
+                relation: Model.HasManyRelation,
+                modelClass: UserAvatar,
+                join: {
+                    from: 'userAvatar.userId',
+                    to: 'userData.userId'
+                }
+            },
+        }
     }
 }
 

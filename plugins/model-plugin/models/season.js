@@ -1,25 +1,28 @@
 const {Model} = require('objection')
-const knex = require('knex')
 const guid = require('objection-guid')({
-  field: 'accessoryId',
+  field: 'seasonId',
 });
 
 class Accessory extends guid(Model) {
   static get tableName() {
-    return 'accessory';
+    return 'season';
   }
 
   static get idColumn() {
-    return 'accessoryId';
+    return 'seasonId';
   }
 
   static get jsonSchema() {
     return {
       type: 'object',
       properties: {
-        accessoryId: {type: 'string'},
+        seasonId: {type: 'string'},
         name: {type: 'string'},
         description: {type: 'string'},
+        active: {type: 'int'},
+        startDate: {type: 'string'},
+        enDate: {type: 'string'},
+        version: {type: 'int'},
       }
     };
   }

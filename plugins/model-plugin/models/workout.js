@@ -1,8 +1,12 @@
+const {Task, WorkoutTask} = require('./task')
+
+
 const { Model } = require('objection')
-const knex = require('knex')
+
 const guid = require('objection-guid')({
   field: 'workoutId',
 });
+
 
 
 
@@ -13,6 +17,8 @@ class Workout extends guid(Model) {
   static get idColumn() {
     return 'workoutId';
   }
+
+
   static get jsonSchema () {
     return {
       type: 'object',
@@ -20,14 +26,36 @@ class Workout extends guid(Model) {
         workoutId: {type: 'string'},
         name: {type: 'string'},
         duration: {type: 'int'},
-        videoUrl: {type: 'string'},
         level: {type: 'int'},
         description: {type: 'int'},
         awakingId: {type: 'string'},
         warmumpId: {type: 'string'},
-        experience: {type: 'int'}
+        experience: {type: 'int'},
       }
     };
+  }
+  static get relationMappings() {
+    const WorkoutTask = require('./workoutTask');
+    const Finisher = require('./finisher');
+
+    return {
+      tasks: {
+        relation: Model.HasManyRelation,
+        modelClass: WorkoutTask,
+        join: {
+          from: 'workout.workoutId',
+          to: 'workoutTask.workoutId'
+        }
+      },
+      finisher: {
+        relation: Model.HasOneRelation,
+        modelClass: Finisher,
+        join: {
+          from: 'workout.finisherId',
+          to: 'finisher.finisherId'
+        }
+      }
+    }
   }
 }
 

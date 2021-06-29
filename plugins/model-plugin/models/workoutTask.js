@@ -23,6 +23,21 @@ class WorkoutTask extends guid(Model) {
       }
     };
   }
+
+  static get relationMappings() {
+    const Task = require('./task');
+
+    return {
+      task: {
+        relation: Model.HasOneRelation,
+        modelClass: Task,
+        join: {
+          from: 'task.taskId',
+          to: 'workoutTask.taskId'
+        }
+      }
+    }
+  }
 }
 
 module.exports = WorkoutTask

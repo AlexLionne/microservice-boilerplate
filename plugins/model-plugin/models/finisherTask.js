@@ -25,6 +25,20 @@ class FinisherTask extends guid(Model) {
       }
     };
   }
+  static get relationMappings() {
+    const Task = require('./task');
+
+    return {
+      task: {
+        relation: Model.HasOneRelation,
+        modelClass: Task,
+        join: {
+          from: 'task.taskId',
+          to: 'finisherTask.taskId',
+        }
+      }
+    }
+  }
 }
 
 module.exports = FinisherTask

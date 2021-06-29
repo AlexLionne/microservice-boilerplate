@@ -1,7 +1,7 @@
 const knex = require("knex");
 const dbSocketPath = process.env.DB_SOCKET_PATH || '/cloudsql'
 
-const {DB_USER, DB_PASSWORD, DB, DB_URL, ENV} = process.env
+const {DB_USER, DB_PASSWORD, DB, ENV} = process.env
 
 const connection = ENV === "production" ?
     {
@@ -16,19 +16,9 @@ const connection = ENV === "production" ?
         user: "root",
         password: "root",
         database: "data",
-        port: 8889,
-
+        port: 8889, //MAMP config
     }
-    /*{
-        host: DB_URL,
-        user: DB_USER,
-        password: DB_PASSWORD,
-        database: DB,
-    }*/
-/*
 
-const knex = Knex(knexConfig);
-Model.knex(knex);*/
 const knexConfig = knex({client: 'mysql', connection})
 
 module.exports = {
@@ -42,9 +32,19 @@ module.exports = {
     Awaking: require('./awaking').bindKnex(knexConfig),
     AwakingTask: require('./awakingTask').bindKnex(knexConfig),
     Skin: require('./skin').bindKnex(knexConfig),
+    Season: require('./season').bindKnex(knexConfig),
     SkinCollection: require('./skinCollection').bindKnex(knexConfig),
     Auth: require('./auth').bindKnex(knexConfig),
     UserData: require('./userData').bindKnex(knexConfig),
     User: require('./user').bindKnex(knexConfig),
     Token: require('./token').bindKnex(knexConfig),
+    FirstUser: require('./firstUser').bindKnex(knexConfig),
+    TimeZone: require('./timezone').bindKnex(knexConfig),
+    SeasonWorkout: require('./seasonWorkout').bindKnex(knexConfig),
+    UserSeasonWorkout: require('./userSeasonWorkout').bindKnex(knexConfig),
+    UserSkin: require('./userSkin').bindKnex(knexConfig),
+    SeasonWorkoutReward: require('./seasonWorkoutReward').bindKnex(knexConfig),
+    UserSeason: require('./userSeason').bindKnex(knexConfig),
+    UserAvatar: require('./userAvatar').bindKnex(knexConfig),
+    Avatar: require('./avatar').bindKnex(knexConfig),
 }
