@@ -22,7 +22,7 @@ chalk = require('chalk')
 moment = require('moment')
 io = require('socket.io')(server, {
     cors: {
-        origin: "http://localhost:3001",
+        origin: "*",
         methods: ["GET", "POST"]
     }
 })
