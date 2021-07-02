@@ -83,13 +83,17 @@ class Microservice {
         _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
 
         io.on('connection', (client) => {
-            handler['connection'](client)
+            log(chalk.green('new client connected'))
             Object.keys(events).map(key => {
                 const name = events[key].name
                 io.on(name, (data) => {
                     handler[name](client, data)
                 })
             })
+        })
+
+        io.on('disconnect', () => {
+            log(chalk.red('client disconnected'))
         })
 
 
