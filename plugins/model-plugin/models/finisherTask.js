@@ -21,7 +21,8 @@ class FinisherTask extends guid(Model) {
         finisherId: {type: 'string'},
         taskId: {type: 'string'},
         repetition: {type: 'int'},
-        repetitionType: {type: 'string'}
+        repetitionType: {type: 'string'},
+        order: {type: 'int'},
       }
     };
   }
