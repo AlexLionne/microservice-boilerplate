@@ -88,7 +88,7 @@ class Microservice {
             })*/
             log(chalk.green('new client connected', client.id))
             Object.keys(events).forEach(key => {
-                
+
                 client.on(key, (data) => {
                     handler[key](io, client, data)
                 })

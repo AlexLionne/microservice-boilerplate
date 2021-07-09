@@ -20,6 +20,7 @@ class WorkoutTask extends guid(Model) {
         taskId: {type: 'string'},
         repetition: {type: 'int'},
         repetitionType: {type: 'string'},
+        order: {type: 'int'},
       }
     };
   }
