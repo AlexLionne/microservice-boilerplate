@@ -27,8 +27,17 @@ class SeasonWorkout extends guid(Model) {
 
     static get relationMappings() {
         const Workout = require('./workout');
+        const Award = require('./award');
 
         return {
+            awards: {
+                relation: Model.HasManyRelation,
+                modelClass: Award,
+                join: {
+                    from: 'award.seasonWorkoutId',
+                    to: 'seasonWorkoutId.seasonWorkoutId'
+                }
+            },
             workout: {
                 relation: Model.HasOneRelation,
                 modelClass: Workout,
