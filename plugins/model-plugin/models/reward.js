@@ -1,22 +1,22 @@
 const { Model } = require('objection')
 const guid = require('objection-guid')({
-  field: 'awardId',
+  field: 'rewardId',
 });
 
 
 
-class Award extends guid(Model) {
+class Reward extends guid(Model) {
   static get tableName() {
-    return 'award';
+    return 'reward';
   }
   static get idColumn() {
-    return 'awardId';
+    return 'rewardId';
   }
   static get jsonSchema () {
     return {
       type: 'object',
       properties: {
-        awardId: {type: 'string'},
+        rewardId: {type: 'string'},
         seasonWorkoutId: {type: 'string'},
         type: {type: 'string'},
         value: {type: 'string'}
@@ -25,4 +25,4 @@ class Award extends guid(Model) {
   }
 }
 
-module.exports = Award
+module.exports = Reward
