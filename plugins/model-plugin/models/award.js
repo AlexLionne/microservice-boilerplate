@@ -5,7 +5,7 @@ const guid = require('objection-guid')({
 
 
 
-class Level extends guid(Model) {
+class Award extends guid(Model) {
   static get tableName() {
     return 'award';
   }
@@ -25,4 +25,4 @@ class Level extends guid(Model) {
   }
 }
 
-module.exports = Level
+module.exports = Award
