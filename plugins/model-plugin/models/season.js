@@ -3,7 +3,7 @@ const guid = require('objection-guid')({
   field: 'seasonId',
 });
 
-class Accessory extends guid(Model) {
+class Season extends guid(Model) {
   static get tableName() {
     return 'season';
   }
@@ -28,4 +28,4 @@ class Accessory extends guid(Model) {
   }
 }
 
-module.exports = Accessory
+module.exports = Season
