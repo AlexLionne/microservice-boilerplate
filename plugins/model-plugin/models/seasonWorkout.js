@@ -30,7 +30,7 @@ class SeasonWorkout extends guid(Model) {
         const Reward = require('./reward');
 
         return {
-            awards: {
+            rewards: {
                 relation: Model.HasManyRelation,
                 modelClass: Reward,
                 join: {
