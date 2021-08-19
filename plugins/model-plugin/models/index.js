@@ -42,6 +42,7 @@ module.exports = {
     TimeZone: require('./timezone').bindKnex(knexConfig),
     SeasonWorkout: require('./seasonWorkout').bindKnex(knexConfig),
     Reward: require('./reward').bindKnex(knexConfig),
+    UserReward: require('./userReward').bindKnex(knexConfig),
     UserSeasonWorkout: require('./userSeasonWorkout').bindKnex(knexConfig),
     UserSkin: require('./userSkin').bindKnex(knexConfig),
     UserSeason: require('./userSeason').bindKnex(knexConfig),
