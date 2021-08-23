@@ -22,7 +22,8 @@ class Reward extends guid(Model) {
                 description: {type: 'string'},
                 type: {type: 'string'},
                 seasonId: {type: 'string'},
-                value: {type: 'string'}
+                value: {type: 'string'},
+                premium: {type: 'integer'}
             }
         };
     }
