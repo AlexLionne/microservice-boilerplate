@@ -23,6 +23,8 @@ class Season extends guid(Model) {
         startDate: {type: 'string'},
         enDate: {type: 'string'},
         version: {type: 'int'},
+        isCartSeason: {type: 'tinyInt'},
+        referredSeasonId: {type: 'string'},
       }
     };
   }
