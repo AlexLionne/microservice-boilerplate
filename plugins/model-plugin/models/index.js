@@ -19,7 +19,19 @@ const connection = ENV === "production" ?
         port: 8889, //MAMP config
     }
 
-const knexConfig = knex({client: 'mysql', connection, pool: { min: 0, max: 10 }})
+const knexConfig = knex({
+    client: 'mysql',
+    connection,
+    pool: {
+        min: 0,
+        max: 15,
+        createTimeoutMillis: 3000,
+        acquireTimeoutMillis: 30000,
+        idleTimeoutMillis: 30000,
+        reapIntervalMillis: 1000,
+        createRetryIntervalMillis: 100,
+        propagateCreateError: false
+    }})
 
 module.exports = {
     Task: require('./task').bindKnex(knexConfig),
