@@ -23,6 +23,7 @@ class UserSeasonWorkout extends guid(Model) {
         feelings: {type: 'int'},
         endTime: {type: 'time'},
         averageCaloriesBurned: {type: 'long'},
+        completionDate: {type: 'string'},
       }
     };
   }
