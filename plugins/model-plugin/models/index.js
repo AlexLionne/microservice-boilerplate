@@ -60,4 +60,5 @@ module.exports = {
     UserSeason: require('./userSeason').bindKnex(knexConfig),
     UserAvatar: require('./userAvatar').bindKnex(knexConfig),
     Avatar: require('./avatar').bindKnex(knexConfig),
+    UserFeedback: require('./userFeedback').bindKnex(knexConfig),
 }
