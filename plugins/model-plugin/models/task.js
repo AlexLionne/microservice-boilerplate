@@ -32,14 +32,14 @@ class Task extends guid(Model) {
 
         const file = await storage
             .bucket(TASKS_BUCKET)
-            .file(`${this.taskId}/video.MOV`)
+            .file(`${this.taskId}/video.mp4`)
 
         const [exists] = await file.exists()
 
         if (exists) {
             const [videoUrl] = await storage
                 .bucket(TASKS_BUCKET)
-                .file(`${this.taskId}/video.MOV`)
+                .file(`${this.taskId}/video.mp4`)
                 .getSignedUrl({
                     version: 'v4',
                     action: 'read',
