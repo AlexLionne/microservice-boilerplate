@@ -34,13 +34,16 @@ class Workout extends guid(Model) {
         };
     }
 
-    async $afterFind({transaction}) {
+    async $afterFind() {
 
-        this.activation = null
-        // add a random activation to wrokout
-        const activations = await Activation.query(transaction)
+        this.activation = {}
+        // add a random activation to workout
+        const activations = await Activation.query()
 
-        this.activation = activations[Math.floor(Math.random() * Array.from(activations).length)]
+        if (Array.from(activations).length > 0) {
+            this.activation = activations[Math.floor(Math.random() * Array.from(activations).length)]
+
+        }
     }
 
 
