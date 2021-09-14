@@ -38,7 +38,9 @@ class Workout extends guid(Model) {
 
         this.activation = null
         // add a random activation to wrokout
-        this.activation = await Activation.query(transaction).orderBy('rand()').first()
+        const activations = await Activation.query(transaction)
+
+        this.activation = activations[Math.floor(Math.random() * Array.from(activations).length)]
     }
 
 
