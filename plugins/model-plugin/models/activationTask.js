@@ -1,24 +1,24 @@
 const { Model } = require('objection')
 const knex = require('knex')
 const guid = require('objection-guid')({
-  field: 'awakingTaskId',
+  field: 'activationTaskId',
 });
 
 
 
-class AwakingTask extends guid(Model) {
+class ActivationTask extends guid(Model) {
   static get tableName() {
-    return 'awakingTask';
+    return 'activationTask';
   }
   static get idColumn() {
-    return 'awakingTaskId';
+    return 'activationTaskId';
   }
   static get jsonSchema () {
     return {
       type: 'object',
       properties: {
-        awakingTaskId: {type: 'string'},
-        awakingId: {type: 'string'},
+        activationTaskId: {type: 'string'},
+        activationId: {type: 'string'},
         taskId: {type: 'string'},
         repetition: {type: 'int'},
         repetitionType: {type: 'string'},
@@ -27,4 +27,4 @@ class AwakingTask extends guid(Model) {
   }
 }
 
-module.exports = AwakingTask
+module.exports = ActivationTask

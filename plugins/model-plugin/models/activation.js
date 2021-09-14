@@ -1,23 +1,23 @@
 const { Model } = require('objection')
 const knex = require('knex')
 const guid = require('objection-guid')({
-  field: 'awakingId',
+  field: 'activationId',
 });
 
 
 
-class Awaking extends guid(Model) {
+class Activation extends guid(Model) {
   static get tableName() {
-    return 'awaking';
+    return 'activation';
   }
   static get idColumn() {
-    return 'awakingId';
+    return 'activationId';
   }
   static get jsonSchema () {
     return {
       type: 'object',
       properties: {
-        awakingId: {type: 'string'},
+        activationId: {type: 'string'},
         name: {type: 'string'},
         description: {type: 'string'},
         experience: {type: 'int', value: 15}
@@ -26,4 +26,4 @@ class Awaking extends guid(Model) {
   }
 }
 
-module.exports = Awaking
+module.exports = Activation
