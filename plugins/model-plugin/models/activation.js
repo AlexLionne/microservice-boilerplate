@@ -29,7 +29,7 @@ class Activation extends guid(Model) {
 
     return {
       tasks: {
-        relation: Model.ActivationTask,
+        relation: Model.HasManyRelation,
         modelClass: ActivationTask,
         join: {
           from: 'activation.activationId',
