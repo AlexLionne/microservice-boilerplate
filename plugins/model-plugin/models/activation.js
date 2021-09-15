@@ -23,6 +23,21 @@ class Activation extends guid(Model) {
       }
     };
   }
+
+  static get relationMappings() {
+    const ActivationTask = require('./activationTask');
+
+    return {
+      tasks: {
+        relation: Model.ActivationTask,
+        modelClass: ActivationTask,
+        join: {
+          from: 'activation.activationId',
+          to: 'activationTask.activationId'
+        }
+      },
+    }
+  }
 }
 
 module.exports = Activation

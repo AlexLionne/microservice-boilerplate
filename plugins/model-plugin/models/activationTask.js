@@ -22,9 +22,25 @@ class ActivationTask extends guid(Model) {
         taskId: {type: 'string'},
         repetition: {type: 'int'},
         repetitionType: {type: 'string'},
+        order: {type: 'int'},
       }
     };
   }
+  static get relationMappings() {
+    const Task = require('./task');
+
+    return {
+      task: {
+        relation: Model.HasOneRelation,
+        modelClass: Task,
+        join: {
+          from: 'task.taskId',
+          to: 'activationTask.taskId'
+        }
+      }
+    }
+  }
+
 }
 
 module.exports = ActivationTask
