@@ -1,5 +1,4 @@
 const { Model } = require('objection')
-const knex = require('knex')
 const guid = require('objection-guid')({
   field: 'activationId',
 });

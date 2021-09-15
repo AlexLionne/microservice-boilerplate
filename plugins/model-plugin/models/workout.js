@@ -1,4 +1,4 @@
-const Activation = require("./activation");
+const Activation = require("./index");
 
 
 const {Model} = require('objection')
