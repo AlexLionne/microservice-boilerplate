@@ -54,6 +54,7 @@ class Task extends guid(Model) {
             type: 'object',
             properties: {
                 taskId: {type: 'string'},
+                accessoryId: {type: 'string'},
                 name: {type: 'string'},
                 experience: {type: 'int'},
                 level: {type: 'int'},
