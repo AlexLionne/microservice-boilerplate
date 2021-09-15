@@ -1,5 +1,4 @@
 const {Model} = require('objection')
-const knex = require('knex')
 const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
 const guid = require('objection-guid')({
   field: 'accessoryId',
@@ -48,8 +47,6 @@ class Accessory extends guid(Model) {
 
       this.previewUrl = previewUrl
     }
-
-
   }
 
   static get jsonSchema() {

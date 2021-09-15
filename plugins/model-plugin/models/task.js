@@ -1,8 +1,4 @@
-import Accessory from "../../../../backend-app/src/screens/Accessories/Accessory";
-
 const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
-
-const {MAX_BUCKET_TIME} = require("../../utils/bucket");
 const {Model} = require('objection')
 const guid = require('objection-guid')({
     field: 'taskId',
