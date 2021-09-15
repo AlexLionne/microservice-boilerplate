@@ -1,3 +1,5 @@
+import Accessory from "../../../../backend-app/src/screens/Accessories/Accessory";
+
 const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
 
 const {MAX_BUCKET_TIME} = require("../../utils/bucket");
@@ -49,7 +51,6 @@ class Task extends guid(Model) {
             this.videoUrl = videoUrl
         }
 
-
     }
 
     static get jsonSchema() {
@@ -63,6 +64,21 @@ class Task extends guid(Model) {
                 bodyArea: {type: 'string'},
             }
         };
+    }
+
+    static get relationMappings() {
+        const Accessory = require('./accessory');
+
+        return {
+            accessory: {
+                relation: Model.HasOneRelation,
+                modelClass: Accessory,
+                join: {
+                    from: 'task.accessoryId',
+                    to: 'accessory.accessoryId'
+                }
+            },
+        }
     }
 }
 
