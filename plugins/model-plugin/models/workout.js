@@ -1,4 +1,3 @@
-const {Activation} = require("./index");
 
 
 const {Model} = require('objection')
@@ -32,18 +31,6 @@ class Workout extends guid(Model) {
                 experience: {type: 'int'},
             }
         };
-    }
-
-    async $afterFind() {
-
-        this.activation = {}
-        // add a random activation to workout
-        const activations = await Activation.query()
-
-        if (Array.from(activations).length > 0) {
-            this.activation = activations[Math.floor(Math.random() * Array.from(activations).length)]
-
-        }
     }
 
 
