@@ -40,7 +40,6 @@ function _routes(microservice, routes, handleRequests, cors, handler, plugins, l
     if (routes) {
         Object.keys(routes).forEach(key => {
             let route = routes[key]
-            if (route.cors) microservice.use(cors());
             //listen for requests
             handleRequests(microservice, handler, plugins, route, log, _request)
         })

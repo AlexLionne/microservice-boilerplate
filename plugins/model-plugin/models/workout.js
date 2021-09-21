@@ -22,12 +22,11 @@ class Workout extends guid(Model) {
             type: 'object',
             properties: {
                 workoutId: {type: 'string'},
+                finisherId: {type: 'string'},
                 name: {type: 'string'},
                 duration: {type: 'int'},
                 level: {type: 'int'},
                 description: {type: 'int'},
-                awakingId: {type: 'string'},
-                warmumpId: {type: 'string'},
                 experience: {type: 'int'},
             }
         };

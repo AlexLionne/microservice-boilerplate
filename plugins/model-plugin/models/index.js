@@ -61,4 +61,6 @@ module.exports = {
     UserAvatar: require('./userAvatar').bindKnex(knexConfig),
     Avatar: require('./avatar').bindKnex(knexConfig),
     UserFeedback: require('./userFeedback').bindKnex(knexConfig),
+    UserClub: require('./userClub').bindKnex(knexConfig),
+    Club: require('./club').bindKnex(knexConfig),
 }

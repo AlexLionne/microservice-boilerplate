@@ -1,4 +1,6 @@
 let express, body, cors, path, microserver, log, chalk, moment, io, formData, session;
+
+log = console.log;
 formData = require('express-form-data');
 express = require('express');
 body = require('body-parser');
@@ -6,6 +8,9 @@ cors = require('cors');
 path = require('path');
 session = require('express-session')
 microserver = express();
+chalk = require('chalk')
+moment = require('moment')
+
 
 microserver.use(body.urlencoded({limit: '5mb', extended: true}));
 microserver.use(body.json({limit: '5mb'}))
@@ -14,16 +19,22 @@ microserver.use(formData.format());
 microserver.use(formData.stream());
 microserver.use(formData.union());
 microserver.use(session({secret: 'secret', cookie: {maxAge: 60000}, resave: false, saveUninitialized: false}));
+microserver.use(function(req, res, next) {
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type, Accept,Authorization,Origin");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    res.setHeader("Access-Control-Allow-Credentials", true);
+    next();
+});
+
 require('dotenv').config()
 
 const server = require('http').createServer(microserver);
-log = console.log;
-chalk = require('chalk')
-moment = require('moment')
+
 io = require('socket.io')(server, {
     cors: {
         origin: "*",
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST", "PUT", "DELETE"]
     }
 })
 
@@ -41,9 +52,9 @@ const {
 } = require('./functions')
 
 _compression(microserver)
-//_requestLogger(microserver)
 _currentRoute(microserver)
 
+microserver.use(cors())
 const {handleRequests} = require('./http')
 /**
  * Microservice module

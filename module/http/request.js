@@ -31,15 +31,6 @@ module.exports = function request(microservice, handler, plugins, route, log, di
             throw e.message
         }
 
-        if (cors) {
-            res.setHeader('Access-Control-Allow-Origin',
-                req.header('origin')
-                || req.header('x-forwarded-host')
-                || req.header('referer')
-                || req.header('host'));
-
-            res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        }
 
         const {headers} = response
 

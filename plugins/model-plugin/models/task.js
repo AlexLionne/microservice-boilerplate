@@ -24,8 +24,6 @@ class Task extends guid(Model) {
      * @returns {*}
      */
     async $afterFind(args) {
-
-
         this.videoUrl = null
 
         const file = await storage
@@ -46,7 +44,6 @@ class Task extends guid(Model) {
 
             this.videoUrl = videoUrl
         }
-
     }
 
     static get jsonSchema() {

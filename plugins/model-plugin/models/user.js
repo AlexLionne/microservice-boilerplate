@@ -27,6 +27,20 @@ class User extends guid(Model) {
             }
         };
     }
+    static get relationMappings() {
+        const UserClub = require('./userClub');
+
+        return {
+            userClub: {
+                relation: Model.HasOneRelation,
+                modelClass: UserClub,
+                join: {
+                    from: 'user.userId',
+                    to: 'userClub.userId'
+                }
+            },
+        }
+    }
 }
 
 module.exports = User
