@@ -27,7 +27,7 @@ const server = require('http').createServer(microserver);
 io = require('socket.io')(server, {
     cors: {
         origin: "*",
-        methods: ["GET", "POST", "PUT", "DELETE"]
+        methods: ["GET", "POST"]
     }
 })
 
