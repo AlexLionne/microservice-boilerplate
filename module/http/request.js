@@ -10,8 +10,13 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         return log(chalk.red('Check endpoint configuration nor method used in the configuration file'))
 
     async function middleware(req, res, next) {
-
         let response
+
+        res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type, Accept,Authorization,Origin");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+        res.setHeader("Access-Control-Allow-Credentials", true);
+        
         try {
             //pass the logger
             req.logger = logger
@@ -19,23 +24,16 @@ module.exports = function request(microservice, handler, plugins, route, log, di
             if (logged) {
                 //authenticate the user with jwt
                 const jwt = await Token.handleToken(req, res)
-
-                if (!jwt)
-                    return res.status(403).send()
+                if (!jwt) return res.status(403).send()
             }
 
             response = await dispatcher(plugins, handler, req, res, next, route)
         } catch (e) {
-            res.sendStatus(500)
             log(chalk.red(e.message))
-            throw e.message
+            res.status(500).send()
         }
 
-
-        const {headers} = response
-
-        if (response && headers) res.set(headers);
-        else if (response) res.status(200).send(response);
+        if (response) res.status(200).send(response);
         else res.status(404).send()
     }
 

@@ -19,13 +19,6 @@ microserver.use(formData.format());
 microserver.use(formData.stream());
 microserver.use(formData.union());
 microserver.use(session({secret: 'secret', cookie: {maxAge: 60000}, resave: false, saveUninitialized: false}));
-microserver.use(function(req, res, next) {
-    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type, Accept,Authorization,Origin");
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-    res.setHeader("Access-Control-Allow-Credentials", true);
-    next();
-});
 
 require('dotenv').config()
 
