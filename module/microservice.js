@@ -82,7 +82,7 @@ class Microservice {
     start() {
         let {resources, routes, port, scheduledFunctions, events} = config
 
-        _rateLimit(microserver)
+        //_rateLimit(microserver)
         _resources(resources)
         _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
 
