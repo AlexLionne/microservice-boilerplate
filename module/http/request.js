@@ -10,8 +10,6 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         return log(chalk.red('Check endpoint configuration nor method used in the configuration file'))
 
     async function middleware(req, res, next) {
-        let response
-
         res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type, Accept,Authorization,Origin");
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
@@ -27,14 +25,10 @@ module.exports = function request(microservice, handler, plugins, route, log, di
                 if (!jwt) return res.status(403).send()
             }
 
-            response = await dispatcher(plugins, handler, req, res, next, route)
+            await dispatcher(plugins, handler, req, res, next, route)
         } catch (e) {
             log(chalk.red(e.message))
-            res.status(500).send()
         }
-
-        if (response) res.status(200).send(response);
-        else res.status(404).send()
     }
 
     try {
