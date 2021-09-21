@@ -22,7 +22,7 @@ class Workout extends guid(Model) {
             type: 'object',
             properties: {
                 workoutId: {type: 'string'},
-                finisherId: {type: 'string'},
+                finisherId: {type: 'string', nullable: true},
                 name: {type: 'string'},
                 duration: {type: 'int'},
                 level: {type: 'int'},

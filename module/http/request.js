@@ -14,7 +14,7 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
         res.setHeader("Access-Control-Allow-Credentials", true);
-        
+
         try {
             //pass the logger
             req.logger = logger
