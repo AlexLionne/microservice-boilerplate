@@ -8,11 +8,11 @@ const guid = require('objection-guid')({
 class Club extends guid(Model) {
 
     static get tableName() {
-        return 'userClub';
+        return 'club';
     }
 
     static get idColumn() {
-        return 'userClubId';
+        return 'clubId';
     }
 
     static get jsonSchema() {
