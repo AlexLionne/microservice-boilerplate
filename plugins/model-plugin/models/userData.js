@@ -31,7 +31,7 @@ class UserData extends guid(Model) {
                 lastSportDate: {type: 'string'},
                 workoutsCount: {type: 'int'},
                 deviceInfo: {type: 'string'},
-                sportRecurrence: {type: 'string'},
+                sportRecurrence: {type: 'int'},
                 level: {type: 'int'},
                 seriesCount: {type: 'int'},
                 nesPass: {type: 'string'},
