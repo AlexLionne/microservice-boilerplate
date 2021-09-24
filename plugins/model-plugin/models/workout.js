@@ -1,14 +1,10 @@
-const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
+
 const {Model} = require('objection')
 
 const guid = require('objection-guid')({
     field: 'workoutId',
 });
-const {Storage} = require('@google-cloud/storage');
 
-const WORKOUTS_VOICES = 'workouts-voices'
-
-const storage = new Storage();
 
 
 class Workout extends guid(Model) {
@@ -18,29 +14,6 @@ class Workout extends guid(Model) {
 
     static get idColumn() {
         return 'workoutId';
-    }
-
-    async $afterFind(args) {
-        this.videoUrl = null
-
-        const file = await storage
-            .bucket(WORKOUTS_VOICES)
-            .file(`${this.workoutId}/announcement.mp3`)
-
-        const [exists] = await file.exists()
-
-        if (exists) {
-            const [announcement] = await storage
-                .bucket(WORKOUTS_VOICES)
-                .file(`${this.taskId}/announcement.mp3`)
-                .getSignedUrl({
-                    version: 'v4',
-                    action: 'read',
-                    expires: Date.now() + BUCKET_RESOURCE_OPTIONS, // 3 hours
-                })
-
-            this.announcement = announcement
-        }
     }
 
     static get jsonSchema() {
