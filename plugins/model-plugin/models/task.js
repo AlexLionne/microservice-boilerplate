@@ -50,7 +50,7 @@ class Task extends guid(Model) {
         return {
             type: 'object',
             properties: {
-                taskId: {type: 'string'},
+                taskId:[{ type: 'null' }, { type: 'string' }],
                 accessoryId: {type: 'string'},
                 name: {type: 'string'},
                 experience: {type: 'int'},
