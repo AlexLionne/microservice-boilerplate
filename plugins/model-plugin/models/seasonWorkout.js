@@ -42,7 +42,7 @@ class SeasonWorkout extends guid(Model) {
         if (exists) {
             const [announcement] = await storage
                 .bucket(WORKOUTS_VOICES)
-                .file(`${this.taskId}/announcement.mp3`)
+                .file(`${this.seasonWorkoutId}/announcement.mp3`)
                 .getSignedUrl({
                     version: 'v4',
                     action: 'read',
