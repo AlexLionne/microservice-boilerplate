@@ -5,7 +5,7 @@ const guid = require('objection-guid')({
 });
 const {Storage} = require('@google-cloud/storage');
 
-const TASKS_BUCKET = 'tasks-bucket'
+const TASKS_BUCKET = 'tasks-videos-bucket'
 
 const storage = new Storage();
 
