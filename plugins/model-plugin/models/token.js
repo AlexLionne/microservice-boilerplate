@@ -29,17 +29,18 @@ class Token extends guid(Model) {
      * return user or end the request
      * @param req
      * @param res
+     * @param trx
      * @returns {Promise<*>}
      */
 
-    static async handleToken(req, res) {
+    static async handleToken(req, res, trx) {
         try {
             const token = this.getTokenFromHeaders(req)
 
             if (!token)
                 return false
 
-            const user = await this.query().where('token', '=', token).first();
+            const user = await this.query(trx).where('token', '=', token).first();
 
 
             return user?.userId
