@@ -23,8 +23,8 @@ const knexConfig = knex({
     client: 'mysql',
     connection,
     pool: {
-        min: 0,
-        max: 15,
+        min: 1,
+        max: 100,
         createTimeoutMillis: 3000,
         acquireTimeoutMillis: 30000,
         idleTimeoutMillis: 30000,
