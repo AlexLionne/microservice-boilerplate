@@ -1,8 +1,6 @@
-const knex = require("knex");
+const Knex = require("knex");
 const dbSocketPath = process.env.DB_SOCKET_PATH || '/cloudsql'
-
 const {DB_USER, DB_PASSWORD, DB, ENV} = process.env
-
 const connection = ENV === "production" ?
     {
         socketPath: `${dbSocketPath}/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
@@ -19,48 +17,66 @@ const connection = ENV === "production" ?
         port: 8889, //MAMP config
     }
 
-const knexConfig = knex({
-    client: 'mysql',
-    connection,
-    pool: {
-        min: 1,
-        max: 100,
-        createTimeoutMillis: 3000,
-        acquireTimeoutMillis: 30000,
-        idleTimeoutMillis: 30000,
-        reapIntervalMillis: 1000,
-        createRetryIntervalMillis: 100,
-        propagateCreateError: false
-    }})
+
+const knexCache = new Map();
+const knex = (serviceId) => getKnexForRequest(serviceId, knexCache);
+
+
+function getKnexForRequest(serviceId, knexCache) {
+
+    let knex = knexCache.get(serviceId);
+
+    if (!knex) {
+        knex = Knex(knexConfigForTenant(serviceId));
+        knexCache.set(serviceId, knex);
+    }
+
+    return knex;
+}
+function knexConfigForTenant(serviceId) {
+    return {
+        client: 'mysql',
+        connection,
+        pool: {
+            min: 1,
+            max: 100,
+            createTimeoutMillis: 3000,
+            acquireTimeoutMillis: 30000,
+            idleTimeoutMillis: 30000,
+            reapIntervalMillis: 1000,
+            createRetryIntervalMillis: 100,
+            propagateCreateError: false
+        }};
+}
 
 module.exports = {
-    Task: require('./task').bindKnex(knexConfig),
-    WorkoutTask: require('./workoutTask').bindKnex(knexConfig),
-    Workout: require('./workout').bindKnex(knexConfig),
-    Finisher: require('./finisher').bindKnex(knexConfig),
-    FinisherTask: require('./finisherTask').bindKnex(knexConfig),
-    Level: require('./level').bindKnex(knexConfig),
-    Accessory: require('./accessory').bindKnex(knexConfig),
-    Activation: require('./activation').bindKnex(knexConfig),
-    ActivationTask: require('./activationTask').bindKnex(knexConfig),
-    Skin: require('./skin').bindKnex(knexConfig),
-    Season: require('./season').bindKnex(knexConfig),
-    SkinCollection: require('./skinCollection').bindKnex(knexConfig),
-    Auth: require('./auth').bindKnex(knexConfig),
-    UserData: require('./userData').bindKnex(knexConfig),
-    User: require('./user').bindKnex(knexConfig),
-    Token: require('./token').bindKnex(knexConfig),
-    FirstUser: require('./firstUser').bindKnex(knexConfig),
-    TimeZone: require('./timezone').bindKnex(knexConfig),
-    SeasonWorkout: require('./seasonWorkout').bindKnex(knexConfig),
-    Reward: require('./reward').bindKnex(knexConfig),
-    UserReward: require('./userReward').bindKnex(knexConfig),
-    UserSeasonWorkout: require('./userSeasonWorkout').bindKnex(knexConfig),
-    UserSkin: require('./userSkin').bindKnex(knexConfig),
-    UserSeason: require('./userSeason').bindKnex(knexConfig),
-    UserAvatar: require('./userAvatar').bindKnex(knexConfig),
-    Avatar: require('./avatar').bindKnex(knexConfig),
-    UserFeedback: require('./userFeedback').bindKnex(knexConfig),
-    UserClub: require('./userClub').bindKnex(knexConfig),
-    Club: require('./club').bindKnex(knexConfig),
+    Task: require('./task').bindKnex(() => knex('workout')),
+    WorkoutTask: require('./workoutTask').bindKnex(() => knex('workout')),
+    Workout: require('./workout').bindKnex(() => knex('workout')),
+    Finisher: require('./finisher').bindKnex(() => knex('workout')),
+    FinisherTask: require('./finisherTask').bindKnex(() => knex('workout')),
+    Level: require('./level').bindKnex(() => knex('workout')),
+    Accessory: require('./accessory').bindKnex(() => knex('workout')),
+    Activation: require('./activation').bindKnex(() => knex('workout')),
+    ActivationTask: require('./activationTask').bindKnex(() => knex('workout')),
+    Skin: require('./skin').bindKnex(() => knex('season')),
+    Season: require('./season').bindKnex(() => knex('season')),
+    SkinCollection: require('./skinCollection').bindKnex(() => knex('season')),
+    Auth: require('./auth').bindKnex(() => knex('auth')),
+    UserData: require('./userData').bindKnex(() => knex('user')),
+    User: require('./user').bindKnex(() => knex('user')),
+    Token: require('./token').bindKnex(() => knex('auth')),
+    FirstUser: require('./firstUser').bindKnex(() => knex('season')),
+    TimeZone: require('./timezone').bindKnex(() => knex('user')),
+    SeasonWorkout: require('./seasonWorkout').bindKnex(() => knex('season')),
+    Reward: require('./reward').bindKnex(() => knex('season')),
+    UserReward: require('./userReward').bindKnex(() => knex('user')),
+    UserSeasonWorkout: require('./userSeasonWorkout').bindKnex(() => knex('user')),
+    UserSkin: require('./userSkin').bindKnex(() => knex('user')),
+    UserSeason: require('./userSeason').bindKnex(() => knex('user')),
+    UserAvatar: require('./userAvatar').bindKnex(() => knex('user')),
+    Avatar: require('./avatar').bindKnex(() => knex('user')),
+    UserFeedback: require('./userFeedback').bindKnex(() => knex('user')),
+    UserClub: require('./userClub').bindKnex(() => knex('user')),
+    Club: require('./club').bindKnex(() => knex('club')),
 }
