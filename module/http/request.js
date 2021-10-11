@@ -1,5 +1,5 @@
 const chalk = require('chalk')
-const {Token} = require("../../plugins/model-plugin/models");
+const models = require("../../plugins/model-plugin/models");
 const logger = require("../../plugins/logger/logger")
 
 module.exports = function request(microservice, handler, plugins, route, log, dispatcher) {
@@ -18,10 +18,11 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         try {
             //pass the logger
             req.logger = logger
+            req.models = models
 
             if (logged) {
                 //authenticate the user with jwt
-                const jwt = await Token.handleToken(req, res)
+                const jwt = await req.models.Token.handleToken(req, res)
                 if (!jwt) return res.status(403).send()
             }
 
