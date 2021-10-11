@@ -1,8 +1,11 @@
 const {Model} = require('objection')
+const {config} = require("../config/knex");
 const guid = require('objection-guid')({
     field: 'userFeedbackId',
 });
 
+
+Model.knex(config)
 
 class UserFeedback extends guid(Model) {
     static get tableName() {

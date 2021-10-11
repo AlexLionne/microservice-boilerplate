@@ -2,6 +2,7 @@ const {Model} = require('objection')
 const jwt = require('jsonwebtoken');
 
 const bcrypt = require("bcryptjs");
+const {config} = require("../config/knex");
 const guid = require('objection-guid')({
     field: 'authId',
 });
@@ -14,6 +15,9 @@ const options = {
     passwordField: 'password',
     rounds: RECOMMENDED_ROUNDS,
 }
+
+
+Model.knex(config)
 
 class Auth extends guid(Model) {
 

@@ -4,10 +4,13 @@ const WORKOUTS_VOICES = 'workouts-voices'
 const storage = new Storage();
 
 const {Model} = require('objection')
+const {config} = require("../config/knex");
 const guid = require('objection-guid')({
     field: 'seasonWorkoutId',
 });
 
+
+Model.knex(config)
 
 class SeasonWorkout extends guid(Model) {
     static get tableName() {

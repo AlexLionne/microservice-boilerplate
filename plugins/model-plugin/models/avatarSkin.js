@@ -1,7 +1,11 @@
 const {Model} = require('objection')
+const {config} = require("../config/knex");
 const guid = require('objection-guid')({
     field: 'avatarSkinId',
 });
+
+
+Model.knex(config)
 
 class AvatarSkin extends guid(Model) {
     static get tableName() {

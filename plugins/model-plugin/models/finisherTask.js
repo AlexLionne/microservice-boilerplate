@@ -1,8 +1,12 @@
 const {Model} = require('objection')
 const knex = require('knex')
+const {config} = require("../config/knex");
 const guid = require('objection-guid')({
   field: 'finisherTaskId',
 });
+
+
+Model.knex(config)
 
 class FinisherTask extends guid(Model) {
   static get tableName() {

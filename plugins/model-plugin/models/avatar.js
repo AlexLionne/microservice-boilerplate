@@ -2,6 +2,7 @@ const {AVATARS_BUCKET, BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
 
 const {Model} = require('objection')
 const {Storage} = require('@google-cloud/storage');
+const {config} = require("../config/knex");
 
 const guid = require('objection-guid')({
   field: 'avatarId',
@@ -10,6 +11,9 @@ const guid = require('objection-guid')({
 
 
 const storage = new Storage();
+
+
+Model.knex(config)
 
 class Avatar extends guid(Model) {
   static get tableName() {

@@ -4,12 +4,12 @@ const guid = require('objection-guid')({
   field: 'accessoryId',
 });
 
-
 const {Storage} = require('@google-cloud/storage');
-
+const {config} = require("../config/knex");
 const ACCESSORIES_BUCKET = 'accessories-bucket'
-
 const storage = new Storage();
+
+Model.knex(config)
 
 class Accessory extends guid(Model) {
   static get tableName() {

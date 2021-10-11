@@ -1,8 +1,11 @@
 const { Model } = require('objection')
+const {config} = require("../config/knex");
 const guid = require('objection-guid')({
   field: 'timezoneId',
 });
 
+
+Model.knex(config)
 
 class Timezone extends guid(Model) {
   static get tableName() {

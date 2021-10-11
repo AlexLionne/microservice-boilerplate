@@ -4,11 +4,11 @@ const guid = require('objection-guid')({
     field: 'taskId',
 });
 const {Storage} = require('@google-cloud/storage');
-
+const {config} = require("../config/knex");
 const TASKS_BUCKET = 'tasks-videos-bucket'
-
 const storage = new Storage();
 
+Model.knex(config)
 class Task extends guid(Model) {
     static get tableName() {
         return 'task';
@@ -75,6 +75,5 @@ class Task extends guid(Model) {
         }
     }
 }
-
 
 module.exports = Task

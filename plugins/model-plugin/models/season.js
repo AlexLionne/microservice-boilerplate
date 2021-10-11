@@ -1,7 +1,11 @@
 const {Model} = require('objection')
+const {config} = require("../config/knex");
 const guid = require('objection-guid')({
   field: 'seasonId',
 });
+
+
+Model.knex(config)
 
 class Season extends guid(Model) {
   static get tableName() {

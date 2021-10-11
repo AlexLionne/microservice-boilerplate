@@ -1,8 +1,12 @@
 const {Model} = require('objection');
+const {config} = require("../config/knex");
 
 const guid = require('objection-guid')({
     field: 'userClubId',
 });
+
+
+Model.knex(config)
 
 
 class UserClub extends guid(Model) {
