@@ -81,7 +81,6 @@ function _scheduledFunctions(scheduledFunctions, handler) {
 
     let jobs = []
 
-    console.log(scheduledFunctions)
     Object.keys(scheduledFunctions).map((functionName) => {
         try {
             const job = new CronJob(scheduledFunctions[functionName].cronExpression, async () => {
@@ -237,7 +236,7 @@ function _plugin(name, plugins) {
     }
     // no plugins in yml
     if (!plugins || !plugins.length) {
-        log(chalk.red('No plugins registered in config.yml file. Consider adding plugin in config.yml before require it.'))
+        log(chalk.red('No plugins registered in microservice.yml file. Consider adding plugin in microservice.yml before require it.'))
         return
     }
     //name does not match plugins
