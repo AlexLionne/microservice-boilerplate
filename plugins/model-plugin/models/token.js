@@ -45,6 +45,8 @@ class Token extends guid(Model) {
 
             const user = await this.query().where('token', '=', token).first();
 
+            if(!user || !user.userId)
+                return false
 
             return user.userId
         } catch (e) {
