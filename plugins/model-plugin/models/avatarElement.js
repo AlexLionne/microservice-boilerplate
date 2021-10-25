@@ -5,7 +5,7 @@ const {Storage} = require('@google-cloud/storage');
 const {config} = require("../config/knex");
 
 const guid = require('objection-guid')({
-  field: 'avatarId',
+  field: 'avatarElementId',
 });
 
 
@@ -17,11 +17,11 @@ Model.knex(config)
 
 class Avatar extends guid(Model) {
   static get tableName() {
-    return 'avatar';
+    return 'avatarElement';
   }
 
   static get idColumn() {
-    return 'avatarId';
+    return 'avatarElementId';
   }
 
   /**
@@ -58,11 +58,26 @@ class Avatar extends guid(Model) {
     return {
       type: 'object',
       properties: {
-        avatarId: {type: 'string'},
+        avatarElementId: {type: 'string'},
         name: {type: 'string'},
-        type: {type: 'string'},
+        avatarSkinId: {type: 'string'},
       }
     };
+  }
+
+  static get relationMappings() {
+    const AvatarSkin = require('./avatarSkin');
+
+    return {
+      avatar: {
+        relation: Model.HasOneRelation,
+        modelClass: AvatarSkin,
+        join: {
+          from: 'avatarElement.avatarSkinId',
+          to: 'avatarSkin.avatarSkinId'
+        }
+      },
+    }
   }
 }
 

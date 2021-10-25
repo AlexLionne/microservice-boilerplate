@@ -59,11 +59,14 @@ class Avatar extends guid(Model) {
       type: 'object',
       properties: {
         avatarId: {type: 'string'},
-        name: {type: 'string'},
+        gender: {type: 'string'},
+        properties:  {type: 'string'},
         type: {type: 'string'},
       }
     };
   }
+
+
 }
 
 module.exports = Avatar

@@ -22,12 +22,26 @@ class AvatarSkin extends guid(Model) {
             properties: {
                 avatarSkinId: {type: 'string'},
                 avatarId: {type: 'string'},
-                skinId: {type: 'string'},
-                url: {type: 'string'},
-                preview: {type: 'string'},
+                name: {type: 'string'},
             }
         };
     }
+
+    static get relationMappings() {
+        const AvatarSkin = require('./avatarSkin');
+
+        return {
+            avatar: {
+                relation: Model.HasOneRelation,
+                modelClass: AvatarSkin,
+                join: {
+                    from: 'avatarSkin.avatarId',
+                    to: 'avatar.avatarId'
+                }
+            },
+        }
+    }
+
 }
 
 module.exports = AvatarSkin

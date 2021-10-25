@@ -25,6 +25,8 @@ module.exports = {
     UserSeason: require('./userSeason'),
     UserAvatar: require('./userAvatar'),
     Avatar: require('./avatar'),
+    AvatarElement: require('./avatarElement'),
+    UserAvatarElement: require('./userAvatarElement'),
     UserFeedback: require('./userFeedback'),
     UserClub: require('./userClub'),
     Club: require('./club'),

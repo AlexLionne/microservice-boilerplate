@@ -58,9 +58,7 @@ class UserAvatar extends guid(Model) {
                 userAvatarId: {type: 'string'},
                 avatarId: {type: 'string'},
                 userId: {type: 'string'},
-                properties: {type: 'string'},
-                skinProperties: {type: 'string'},
-                active: {type: 'int'},
+                isActive: {type: 'int'},
             }
         };
     }
