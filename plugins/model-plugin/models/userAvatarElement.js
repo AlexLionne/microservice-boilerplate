@@ -5,7 +5,7 @@ const {Storage} = require('@google-cloud/storage');
 const {config} = require("../config/knex");
 
 const guid = require('objection-guid')({
-  field: 'avatarId',
+  field: 'userAvatarElementId',
 });
 
 
@@ -17,11 +17,11 @@ Model.knex(config)
 
 class Avatar extends guid(Model) {
   static get tableName() {
-    return 'avatar';
+    return 'userAvatarElement';
   }
 
   static get idColumn() {
-    return 'avatarId';
+    return 'userAvatarElementId';
   }
 
   /**
@@ -31,7 +31,7 @@ class Avatar extends guid(Model) {
    */
   async $afterFind(args) {
 
-    this.preview = null
+    /*this.preview = null
 
     const file = await storage
         .bucket(AVATARS_BUCKET)
@@ -51,19 +51,39 @@ class Avatar extends guid(Model) {
 
       this.preview = preview
       this.properties = JSON.parse(this.properties)
-    }
+    }*/
   }
 
   static get jsonSchema() {
     return {
       type: 'object',
       properties: {
-        avatarId: {type: 'string'},
-        gender: {type: 'string'},
-        properties:  {type: 'string'},
-        type: {type: 'string'},
+        userAvatarElementId: {type: 'string'},
+        userId: {type: 'string'},
+        avatarElementId: {type: 'string'},
+        acquiredDate: {type: 'datetime'},
+        isActive:  {type: 'int'},
+
+        roughness:  {type: 'int'},
+        color:  {type: 'string'},
+        specular:  {type: 'int'},
       }
     };
+  }
+
+  static get relationMappings() {
+    const AvatarElement = require('./avatarElement');
+
+    return {
+      avatarElement: {
+        relation: Model.HasOneRelation,
+        modelClass: AvatarElement,
+        join: {
+          from: 'userAvatar.avatarElementId',
+          to: 'avatarElement.avatarElementId'
+        }
+      },
+    }
   }
 
 
