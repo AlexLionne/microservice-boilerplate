@@ -67,6 +67,7 @@ class Avatar extends guid(Model) {
         roughness:  {type: 'int'},
         color:  {type: 'string'},
         specular:  {type: 'int'},
+        metallic:  {type: 'int'},
       }
     };
   }
