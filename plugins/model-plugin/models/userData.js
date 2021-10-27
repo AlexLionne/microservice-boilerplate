@@ -46,7 +46,7 @@ class UserData extends guid(Model) {
         const UserAvatar = require('./userAvatar');
 
         return {
-            avatars: {
+            avatar: {
                 relation: Model.HasManyRelation,
                 modelClass: UserAvatar,
                 join: {
