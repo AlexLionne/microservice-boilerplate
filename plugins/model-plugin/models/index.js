@@ -8,9 +8,9 @@ module.exports = {
     Accessory: require('./accessory'),
     Activation: require('./activation'),
     ActivationTask: require('./activationTask'),
-    Skin: require('./skin'),
+
     Season: require('./season'),
-    SkinCollection: require('./skinCollection'),
+
     Auth: require('./auth'),
     UserData: require('./userData'),
     User: require('./user'),
@@ -23,10 +23,16 @@ module.exports = {
     UserSeasonWorkout: require('./userSeasonWorkout'),
     UserSkin: require('./userSkin'),
     UserSeason: require('./userSeason'),
+
+    // avatars
     UserAvatar: require('./userAvatar'),
     Avatar: require('./avatar'),
+    AvatarSkin: require('./avatarSkin'),
     AvatarElement: require('./avatarElement'),
     UserAvatarElement: require('./userAvatarElement'),
+    Skin: require('./skin'),
+    SkinCollection: require('./skinCollection'),
+
     UserFeedback: require('./userFeedback'),
     UserClub: require('./userClub'),
     Club: require('./club'),
