@@ -21,7 +21,7 @@ class UserAvatar extends guid(Model) {
         return 'userAvatarId';
     }
 
-    async $afterFind(args) {
+    /*async $afterFind(args) {
 
 
         try {
@@ -49,7 +49,7 @@ class UserAvatar extends guid(Model) {
             console.log(e)
         }
 
-    }
+    }*/
 
     static get jsonSchema() {
         return {
