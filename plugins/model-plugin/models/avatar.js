@@ -28,7 +28,7 @@ class Avatar extends guid(Model) {
    * Hook to handle avatar URLs
    * @returns {*}
    * @param args
-   */
+   *
   async $afterFind(args) {
 
     this.preview = null
@@ -52,7 +52,7 @@ class Avatar extends guid(Model) {
       this.preview = preview
       this.properties = JSON.parse(this.properties)
     }
-  }
+  }*/
 
   static get jsonSchema() {
     return {

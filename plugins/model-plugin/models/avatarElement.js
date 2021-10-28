@@ -28,7 +28,7 @@ class Avatar extends guid(Model) {
    * Hook to handle avatar URLs
    * @returns {*}
    * @param args
-   */
+
   async $afterFind(args) {
 
     this.preview = null
@@ -63,7 +63,7 @@ class Avatar extends guid(Model) {
         avatarSkinId: {type: 'string'},
       }
     };
-  }
+  }*/
 
   static get relationMappings() {
     const AvatarSkin = require('./avatarSkin');
