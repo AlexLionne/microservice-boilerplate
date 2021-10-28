@@ -22,7 +22,7 @@ class UserAvatar extends guid(Model) {
     }
 
     async $afterFind(args) {
-        this.properties = JSON.parse(this.properties)
+
 
         try {
             const file = await storage
