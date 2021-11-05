@@ -24,25 +24,21 @@ class Avatar extends guid(Model) {
     return 'avatarId';
   }
 
-  /**
-   * Hook to handle avatar URLs
-   * @returns {*}
-   * @param args
-   *
+
   async $afterFind(args) {
 
     this.preview = null
 
     const file = await storage
         .bucket(AVATARS_BUCKET)
-        .file(`${this.type}/preview.png`)
+        .file(`${this.type}/base/preview.png`)
 
     const [exists] = await file.exists()
 
     if (exists) {
       const [preview] = await storage
           .bucket(AVATARS_BUCKET)
-          .file(`${this.type}/preview.png`)
+          .file(`${this.type}/base/preview.png`)
           .getSignedUrl({
             version: 'v4',
             action: 'read',
@@ -50,9 +46,8 @@ class Avatar extends guid(Model) {
           })
 
       this.preview = preview
-      this.properties = JSON.parse(this.properties)
     }
-  }*/
+  }
 
   static get jsonSchema() {
     return {
@@ -64,6 +59,22 @@ class Avatar extends guid(Model) {
       }
     };
   }
+
+  static get relationMappings() {
+    const AvatarSkin = require('./avatarSkin');
+
+    return {
+      skins: {
+        relation: Model.HasManyRelation,
+        modelClass: AvatarSkin,
+        join: {
+          from: 'avatar.avatarId',
+          to: 'avatarSkin.avatarId'
+        }
+      },
+    }
+  }
+
 }
 
 module.exports = Avatar

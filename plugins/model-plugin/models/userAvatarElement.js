@@ -15,7 +15,7 @@ const storage = new Storage();
 
 Model.knex(config)
 
-class Avatar extends guid(Model) {
+class UserAvatarElement extends guid(Model) {
   static get tableName() {
     return 'userAvatarElement';
   }
@@ -24,43 +24,14 @@ class Avatar extends guid(Model) {
     return 'userAvatarElementId';
   }
 
-  /**
-   * Hook to handle avatar URLs
-   * @returns {*}
-   * @param args
-   */
-  async $afterFind(args) {
-
-    /*this.preview = null
-
-    const file = await storage
-        .bucket(AVATARS_BUCKET)
-        .file(`${this.type}/preview.png`)
-
-    const [exists] = await file.exists()
-
-    if (exists) {
-      const [preview] = await storage
-          .bucket(AVATARS_BUCKET)
-          .file(`${this.type}/preview.png`)
-          .getSignedUrl({
-            version: 'v4',
-            action: 'read',
-            expires: Date.now() + BUCKET_RESOURCE_OPTIONS, // 3 hours
-          })
-
-      this.preview = preview
-      this.properties = JSON.parse(this.properties)
-    }*/
-  }
-
   static get jsonSchema() {
     return {
       type: 'object',
       properties: {
         userAvatarElementId: {type: 'string'},
-        userId: {type: 'string'},
+        userAvatarId: {type: 'string'},
         avatarElementId: {type: 'string'},
+
         acquiredDate: {type: 'datetime'},
         isActive:  {type: 'int'},
 
@@ -71,23 +42,6 @@ class Avatar extends guid(Model) {
       }
     };
   }
-
-  static get relationMappings() {
-    const AvatarElement = require('./avatarElement');
-
-    return {
-      avatarElement: {
-        relation: Model.HasOneRelation,
-        modelClass: AvatarElement,
-        join: {
-          from: 'userAvatar.avatarElementId',
-          to: 'avatarElement.avatarElementId'
-        }
-      },
-    }
-  }
-
-
 }
 
-module.exports = Avatar
+module.exports = UserAvatarElement

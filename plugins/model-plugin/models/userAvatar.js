@@ -21,35 +21,27 @@ class UserAvatar extends guid(Model) {
         return 'userAvatarId';
     }
 
-    /*async $afterFind(args) {
+    async $afterFind(args) {
+        this.preview = null
 
+        const file = await storage
+            .bucket('all-users-avatars')
+            .file(`${this.userId}/preview.png`)
 
-        try {
-            const file = await storage
+        const [exists] = await file.exists()
+
+        if (exists) {
+            const [preview] = await storage
                 .bucket('all-users-avatars')
                 .file(`${this.userId}/preview.png`)
-
-            const [exists] = await file.exists()
-
-            if (exists) {
-                const [preview] = await storage
-                    .bucket('all-users-avatars')
-                    .file(`${this.userId}/preview.png`)
-                    .getSignedUrl({
-                        version: 'v4',
-                        action: 'read',
-                        expires: Date.now() + BUCKET_RESOURCE_OPTIONS, // 3 hours
-                    })
-                console.log(preview)
-                this.preview = preview
-            } else {
-                this.preview = null
-            }
-        } catch (e) {
-            console.log(e)
+                .getSignedUrl({
+                    version: 'v4',
+                    action: 'read',
+                    expires: Date.now() + BUCKET_RESOURCE_OPTIONS, // 3 hours
+                })
+            this.preview = preview
         }
-
-    }*/
+    }
 
     static get jsonSchema() {
         return {
@@ -64,15 +56,15 @@ class UserAvatar extends guid(Model) {
     }
 
     static get relationMappings() {
-        const Avatar = require('./avatar');
+        const UserAvatarElement = require('./userAvatarElement');
 
         return {
-            avatar: {
-                relation: Model.HasOneRelation,
-                modelClass: Avatar,
+            elements: {
+                relation: Model.HasManyRelation,
+                modelClass: UserAvatarElement,
                 join: {
-                    from: 'userAvatar.avatarId',
-                    to: 'avatar.avatarId'
+                    from: 'userAvatar.userAvatarId',
+                    to: 'userAvatarElement.userAvatarId'
                 }
             },
         }

@@ -28,15 +28,15 @@ class AvatarSkin extends guid(Model) {
     }
 
     static get relationMappings() {
-        const AvatarSkin = require('./avatarSkin');
+        const AvatarElement = require('./avatarElement');
 
         return {
-            avatar: {
-                relation: Model.HasOneRelation,
-                modelClass: AvatarSkin,
+            elements: {
+                relation: Model.HasManyRelation,
+                modelClass: AvatarElement,
                 join: {
-                    from: 'avatarSkin.avatarId',
-                    to: 'avatar.avatarId'
+                    from: 'avatarSkin.avatarSkinId',
+                    to: 'avatarElement.avatarSkinId'
                 }
             },
         }
