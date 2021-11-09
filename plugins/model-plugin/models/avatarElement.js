@@ -60,6 +60,7 @@ class Avatar extends guid(Model) {
                 name: {type: 'string'},
                 avatarSkinId: {type: 'string'},
                 type: {type: 'string'},
+                category: {type: 'string'},
             }
         };
     }
