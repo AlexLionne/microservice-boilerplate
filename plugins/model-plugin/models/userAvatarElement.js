@@ -1,16 +1,10 @@
-const {AVATARS_BUCKET, BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
-
 const {Model} = require('objection')
-const {Storage} = require('@google-cloud/storage');
 const {config} = require("../config/knex");
 
 const guid = require('objection-guid')({
   field: 'userAvatarElementId',
 });
 
-
-
-const storage = new Storage();
 
 
 Model.knex(config)

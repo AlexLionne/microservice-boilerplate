@@ -32,14 +32,14 @@ class Avatar extends guid(Model) {
 
             const file = await storage
                 .bucket(AVATARS_BUCKET)
-                .file(`${this.type}/${this.name}.png`)
+                .file(`${this.bucket}/${this.type}/${this.name}.png`)
 
             const [exists] = await file.exists()
 
             if (exists) {
                 const [preview] = await storage
                     .bucket(AVATARS_BUCKET)
-                    .file(`${this.type}/${this.name}.png`)
+                    .file(`${this.bucket}/${this.type}/${this.name}.png`)
                     .getSignedUrl({
                         version: 'v4',
                         action: 'read',
@@ -60,6 +60,7 @@ class Avatar extends guid(Model) {
                 name: {type: 'string'},
                 avatarSkinId: {type: 'string'},
                 type: {type: 'string'},
+                bucket: {type: 'string'},
             }
         };
     }
