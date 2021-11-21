@@ -2,6 +2,7 @@ const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
 const {Model} = require('objection')
 const {Storage} = require('@google-cloud/storage');
 const {config} = require("../config/knex");
+const UserAvatarElement = require("./userAvatarElement");
 
 const storage = new Storage();
 
@@ -57,8 +58,17 @@ class UserAvatar extends guid(Model) {
 
     static get relationMappings() {
         const UserAvatarElement = require('./userAvatarElement');
+        const Avatar = require('./avatar');
 
         return {
+            avatar: {
+                relation: Model.HasOneRelation,
+                modelClass: Avatar,
+                join: {
+                    from: 'userAvatar.avatarId',
+                    to: 'avatar.avatarId'
+                }
+            },
             elements: {
                 relation: Model.HasManyRelation,
                 modelClass: UserAvatarElement,
