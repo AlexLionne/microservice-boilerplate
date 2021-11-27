@@ -66,7 +66,7 @@ class Avatar extends guid(Model) {
     return {
       skins: {
         relation: Model.HasManyRelation,
-        modelClass: AvatarSkin,
+          modelClass: AvatarSkin,
         join: {
           from: 'avatar.avatarId',
           to: 'avatarSkin.avatarId'
