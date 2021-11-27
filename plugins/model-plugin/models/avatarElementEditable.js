@@ -24,7 +24,7 @@ class AvatarElementEditable extends guid(Model) {
                 avatarElementEditableId: {type: 'string'},
                 avatarElementId: {type: 'string'},
                 name: {type: 'string'},
-                value: {type: 'string'},
+                type: {type: 'string'},
             }
         };
     }
