@@ -3,6 +3,7 @@ const {AVATARS_BUCKET, BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
 const {Model} = require('objection')
 const {Storage} = require('@google-cloud/storage');
 const {config} = require("../config/knex");
+const AvatarSkin = require("./avatarSkin");
 
 const guid = require('objection-guid')({
     field: 'avatarElementId',
@@ -14,7 +15,7 @@ const storage = new Storage();
 
 Model.knex(config)
 
-class Avatar extends guid(Model) {
+class AvatarElement extends guid(Model) {
     static get tableName() {
         return 'avatarElement';
     }
@@ -65,6 +66,20 @@ class Avatar extends guid(Model) {
             }
         };
     }
+    static get relationMappings() {
+        const AvatarElementEditable = require('./avatarElementEditable');
+
+        return {
+            editable: {
+                relation: Model.HasManyRelation,
+                modelClass: AvatarElementEditable,
+                join: {
+                    from: 'avatarElementEditable.avatarElementId',
+                    to: 'avatarElement.avatarElementId'
+                }
+            },
+        }
+    }
 }
 
-module.exports = Avatar
+module.exports = AvatarElement

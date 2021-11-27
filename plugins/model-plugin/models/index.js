@@ -28,6 +28,7 @@ module.exports = {
     UserAvatar: require('./userAvatar'),
     Avatar: require('./avatar'),
     AvatarSkin: require('./avatarSkin'),
+    AvatarElementEditable: require('./avatarElementEditable'),
     AvatarElement: require('./avatarElement'),
     UserAvatarElement: require('./userAvatarElement'),
     Skin: require('./skin'),
