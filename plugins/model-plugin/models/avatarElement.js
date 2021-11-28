@@ -74,8 +74,8 @@ class AvatarElement extends guid(Model) {
                 relation: Model.HasManyRelation,
                 modelClass: AvatarElementEditable,
                 join: {
-                    from: 'avatarElementEditable.avatarElementId',
-                    to: 'avatarElement.avatarElementId'
+                    from: 'avatarElement.avatarElementId',
+                    to: 'avatarElementEditable.avatarElementId'
                 }
             },
         }
