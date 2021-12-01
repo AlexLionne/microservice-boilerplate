@@ -63,6 +63,7 @@ class AvatarElement extends guid(Model) {
                 type: {type: 'string'},
                 bucket: {type: 'string'},
                 category: {type: 'string'},
+                removable: {type: 'int'},
             }
         };
     }

@@ -25,10 +25,8 @@ class UserAvatarElement extends guid(Model) {
         userAvatarElementId: {type: 'string'},
         userAvatarId: {type: 'string'},
         avatarElementId: {type: 'string'},
-
         acquiredDate: {type: 'datetime'},
         isActive:  {type: 'int'},
-
         roughness:  {type: 'int'},
         color:  {type: 'string'},
         specular:  {type: 'int'},
