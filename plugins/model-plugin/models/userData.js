@@ -37,7 +37,6 @@ class UserData extends guid(Model) {
                 sportRecurrence: {type: 'int'},
                 level: {type: 'int'},
                 seriesCount: {type: 'int'},
-                nesPass: {type: 'string'},
                 nescoins: {type: 'long'},
             }
         };
