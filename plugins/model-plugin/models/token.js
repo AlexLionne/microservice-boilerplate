@@ -24,7 +24,8 @@ class Token extends guid(Model) {
             properties: {
                 userTokenId: {type: 'string', maxLength: 36},
                 userId: {type: 'string', maxLength: 36},
-                token: {type: 'string'}
+                token: {type: 'string'},
+                refreshToken: {type: 'string'},
             }
         }
     }
