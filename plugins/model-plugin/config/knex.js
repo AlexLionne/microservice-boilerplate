@@ -2,15 +2,8 @@ const Knex = require('knex');
 
 const dbSocketPath = process.env.DB_SOCKET_PATH || '/cloudsql'
 const {DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST} = process.env
-console.log(DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST)
-const connection = ENV === "production" ?
-    {
-        socketPath: `${dbSocketPath}/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
-        user: DB_USER,
-        password: DB_PASSWORD,
-        database: DB,
-    }
-    :
+
+const connection = ENV === "DEV" ?
     {
         host: DB_HOST,
         user: DB_USER,
@@ -18,6 +11,14 @@ const connection = ENV === "production" ?
         database: DB,
         port: DB_PORT, //MAMP config
     }
+    :
+    {
+        socketPath: `${dbSocketPath}/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
+        user: DB_USER,
+        password: DB_PASSWORD,
+        database: DB,
+    }
+
 
 const config = Knex({
     client: 'mysql',
