@@ -2,6 +2,7 @@ const Knex = require('knex');
 
 const dbSocketPath = process.env.DB_SOCKET_PATH || '/cloudsql'
 const {DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST} = process.env
+console.log(DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST)
 const connection = ENV === "production" ?
     {
         socketPath: `${dbSocketPath}/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
