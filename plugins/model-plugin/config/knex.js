@@ -3,7 +3,7 @@ const Knex = require('knex');
 const dbSocketPath = process.env.DB_SOCKET_PATH || '/cloudsql'
 const {DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST, DB_SOCKET} = process.env
 
-if (ENV === 'DEV') console.log(DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST, DB_SOCKET)
+if (ENV === "DEV") console.log(DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST, DB_SOCKET)
 
 let connection = {}
 if (DB_SOCKET) connection = {socketPath: DB_SOCKET}
@@ -27,7 +27,7 @@ connection = ENV === "DEV" ?
 
 
 const config = Knex({
-    client: 'mysql',
+    client: 'mysql2',
     connection,
     pool: {
         min: 1,
@@ -37,7 +37,13 @@ const config = Knex({
         idleTimeoutMillis: 30000,
         reapIntervalMillis: 1000,
         createRetryIntervalMillis: 100,
-        propagateCreateError: false
+        propagateCreateError: false,
+        afterCreate: (conn, done) => {
+            // .... add logic here ....
+            // you must call with new connection
+            console.log('new connection created')
+            done(null, conn);
+        },
     }
 })
 
