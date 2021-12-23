@@ -43,7 +43,6 @@
     "lowdb": "^1.0.0",
     "moment": "^2.27.0",
     "morgan": "^1.10.0",
-    "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "nodejs-license-key": "^1.0.1",
     "npm-auto-version": "^1.0.0",

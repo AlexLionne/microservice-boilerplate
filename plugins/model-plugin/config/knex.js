@@ -15,7 +15,7 @@ connection = ENV === "DEV" ?
         user: DB_USER,
         password: DB_PASSWORD,
         database: DB,
-        port: DB_PORT,
+        charset: 'utf8'
     }
     :
     {
@@ -23,6 +23,7 @@ connection = ENV === "DEV" ?
         user: DB_USER,
         password: DB_PASSWORD,
         database: DB,
+        charset: 'utf8'
     }
 
 
@@ -39,12 +40,12 @@ const config = Knex({
         reapIntervalMillis: 1000,
         createRetryIntervalMillis: 100,
         propagateCreateError: false,
-        afterCreate: (conn, done) => {
+        /* afterCreate: (conn, done) => {
             // .... add logic here ....
             // you must call with new connection
             console.log('new connection created')
             done(null, conn);
-        },
+        },*/
     }
 })
 
