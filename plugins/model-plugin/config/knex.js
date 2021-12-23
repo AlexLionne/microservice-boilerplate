@@ -29,6 +29,7 @@ connection = ENV === "DEV" ?
 const config = Knex({
     client: 'mysql2',
     connection,
+    debug: ENV === "DEV",
     pool: {
         min: 1,
         max: 100,
