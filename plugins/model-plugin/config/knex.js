@@ -1,13 +1,17 @@
 const Knex = require('knex');
 
 const dbSocketPath = process.env.DB_SOCKET_PATH || '/cloudsql'
-const {DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST} = process.env
+const {DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST, DB_SOCKET} = process.env
 
-console.log(DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST)
+console.log(DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST, DB_SOCKET)
 
-const connection = ENV === "DEV" ?
+let                 connection = {}
+if (DB_SOCKET)      connection = {socketPath: DB_SOCKET}
+else                connection = {host: DB_HOST}
+
+connection = ENV === "DEV" ?
     {
-        host: DB_HOST,
+        ...connection,
         user: DB_USER,
         password: DB_PASSWORD,
         database: DB,
