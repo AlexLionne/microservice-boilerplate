@@ -46,7 +46,7 @@ class Token extends guid(Model) {
 
             const user = await this.query().where('token', '=', token).first();
 
-            if(!user || !user.userId)
+            if (!user || !user.userId)
                 return false
 
             return user.userId
@@ -56,7 +56,7 @@ class Token extends guid(Model) {
         }
     }
 
-    static getTokenFromHeaders = (req) => {
+    static getTokenFromHeaders(req) {
         const {headers: {authorization}} = req;
 
         if (authorization && authorization.split(' ')[0] === 'Bearer') {
