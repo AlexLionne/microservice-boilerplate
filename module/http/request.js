@@ -38,6 +38,7 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         if (method.toLowerCase() === 'post') microservice.post(endpoint, middleware)
         if (method.toLowerCase() === 'put') microservice.put(endpoint, middleware)
         if (method.toLowerCase() === 'delete') microservice.delete(endpoint, middleware)
+        if (method.toLowerCase() === '*') microservice[method.toLowerCase()](endpoint, middleware)
 
     } catch (e) {
         return e.message
