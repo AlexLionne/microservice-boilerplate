@@ -6,7 +6,7 @@ module.exports = function request(microservice, handler, plugins, route, log, di
 
     const {endpoint, method, cors, logged} = route
 
-    if (!endpoint || !endpoint.includes('/') || (!['get', 'post', 'put', 'delete', 'options', 'option'].includes(method.toLowerCase())))
+    if (!endpoint || !endpoint.includes('/') || (!['get', 'post', 'put', 'delete', 'options', 'option', 'patch'].includes(method.toLowerCase())))
         return log(chalk.red('Check endpoint configuration nor method used in the configuration file'))
 
     async function middleware(req, res, next) {
