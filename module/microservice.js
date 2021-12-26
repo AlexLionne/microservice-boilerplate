@@ -116,6 +116,11 @@ class Microservice {
             next();
         })
 
+        microserver.use(function(err, req, res, next){
+            console.log(err.stack);
+            res.status(500).send();
+        });
+
         server.listen(port, () => {
             log(
                 chalk.bold.green(config.name) + chalk.reset(' running on ') + port
