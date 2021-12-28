@@ -1,7 +1,7 @@
 const Knex = require('knex');
 
 const dbSocketPath = process.env.DB_SOCKET_PATH || '/cloudsql'
-const {DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST, DB_SOCKET} = process.env
+const {DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST, DB_SOCKET, KNEX_DEBUG} = process.env
 
 if (ENV === "DEV") console.log(DB_USER, DB_PASSWORD, DB, ENV, DB_PORT, DB_HOST, DB_SOCKET)
 
@@ -30,7 +30,7 @@ connection = ENV === "DEV" ?
 const config = Knex({
     client: 'mysql2',
     connection,
-    debug: ENV === "DEV",
+    debug: KNEX_DEBUG,
     pool: {
         min: 1,
         max: 100,
