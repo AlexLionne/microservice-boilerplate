@@ -36,6 +36,7 @@ class Token extends guid(Model) {
      * return user or end the request
      * @param req
      * @param res
+     * @param next
      * @returns {Promise<*>}
      */
 

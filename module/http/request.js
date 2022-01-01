@@ -20,24 +20,36 @@ module.exports = function request(microservice, handler, plugins, route, log, di
             req.logger = logger
             req.models = models
 
-            if (logged) {
-                //authenticate the user with jwt
-                const {authId} = await req.models.Token.handleToken(req, res)
-                if (!authId) res.status(403).send()
-            }
-
             await dispatcher(plugins, handler, req, res, next, route)
         } catch (e) {
             log(chalk.red(e.message))
-            res.status(403).send()
+            return res.status(500).send()
         }
     }
 
+    async function authenticate(req, res, next) {
+        try {
+            // current route require logged privilege in config.yml
+            if (logged) {
+                //authenticate the user with jwt, returns userId
+                const userId = await req.models.Token.handleToken(req, res)
+                if (!userId) return res.status(403).send()
+
+                req.userId = userId
+            }
+            next()
+        } catch (e) {
+            log(chalk.red(e.message))
+            return res.status(500).send()
+        }
+    }
+
+
     try {
-        if (method.toLowerCase() === 'get') microservice.get(endpoint, middleware)
-        if (method.toLowerCase() === 'post') microservice.post(endpoint, middleware)
-        if (method.toLowerCase() === 'put') microservice.put(endpoint, middleware)
-        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, middleware)
+        if (method.toLowerCase() === 'get') microservice.get(endpoint, authenticate, middleware)
+        if (method.toLowerCase() === 'post') microservice.post(endpoint, authenticate, middleware)
+        if (method.toLowerCase() === 'put') microservice.put(endpoint, authenticate, middleware)
+        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, authenticate, middleware)
     } catch (e) {
         log(chalk.red(e.message))
         return e.message
