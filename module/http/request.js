@@ -18,7 +18,6 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         try {
             //pass the logger
             req.logger = logger
-            req.models = models
 
             await dispatcher(plugins, handler, req, res, next, route)
         } catch (e) {
@@ -29,6 +28,7 @@ module.exports = function request(microservice, handler, plugins, route, log, di
 
     async function authenticate(req, res, next) {
         try {
+            req.models = models
             // current route require logged privilege in config.yml
             if (logged) {
                 //authenticate the user with jwt, returns userId
