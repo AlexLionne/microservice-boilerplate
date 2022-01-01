@@ -19,6 +19,7 @@ microserver.use(formData.format());
 microserver.use(formData.stream());
 microserver.use(formData.union());
 microserver.use(session({secret: 'secret', cookie: {maxAge: 60000}, resave: false, saveUninitialized: false}));
+microserver.set('etag', false); // turn off etag check
 
 require('dotenv').config()
 
