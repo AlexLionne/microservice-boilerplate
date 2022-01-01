@@ -29,13 +29,13 @@ class Auth extends guid(Model) {
         return 'authId';
     }
 
-    async $beforeInsert (...args) {
+    async $beforeInsert(...args) {
         await super.$beforeInsert(...args)
 
         return await this.generateHash()
     }
 
-    async $beforeUpdate (queryOptions, ...args) {
+    async $beforeUpdate(queryOptions, ...args) {
         await super.$beforeUpdate(queryOptions, ...args)
 
         if (queryOptions.patch && this[options.passwordField] === undefined) {
@@ -46,13 +46,13 @@ class Auth extends guid(Model) {
     }
 
     // Compares a password to a bcrypt hash, returns whether or not the password was verified.
-    async verifyPassword (password) {
+    async verifyPassword(password) {
         return await bcrypt.compare(password, this[options.passwordField])
     }
 
     /* Sets the password field to a bcrypt hash of the password.
      * Only does so if the password is not already a bcrypt hash. */
-    async generateHash () {
+    async generateHash() {
         const password = this[options.passwordField]
 
         if (password) {
@@ -74,30 +74,18 @@ class Auth extends guid(Model) {
 
     /* Detect rehashing to avoid undesired effects.
      * Returns true if the string seems to be a bcrypt hash. */
-    static isBcryptHash (str) {
+    static isBcryptHash(str) {
         return BCRYPT_HASH_REGEX.test(str)
     }
 
     generateJWT() {
-        const today = new Date();
-        const expirationDate = new Date(today);
-        expirationDate.setDate(today.getDate() + 60);
-
-        return jwt.sign({
-            email: this.email,
-            authId: this.authId,
-            exp: parseInt(expirationDate.getTime() / 1000, 10),
-        }, 'secret');
+        return jwt.sign(
+            {
+                authId: this.authId,
+            },
+            '6716778962',
+            {expiresIn: '7d',});
     }
-
-    toAuthJSON() {
-        return {
-            authId: this.authId,
-            email: this.email,
-            token: this.generateJWT(),
-        };
-    };
-
 }
 
 module.exports = Auth

@@ -22,13 +22,14 @@ module.exports = function request(microservice, handler, plugins, route, log, di
 
             if (logged) {
                 //authenticate the user with jwt
-                const jwt = await req.models.Token.handleToken(req, res)
-                if (!jwt) return res.status(403).send()
+                const {authId} = await req.models.Token.handleToken(req, res)
+                if (!authId) res.status(403).send()
             }
 
             await dispatcher(plugins, handler, req, res, next, route)
         } catch (e) {
             log(chalk.red(e.message))
+            res.status(403).send()
         }
     }
 
@@ -38,6 +39,7 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         if (method.toLowerCase() === 'put') microservice.put(endpoint, middleware)
         if (method.toLowerCase() === 'delete') microservice.delete(endpoint, middleware)
     } catch (e) {
+        log(chalk.red(e.message))
         return e.message
     }
 
