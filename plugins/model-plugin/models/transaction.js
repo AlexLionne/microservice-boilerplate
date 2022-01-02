@@ -7,7 +7,7 @@ const guid = require('objection-guid')({
 });
 Model.knex(config)
 
-class Transaction extends Model {
+class Transaction extends guid(Model) {
   static get tableName() {
     return 'transaction';
   }
