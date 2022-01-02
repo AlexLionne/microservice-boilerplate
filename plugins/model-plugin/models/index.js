@@ -37,4 +37,6 @@ module.exports = {
     UserFeedback: require('./userFeedback'),
     UserClub: require('./userClub'),
     Club: require('./club'),
+
+    Transaction: require('./transaction')
 }
