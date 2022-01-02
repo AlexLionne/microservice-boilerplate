@@ -2,7 +2,9 @@ const {Model} = require('objection')
 const knex = require('knex')
 const {config} = require("../config/knex");
 
-
+const guid = require('objection-guid')({
+  field: 'transactionId',
+});
 Model.knex(config)
 
 class Transaction extends Model {
@@ -19,6 +21,7 @@ class Transaction extends Model {
       type: 'object',
       properties: {
         transactionId: {type: 'string'},
+        qonversionTransactionId: {type: 'string'},
         userId: {type: 'string'},
         createdAt: {type: 'datetime'},
         isProceed: {type: 'tinyint'},
