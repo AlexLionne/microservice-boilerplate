@@ -29,6 +29,7 @@ class User extends guid(Model) {
                 lastConnectionDate: {type: 'string'},
                 timezone: {type: 'string'},
                 FCMToken: {type: 'string'},
+                active: {type: 'tinyint'},
             }
         };
     }

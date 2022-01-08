@@ -87,13 +87,11 @@ class Microservice {
         _resources(resources)
         _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
 
+        io.models = require("../plugins/model-plugin/models");
+
         io.on('connection', (client) => {
-            /*client.onAny((name) => {
-                log(chalk.yellow(name))
-            })*/
             log(chalk.green('new client connected', client.id))
             Object.keys(events).forEach(key => {
-
                 client.on(key, (data) => {
                     handler[key](io, client, data)
                 })
