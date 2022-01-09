@@ -33,10 +33,12 @@ module.exports = function request(microservice, handler, plugins, route, log, di
 
     async function authenticate(req, res, next) {
         try {
-            req.clientSocket = (url = SOCKET_URL) => io(url, {
-                jsonp: false,
-                transports: ['websocket']
-            });
+            req.clientSocket = function (url = SOCKET_URL) {
+                return io(url, {
+                    jsonp: false,
+                    transports: ['websocket']
+                });
+            }
 
             req.models = models
             // current route require logged privilege in config.yml
