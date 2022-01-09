@@ -1,7 +1,7 @@
 const chalk = require('chalk')
 const models = require("../../plugins/model-plugin/models");
 const logger = require("../../plugins/logger/logger")
-const {socket} = require("../socket-client");
+const socket = require("../socket-client");
 
 module.exports = function request(microservice, handler, plugins, route, log, dispatcher) {
 
