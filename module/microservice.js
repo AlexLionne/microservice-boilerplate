@@ -102,7 +102,6 @@ class Microservice {
             })
         })
 
-
         port = _port(config)
         jobs = _scheduledFunctions(scheduledFunctions, handler)
 

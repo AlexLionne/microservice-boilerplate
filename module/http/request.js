@@ -1,6 +1,7 @@
 const chalk = require('chalk')
 const models = require("../../plugins/model-plugin/models");
 const logger = require("../../plugins/logger/logger")
+const {socket} = require("../socket-client");
 
 module.exports = function request(microservice, handler, plugins, route, log, dispatcher) {
 
@@ -30,6 +31,7 @@ module.exports = function request(microservice, handler, plugins, route, log, di
 
     async function authenticate(req, res, next) {
         try {
+            req.socket = socket
             req.models = models
             // current route require logged privilege in config.yml
             if (logged) {
