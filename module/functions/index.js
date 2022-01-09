@@ -192,7 +192,7 @@ function _events(handler, io) {
     log(chalk.yellow("Socket.io events"))
 
     io.on('connection', (socket) => {
-        console.log(handler.connect(socket))
+       console.log('New connection')
     })
     io.on('error', (error) => {
         console.log('error', error)
