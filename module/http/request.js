@@ -31,7 +31,7 @@ module.exports = function request(microservice, handler, plugins, route, log, di
 
     async function authenticate(req, res, next) {
         try {
-            req.socket = socket()
+            req.socket = socket
             req.models = models
             // current route require logged privilege in config.yml
             if (logged) {
