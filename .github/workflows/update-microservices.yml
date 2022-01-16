@@ -8,6 +8,6 @@ jobs:
       - uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{secrets.GITHUB_TOKEN}}
-          repository: auth-microservice
+          repository: Nesga-ARC/auth-microservice
           event-type: update_microservice
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
