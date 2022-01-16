@@ -7,8 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Auth Microservice
-        uses: benc-uk/workflow-dispatch@v1
+        uses: mvasigh/dispatch-action@main
         with:
-          workflow: Auth Microservice
+          # You should create a personal access token and store it in your repository
+          token: ${{secrets.GITHUB_TOKEN}}
           repo: Nesga-ARC/auth-microservice
-          token: ${{ secrets.GITHUB_TOKEN }}
+          event_type: update_microservice
