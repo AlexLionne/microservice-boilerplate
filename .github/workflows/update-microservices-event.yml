@@ -20,6 +20,6 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: Nesga-ARC/auth-microservice
+          repository: ${{ matrix.repo }}
           event-type: update-microservice
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
