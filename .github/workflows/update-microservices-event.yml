@@ -3,6 +3,17 @@ on: push
 
 jobs:
   update:
+    strategy:
+      matrix:
+        repo: [
+            'Nesga-ARC/auth-microservice',
+            'Nesga-ARC/backoffice-microservice',
+            'Nesga-ARC/nesga-socket',
+            'Nesga-ARC/season-microservice',
+            'Nesga-ARC/shop-microservice',
+            'Nesga-ARC/user-microservice',
+            'Nesga-ARC/watcher-microservice',
+        ]
     runs-on: ubuntu-latest
     steps:
       - name: Repository Update
