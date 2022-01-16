@@ -18,7 +18,6 @@ jobs:
           node-version: 16
       - run: npm ci
    ## - run: npm test
-
   publish-gpr:
     needs: build
     runs-on: ubuntu-latest
@@ -36,3 +35,24 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
           NPM_AUTH_TOKEN: ${{secrets.NPM_ACCESS_TOKEN}}
+  update-services:
+    strategy:
+      matrix:
+        repo: [
+            'Nesga-ARC/auth-microservice',
+            'Nesga-ARC/backoffice-microservice',
+            'Nesga-ARC/nesga-socket',
+            'Nesga-ARC/season-microservice',
+            'Nesga-ARC/shop-microservice',
+            'Nesga-ARC/user-microservice',
+            'Nesga-ARC/watcher-microservice',
+        ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Update
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: ${{ matrix.repo }}
+          event-type: update-microservice
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
