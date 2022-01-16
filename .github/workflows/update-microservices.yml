@@ -5,7 +5,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      uses: geofjamg/broadcast-event@v1.0.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        event-type: update-microservice
+      - uses: geofjamg/broadcast-event@v1.0.0
+      - name: Bump version
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: update-microservice
