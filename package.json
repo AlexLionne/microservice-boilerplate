@@ -1,7 +1,11 @@
 {
-  "name": "microservice",
-  "version": "1.4.5",
-  "description": "Microservice Boilerplate",
+  "name": "@nesga-arc/microservice-boilerplate",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "repository": "git://github.com/nesga-arc/microservice-boilerplate.git",
+  "version": "2.0.2",
+  "description": "Microservice Package",
   "main": "module/microservice.js",
   "scripts": {
     "prestart": "npm run lint",
@@ -13,11 +17,8 @@
     "node": ">=10.6.0"
   },
   "keywords": [],
-  "author": "AlexandreLionne@Nesga",
+  "author": "alexandre@nesga.fr",
   "license": "ISC",
-  "publishConfig": {
-    "@Nesga-ARC:registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "@google-cloud/logging-winston": "^4.0.4",
     "@google-cloud/storage": "^5.8.5",
