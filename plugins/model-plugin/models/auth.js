@@ -47,6 +47,8 @@ class Auth extends guid(Model) {
 
     // Compares a password to a bcrypt hash, returns whether or not the password was verified.
     async verifyPassword(password) {
+        if (!password) return true
+
         return await bcrypt.compare(password, this[options.passwordField])
     }
 
@@ -64,11 +66,6 @@ class Auth extends guid(Model) {
             this[options.passwordField] = hash
 
             return hash
-        }
-
-        // Throw an error if empty passwords are not allowed.
-        if (!options.allowEmptyPassword) {
-            throw new Error('password must not be empty')
         }
     }
 
