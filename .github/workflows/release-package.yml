@@ -61,8 +61,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: get-npm-version
-          id: package-version
-          uses: martinbeentjes/npm-get-version-action@master
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
       - name: Repository Update
         uses: peter-evans/repository-dispatch@v1
         with:
