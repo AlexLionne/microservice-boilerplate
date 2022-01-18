@@ -13,14 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: fregante/setup-git-user@v1
-      - name: Bump version
-        run: npm version patch
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm version patch
       - run: npm ci
+  version:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, '[RELEASE]')"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: fregante/setup-git-user@v1
+      - name: Bump version
+        run: npm version patch
+      - run: npm version patch -m "[RELEASE] %s"
+      - run: git push
   publish-gpr:
     needs: build
     runs-on: ubuntu-latest
