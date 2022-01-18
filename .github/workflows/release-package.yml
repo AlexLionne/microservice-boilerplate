@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: 16
       - run: npm ci
-  publish-gpr:
+  publish:
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -39,12 +39,14 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
+      - run: npm version patch
       - run: npm ci
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
           NPM_AUTH_TOKEN: ${{secrets.NPM_ACCESS_TOKEN}}
   update-services:
+    needs: publish
     strategy:
       matrix:
         repo: [
