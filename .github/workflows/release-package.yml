@@ -7,16 +7,7 @@ on:
   push:
     branches:
       - main
-
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-      - run: npm ci
   version:
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, '[RELEASE]')"
@@ -25,8 +16,17 @@ jobs:
       - uses: fregante/setup-git-user@v1
       - name: Bump version
         run: npm version patch
-      - run: npm version patch -m "[RELEASE] %s"
+      - run: npm version patch -m "Release version %s"
       - run: git push
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - run: npm ci
   publish-gpr:
     needs: build
     runs-on: ubuntu-latest
