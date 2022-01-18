@@ -39,6 +39,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
+      - uses: fregante/setup-git-user@v1
       - run: npm version patch
       - run: npm ci
       - run: npm publish
