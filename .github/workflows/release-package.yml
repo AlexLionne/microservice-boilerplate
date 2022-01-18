@@ -60,10 +60,13 @@ jobs:
         ]
     runs-on: ubuntu-latest
     steps:
+      - name: get-npm-version
+          id: package-version
+          uses: martinbeentjes/npm-get-version-action@master
       - name: Repository Update
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: ${{ matrix.repo }}
           event-type: update-microservice
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+          client-payload: '{"version": "${{steps.package-version.outputs.current-version}}", ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
