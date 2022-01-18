@@ -15,8 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: fregante/setup-git-user@v1
       - name: Bump version
-        run: npm version patch
-      - run: npm version patch -m "Release version %s"
+        run: npm version patch -m "Release version %s"
       - run: git push
   build:
     needs: version
