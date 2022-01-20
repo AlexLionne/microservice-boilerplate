@@ -101,7 +101,7 @@ class Microservice {
             })
         })
 
-        port = _port(config)
+        port = process.env.PORT || _port(config)
         jobs = _scheduledFunctions(scheduledFunctions, handler)
 
         microserver.use((err, req, res, next) => {
