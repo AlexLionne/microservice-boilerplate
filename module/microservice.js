@@ -25,6 +25,9 @@ require('dotenv').config()
 const server = require('http').createServer(microserver);
 
 io = require('socket.io')(server, {
+    transports: ['websocket', 'polling'],
+    cookie: true,
+    secure: true,
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
@@ -113,7 +116,7 @@ class Microservice {
             next();
         })
 
-        microserver.use(function(err, req, res, next){
+        microserver.use(function (err, req, res, next) {
             console.log(err.stack);
             res.status(500).send();
         });
