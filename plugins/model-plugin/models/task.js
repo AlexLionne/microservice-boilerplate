@@ -61,6 +61,7 @@ class Task extends guid(Model) {
     }
 
     static get relationMappings() {
+        const TaskMuscle = require('./taskMuscle');
         const Accessory = require('./accessory');
 
         return {
@@ -70,6 +71,14 @@ class Task extends guid(Model) {
                 join: {
                     from: 'task.accessoryId',
                     to: 'accessory.accessoryId'
+                }
+            },
+            muscles: {
+                relation: Model.HasManyRelation,
+                modelClass: TaskMuscle,
+                join: {
+                    from: 'task.taskId',
+                    to: 'taskMuscle.taskId'
                 }
             },
         }

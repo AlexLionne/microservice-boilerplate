@@ -1,4 +1,6 @@
 module.exports = {
+    Muscle: require('./muscle'),
+    TaskMuscle: require('./taskMuscle'),
     Task: require('./task'),
     WorkoutTask: require('./workoutTask'),
     Workout: require('./workout'),
@@ -38,5 +40,5 @@ module.exports = {
     UserClub: require('./userClub'),
     Club: require('./club'),
 
-    Transaction: require('./transaction')
+    Transaction: require('./transaction'),
 }
