@@ -41,4 +41,5 @@ module.exports = {
     Club: require('./club'),
 
     Transaction: require('./transaction'),
+    Device: require('./device'),
 }

@@ -27,14 +27,13 @@ class User extends guid(Model) {
                 authId: {type: 'string'},
                 firstConnectionDate: {type: 'string'},
                 lastConnectionDate: {type: 'string'},
-                timezone: {type: 'string'},
-                FCMToken: {type: 'string'},
                 active: {type: 'tinyint'},
             }
         };
     }
     static get relationMappings() {
         const UserClub = require('./userClub');
+        const Device = require('./device');
 
         return {
             userClub: {
@@ -43,6 +42,14 @@ class User extends guid(Model) {
                 join: {
                     from: 'user.userId',
                     to: 'userClub.userId'
+                }
+            },
+            device: {
+                relation: Model.HasManyRelation,
+                modelClass: Device,
+                join: {
+                    from: 'user.userId',
+                    to: 'device.userId'
                 }
             },
         }

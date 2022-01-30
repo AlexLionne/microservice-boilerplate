@@ -33,7 +33,6 @@ class UserData extends guid(Model) {
                 experience: {type: 'long'},
                 lastSportDate: {type: 'string'},
                 workoutsCount: {type: 'int'},
-                deviceInfo: {type: 'string'},
                 sportRecurrence: {type: 'int'},
                 level: {type: 'int'},
                 seriesCount: {type: 'int'},
