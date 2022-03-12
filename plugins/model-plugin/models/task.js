@@ -55,7 +55,6 @@ class Task extends guid(Model) {
                 name: {type: 'string'},
                 experience: {type: 'int'},
                 level: {type: 'int'},
-                bodyArea: {type: 'string'},
             }
         };
     }
