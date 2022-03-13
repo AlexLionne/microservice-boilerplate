@@ -3,7 +3,6 @@ const guid = require('objection-guid')({
     field: 'taskMuscleId',
 });
 const {config} = require("../config/knex");
-const Accessory = require("./accessory");
 
 Model.knex(config)
 
@@ -23,8 +22,8 @@ class TaskMuscle extends guid(Model) {
                 taskMuscleId: {type: 'string'},
                 muscleId: {type: 'string'},
                 taskId: {type: 'string'},
-                effort: {type: 'float'},
-                recovery: {type: 'time'},
+                effort: {type: 'string'},
+                recovery: {type: 'string'},
             }
         };
     }
@@ -34,12 +33,12 @@ class TaskMuscle extends guid(Model) {
         const Accessory = require('./accessory');
 
         return {
-            accessory: {
-                relation: Model.HasOneRelation,
+            task: {
+                relation: Model.HasManyRelation,
                 modelClass: Accessory,
                 join: {
-                    from: 'task.accessoryId',
-                    to: 'accessory.accessoryId'
+                    from: 'taskMuscle.taskId',
+                    to: 'task.taskId'
                 }
             },
             muscle: {
