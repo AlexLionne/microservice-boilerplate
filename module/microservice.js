@@ -50,7 +50,14 @@ const {
 _compression(microserver)
 _currentRoute(microserver)
 
-microserver.use(cors())
+microserver.use((req, res, next) => {
+    res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Authorization, Origin");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    res.header("Access-Control-Allow-Credentials", true);
+
+    next()
+})
 const {handleRequests} = require('./http')
 /**
  * Microservice module

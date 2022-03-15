@@ -26,8 +26,6 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
         res.header("Access-Control-Allow-Credentials", true);
-        // cache control to avoid 304
-        res.header('Cache-Control', 'no-cache, no-store, must-revalidate')
         try {
             req.models = models
             // current route require logged privilege in config.yml
