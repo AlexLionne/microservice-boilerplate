@@ -51,7 +51,7 @@ jobs:
       matrix:
         repo: [
             'Nesga-ARC/auth-microservice',
-            'Nesga-ARC/backoffice-microservice',
+            'Nesga-ARC/backend-microservice',
             'Nesga-ARC/nesga-socket',
             'Nesga-ARC/season-microservice',
             'Nesga-ARC/shop-microservice',

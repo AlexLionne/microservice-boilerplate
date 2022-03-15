@@ -50,7 +50,7 @@ class Token extends guid(Model) {
                 return false
 
             const {authId} = jwt.decode(token)
-            
+
             if (!authId)
                 return false
 
