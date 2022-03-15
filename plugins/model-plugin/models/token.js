@@ -47,7 +47,7 @@ class Token extends guid(Model) {
             if (!token)
                 return false
 
-            const {authId} = jwt.verify(token, '6716778962');
+            const {authId} = jwt.verify(token, '@nesga');
 
             if (!authId)
                 return false

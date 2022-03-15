@@ -80,8 +80,8 @@ class Auth extends guid(Model) {
             {
                 authId: this.authId,
             },
-            '6716778962',
-            {expiresIn: '7d',});
+            '@nesga'
+        );
     }
 }
 
