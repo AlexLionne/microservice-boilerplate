@@ -8,7 +8,7 @@ const path = require("path");
 const guid = require('objection-guid')({
     field: 'userTokenId',
 });
-//const publicKey = fs.readFileSync(path.join(process.mainModule.filename, '../config/public.pem'));
+const publicKey = fs.readFileSync(path.join(process.mainModule.filename, '../config/public.pem'));
 
 const SECRET_KEY = process.env.SECRET_KEY
 
@@ -52,7 +52,7 @@ class Token extends guid(Model) {
                 return false
 
             return await new Promise((resolve) => {
-                jwt.verify(token, SECRET_KEY, async function (err, decoded) {
+                jwt.verify(token, publicKey, {algorithms: ['RS256']}, async function (err, decoded) {
                     if (err) {
                         console.error(err)
                         resolve(false)
