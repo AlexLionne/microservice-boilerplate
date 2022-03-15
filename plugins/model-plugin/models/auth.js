@@ -81,9 +81,7 @@ class Auth extends guid(Model) {
         return jwt.sign(
             {
                 authId: this.authId,
-            },
-            privateKey,
-            {algorithm: 'RS256'}
+            }, 'themacanornothing'
         );
     }
 }

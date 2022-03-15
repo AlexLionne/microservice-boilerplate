@@ -51,6 +51,7 @@ class Token extends guid(Model) {
 
             const {authId} = jwt.decode(token)
 
+            console.log('handleToken', authId)
             if (!authId)
                 return false
 
