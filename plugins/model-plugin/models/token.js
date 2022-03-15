@@ -2,11 +2,14 @@ const {Model} = require('objection');
 const {config} = require("../config/knex");
 const jwt = require('jsonwebtoken');
 const User = require("./user");
+const fs = require("fs");
+const path = require("path");
 
 const guid = require('objection-guid')({
     field: 'userTokenId',
 });
 
+const publicKey = fs.readFileSync(path.join(__dirname, '../', '../', '../', 'config/public.pem'));
 
 Model.knex(config)
 
@@ -47,7 +50,7 @@ class Token extends guid(Model) {
             if (!token)
                 return false
 
-            const {authId} = jwt.verify(token, '@nesga');
+            const {authId} = jwt.verify(token, publicKey, {algorithm: 'RS256'});
 
             if (!authId)
                 return false
