@@ -49,15 +49,21 @@ class Token extends guid(Model) {
             if (!token)
                 return false
 
-            const {authId} = jwt.decode(token)
+            const userId = await new Promise((resolve) => {
+                jwt.verify(token, publicKey, async function (err, decoded) {
+                    const {authId} = decoded
 
-            console.log('handleToken', authId)
-            if (!authId)
-                return false
+                    if (!authId)
+                        resolve(false)
 
-            const {userId} = await User.query().where('authId', '=', authId).first()
+                    const {userId} = await User.query().where('authId', '=', authId).first()
+
+                    resolve(userId)
+                });
+            })
 
             return userId
+
         } catch (e) {
             console.log(e)
             return false
