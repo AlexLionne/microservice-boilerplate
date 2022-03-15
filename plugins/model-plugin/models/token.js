@@ -49,7 +49,8 @@ class Token extends guid(Model) {
             if (!token)
                 return false
 
-            const {authId} = jwt.verify(token, publicKey, {algorithms: ['RS256']});
+            const {authId} = jwt.decode(token)
+            
             if (!authId)
                 return false
 
