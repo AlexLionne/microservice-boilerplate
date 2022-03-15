@@ -12,6 +12,8 @@ const privateKey = fs.readFileSync(path.join(process.mainModule.filename, '../co
 const RECOMMENDED_ROUNDS = 12
 const BCRYPT_HASH_REGEX = /^\$2[ayb]\$[0-9]{2}\$[A-Za-z0-9./]{53}$/
 
+const SECRET_KEY = process.env.SECRET_KEY
+
 const options = {
     allowEmptyPassword: false,
     passwordField: 'password',
@@ -82,8 +84,7 @@ class Auth extends guid(Model) {
             {
                 authId: this.authId,
             },
-            privateKey,
-            {algorithm: 'RS256'}
+            SECRET_KEY
         );
     }
 }

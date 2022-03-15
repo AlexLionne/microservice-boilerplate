@@ -8,7 +8,9 @@ const path = require("path");
 const guid = require('objection-guid')({
     field: 'userTokenId',
 });
-const publicKey = fs.readFileSync(path.join(process.mainModule.filename, '../config/public.pem'));
+//const publicKey = fs.readFileSync(path.join(process.mainModule.filename, '../config/public.pem'));
+
+const SECRET_KEY = process.env.SECRET_KEY
 
 Model.knex(config)
 
@@ -50,17 +52,18 @@ class Token extends guid(Model) {
                 return false
 
             return await new Promise((resolve) => {
-                jwt.verify(token, publicKey, async function (err, decoded) {
+                jwt.verify(token, SECRET_KEY, async function (err, decoded) {
                     if (err) {
                         console.error(err)
                         resolve(false)
                     }
-                    const {authId} = decoded
+                    console.log(decoded)
+                    const authId = decoded.authId
 
                     if (!authId)
                         resolve(false)
 
-                    const {userId} = await User.query().where('authId', '=', authId).first()
+                    const {userId} = await User.query().where('authId', '=', decoded.authId).first()
 
                     resolve(userId)
                 });
