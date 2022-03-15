@@ -1,7 +1,6 @@
 const {Model} = require('objection')
 const jwt = require('jsonwebtoken');
 const fs = require("fs")
-const path = require("path");
 
 const bcrypt = require("bcryptjs");
 const {config} = require("../config/knex");
@@ -9,7 +8,7 @@ const guid = require('objection-guid')({
     field: 'authId',
 });
 
-const privateKey = fs.readFileSync(path.join(__dirname, '../', '../', '../', 'config/private.pem'));
+const privateKey = fs.readFileSync('../../../config/private.pem');
 
 const RECOMMENDED_ROUNDS = 12
 const BCRYPT_HASH_REGEX = /^\$2[ayb]\$[0-9]{2}\$[A-Za-z0-9./]{53}$/
@@ -80,8 +79,6 @@ class Auth extends guid(Model) {
     }
 
     generateJWT() {
-
-
         return jwt.sign(
             {
                 authId: this.authId,

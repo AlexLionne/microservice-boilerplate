@@ -3,13 +3,12 @@ const {config} = require("../config/knex");
 const jwt = require('jsonwebtoken');
 const User = require("./user");
 const fs = require("fs");
-const path = require("path");
 
 const guid = require('objection-guid')({
     field: 'userTokenId',
 });
 
-const publicKey = fs.readFileSync(path.join(__dirname, '../', '../', '../', 'config/public.pem'));
+const publicKey = fs.readFileSync('../../../config/public.pem');
 
 Model.knex(config)
 
