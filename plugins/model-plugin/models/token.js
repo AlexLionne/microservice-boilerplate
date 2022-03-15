@@ -49,8 +49,12 @@ class Token extends guid(Model) {
             if (!token)
                 return false
 
-            const userId = await new Promise((resolve) => {
+            return await new Promise((resolve) => {
                 jwt.verify(token, publicKey, async function (err, decoded) {
+                    if (err) {
+                        console.error(err)
+                        resolve(false)
+                    }
                     const {authId} = decoded
 
                     if (!authId)
@@ -61,8 +65,6 @@ class Token extends guid(Model) {
                     resolve(userId)
                 });
             })
-
-            return userId
 
         } catch (e) {
             console.log(e)
