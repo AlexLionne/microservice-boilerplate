@@ -83,7 +83,7 @@ class Auth extends guid(Model) {
                 authId: this.authId,
             },
             privateKey,
-            {algorithms: ['RS256']}
+            {algorithm: 'RS256'}
         );
     }
 }
