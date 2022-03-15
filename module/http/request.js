@@ -10,13 +10,6 @@ module.exports = function request(microservice, handler, plugins, route, log, di
         return log(chalk.red('Check endpoint configuration nor method used in the configuration file'))
 
     async function middleware(req, res, next) {
-        res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type, Accept,Authorization,Origin");
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-        res.setHeader("Access-Control-Allow-Credentials", true);
-        // cache control to avoid 304
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-
         try {
             //pass the logger
             req.logger = logger
@@ -29,6 +22,12 @@ module.exports = function request(microservice, handler, plugins, route, log, di
     }
 
     async function authenticate(req, res, next) {
+        res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Authorization, Origin");
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+        res.header("Access-Control-Allow-Credentials", true);
+        // cache control to avoid 304
+        res.header('Cache-Control', 'no-cache, no-store, must-revalidate')
         try {
             req.models = models
             // current route require logged privilege in config.yml
