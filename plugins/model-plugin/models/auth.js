@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const {config} = require("../config/knex");
 const fs = require("fs");
 const path = require("path");
+const moment = require("moment");
 const guid = require('objection-guid')({
     field: 'authId',
 });
@@ -89,7 +90,7 @@ class Auth extends guid(Model) {
                 iss: 'nesga-api-issuer',
                 sub: this.authId,
                 authId: this.authId,
-                exp: 7 * 24 * 60 * 60,
+                exp: moment().add('7', 'days').unix(),
                 expiresIn: '7d'
             },
             privateKey,
