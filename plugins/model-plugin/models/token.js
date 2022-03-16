@@ -2,10 +2,14 @@ const {Model} = require('objection');
 const {config} = require("../config/knex");
 const jwt = require('jsonwebtoken');
 const User = require("./user");
+const fs = require("fs");
+const path = require("path");
 
 const guid = require('objection-guid')({
     field: 'userTokenId',
 });
+
+const publicKey = fs.readFileSync(path.join(process.mainModule.filename, '../config/public.pem'));
 
 
 Model.knex(config)
@@ -47,14 +51,31 @@ class Token extends guid(Model) {
             if (!token)
                 return false
 
-            const {authId} = jwt.verify(token, '6716778962');
+            /*return await new Promise((resolve) => {
+                jwt.verify(token, publicKey, async function (err, decoded) {
+                    if (err) {
+                        console.error(err)
+                        resolve(false)
+                    }
+                    console.log(decoded)
+                    const authId = decoded.authId
+                    if (!authId)
+                        resolve(false)
+                    const {userId} = await User.query().where('authId', '=', authId).first()
 
+                    resolve(userId)
+                })
+            })*/
+
+            const {authId} = jwt.decode(token)
             if (!authId)
                 return false
-
             const {userId} = await User.query().where('authId', '=', authId).first()
+            if (!userId)
+                return false
 
             return userId
+
         } catch (e) {
             console.log(e)
             return false

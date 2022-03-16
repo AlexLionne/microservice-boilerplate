@@ -7,8 +7,10 @@ const guid = require('objection-guid')({
     field: 'authId',
 });
 
+const privateKey = fs.readFileSync(path.join(process.mainModule.filename, '../config/private.pem'));
 const RECOMMENDED_ROUNDS = 12
 const BCRYPT_HASH_REGEX = /^\$2[ayb]\$[0-9]{2}\$[A-Za-z0-9./]{53}$/
+
 
 const options = {
     allowEmptyPassword: false,
@@ -83,8 +85,8 @@ class Auth extends guid(Model) {
             {
                 authId: this.authId,
             },
-            '6716778962',
-            {expiresIn: '7d',});
+            privateKey,
+            {algorithm: 'RS256'})
     }
 }
 
