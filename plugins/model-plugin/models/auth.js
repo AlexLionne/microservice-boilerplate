@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 
 const bcrypt = require("bcryptjs");
 const {config} = require("../config/knex");
+const fs = require("fs");
+const path = require("path");
 const guid = require('objection-guid')({
     field: 'authId',
 });
