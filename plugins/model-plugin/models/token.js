@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require("./user");
 const fs = require("fs");
 const path = require("path");
-
+const jwt_decode = require('jwt-decode')
 const guid = require('objection-guid')({
     field: 'userTokenId',
 });
@@ -51,26 +51,13 @@ class Token extends guid(Model) {
             if (!token)
                 return false
 
-            /*return await new Promise((resolve) => {
-                jwt.verify(token, publicKey, async function (err, decoded) {
-                    if (err) {
-                        console.error(err)
-                        resolve(false)
-                    }
-                    console.log(decoded)
-                    const authId = decoded.authId
-                    if (!authId)
-                        resolve(false)
-                    const {userId} = await User.query().where('authId', '=', authId).first()
+            const {authId} = jwt_decode(token)
 
-                    resolve(userId)
-                })
-            })*/
-
-            const {authId} = jwt.decode(token)
             if (!authId)
                 return false
+
             const {userId} = await User.query().where('authId', '=', authId).first()
+
             if (!userId)
                 return false
 
