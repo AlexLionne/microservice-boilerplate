@@ -48,11 +48,13 @@ class Token extends guid(Model) {
         try {
             const token = this.getTokenFromHeaders(req)
 
+            console.log(token)
             if (!token)
                 return false
 
             const {authId} = jwt_decode(token)
 
+            console.log(jwt_decode(token))
             if (!authId)
                 return false
 
@@ -70,7 +72,18 @@ class Token extends guid(Model) {
     }
 
     static getTokenFromHeaders(req) {
-        const {headers: {authorization}} = req;
+        const {headers} = req;
+
+        console.log(req.headers)
+        
+        let authorization = headers.authorization
+
+        if (headers['x-forwarded-authorization']) {
+            authorization = headers['x-forwarded-authorization']
+        }
+        if (headers['X-Apigateway-Api-Userinfo']) {
+            authorization = headers['X-Apigateway-Api-Userinfo']
+        }
 
         if (authorization && authorization.split(' ')[0] === 'Bearer') {
             return authorization.split(' ')[1];

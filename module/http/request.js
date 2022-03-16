@@ -30,10 +30,9 @@ module.exports = function request(microservice, handler, plugins, route, log, di
             req.models = models
             // current route require logged privilege in config.yml
             if (logged) {
-                console.log('authenticate', logged)
                 //authenticate the user with jwt, returns userId
                 const userId = await req.models.Token.handleToken(req, res)
-                console.log('authenticate', userId)
+
                 if (!userId) return res.status(403).send()
 
                 req.userId = userId
