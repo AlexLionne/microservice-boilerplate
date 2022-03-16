@@ -85,6 +85,9 @@ class Auth extends guid(Model) {
     generateJWT() {
         return jwt.sign(
             {
+                aud: 'https://api.nesga.fr',
+                iss: 'https://dev.nesga.fr',
+                sub: this.authId,
                 authId: this.authId,
             },
             privateKey,
