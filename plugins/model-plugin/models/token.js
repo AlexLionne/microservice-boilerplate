@@ -75,6 +75,7 @@ class Token extends guid(Model) {
         const {headers} = req;
 
         console.log(req.headers)
+
         
         let authorization = headers.authorization
 
