@@ -86,6 +86,7 @@ class Auth extends guid(Model) {
     generateJWT() {
         return jwt.sign(
             {
+                alg: 'RS256',
                 aud: 'https://api.nesga.fr',
                 iss: 'nesga-api-issuer',
                 sub: this.authId,
