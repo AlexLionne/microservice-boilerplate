@@ -89,7 +89,8 @@ class Auth extends guid(Model) {
                 iss: 'nesga-api-issuer',
                 sub: this.authId,
                 authId: this.authId,
-                exp: 7 * 24 * 60 * 60
+                exp: 7 * 24 * 60 * 60,
+                expiresIn: '7d'
             },
             privateKey,
             {algorithm: 'RS256'})
