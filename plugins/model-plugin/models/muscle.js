@@ -21,7 +21,7 @@ class Muscle extends guid(Model) {
             properties: {
                 muscleId: {type: 'string'},
                 name: {type: 'string'},
-                force: {type: 'int'},
+                capacity: {type: 'int'},
                 description: {type: 'string'},
             }
         };
