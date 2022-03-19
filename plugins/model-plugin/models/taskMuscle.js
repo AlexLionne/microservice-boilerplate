@@ -41,7 +41,7 @@ class TaskMuscle extends guid(Model) {
                     to: 'task.taskId'
                 }
             },
-            taskMuscle: {
+            muscle: {
                 relation: Model.HasOneRelation,
                 modelClass: Muscle,
                 join: {
