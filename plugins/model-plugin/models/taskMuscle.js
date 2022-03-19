@@ -22,8 +22,8 @@ class TaskMuscle extends guid(Model) {
                 taskMuscleId: {type: 'string'},
                 muscleId: {type: 'string'},
                 taskId: {type: 'string'},
-                effort: {type: 'string'},
-                recovery: {type: 'string'},
+                effort: {type: 'int'},
+                recovery: {type: 'int'},
             }
         };
     }
@@ -41,7 +41,7 @@ class TaskMuscle extends guid(Model) {
                     to: 'task.taskId'
                 }
             },
-            muscle: {
+            taskMuscle: {
                 relation: Model.HasOneRelation,
                 modelClass: Muscle,
                 join: {
