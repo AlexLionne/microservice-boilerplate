@@ -11,6 +11,9 @@ microserver = express();
 chalk = require('chalk')
 moment = require('moment')
 
+// services messaging
+const {PubSub} = require('./pub-sub/pub-sub')
+
 microserver.use(body.urlencoded({limit: '5mb', extended: true}));
 microserver.use(body.json({limit: '5mb'}))
 microserver.use(formData.parse({autoClean: true}));
@@ -21,6 +24,7 @@ microserver.use(session({secret: 'secret', cookie: {maxAge: 60000}, resave: fals
 microserver.set('etag', false); // turn off etag check
 
 require('dotenv').config()
+
 
 const server = require('http').createServer(microserver);
 
@@ -90,16 +94,55 @@ class Microservice {
 
 
     start() {
-        let {resources, routes, port, scheduledFunctions, events} = config
+        let {resources, routes, port, scheduledFunctions, events, name: serviceName} = config
 
         //_rateLimit(microserver)
         _resources(resources)
         _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
 
-        io.models = require("../plugins/model-plugin/models");
+        let subscriptions = []
 
+        if (resources.pubsub) {
+            try {
+                log(chalk.yellow('Pub/Sub subscriptions : '))
+                for (let sub of resources.pubsub.subscriptions) {
+                    subscriptions.push({
+                        sub: PubSub.subscription(`${sub.subscription}`),
+                        handler: handler[sub.name],
+                        ...sub
+                    })
+                    log(chalk.green('- ' + sub.name))
+                }
+            } catch (e) {
+                log(chalk.red('An error occurred during subscriptions setup, please check that methods are exported or that subscriptions are defined in yaml config file : '))
+                log(chalk.red(e))
+            }
+        }
+        // websockets
+        io.models = require("../plugins/model-plugin/models");
         io.on('connection', (client) => {
-            log(chalk.green('new client connected', client.id))
+            // PubSub to be used in the app
+            if (resources.pubsub) {
+                // create subscriptions for topics
+                try {
+                    for (let subscription of subscriptions) {
+                        subscription.sub.on('message', (message) => subscription.handler(message, client))
+                    }
+                    setTimeout(() => {
+                        try {
+                            for (let subscription of subscriptions) subscription.sub.removeListener('message', (message) => subscription.handler(message, client));
+                        } catch (e) {
+                            log(chalk.red('An error occurred during removeListener setup, please check :'))
+                            log(chalk.red(e))
+                        }
+                    }, 5 * 1000);
+                } catch (e) {
+                    log(chalk.red('An error occurred during subscriptions setup, please check that methods are exported or that subscriptions are defined in yaml config file : '))
+                    log(chalk.red(e))
+                }
+            }
+
+
             Object.keys(events).forEach(key => {
                 client.on(key, (data) => {
                     handler[key](io, client, data)

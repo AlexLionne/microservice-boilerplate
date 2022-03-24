@@ -1,6 +1,7 @@
 const chalk = require('chalk')
 const models = require("../../plugins/model-plugin/models");
 const logger = require("../../plugins/logger/logger")
+const {PubSub} = require("../pub-sub/pub-sub");
 
 module.exports = function request(microservice, handler, plugins, route, log, dispatcher) {
 
@@ -19,6 +20,11 @@ module.exports = function request(microservice, handler, plugins, route, log, di
             log(chalk.red(e.message))
             return res.status(500).send()
         }
+    }
+
+    async function servicesMessaging(req, res, next) {
+        req.PubSub = PubSub
+        next()
     }
 
     async function authenticate(req, res, next) {
@@ -46,10 +52,10 @@ module.exports = function request(microservice, handler, plugins, route, log, di
 
 
     try {
-        if (method.toLowerCase() === 'get') microservice.get(endpoint, authenticate, middleware)
-        if (method.toLowerCase() === 'post') microservice.post(endpoint, authenticate, middleware)
-        if (method.toLowerCase() === 'put') microservice.put(endpoint, authenticate, middleware)
-        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, authenticate, middleware)
+        if (method.toLowerCase() === 'get') microservice.get(endpoint, servicesMessaging, authenticate, middleware)
+        if (method.toLowerCase() === 'post') microservice.post(endpoint, servicesMessaging, authenticate, middleware)
+        if (method.toLowerCase() === 'put') microservice.put(endpoint, servicesMessaging, authenticate, middleware)
+        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, servicesMessaging, authenticate, middleware)
     } catch (e) {
         log(chalk.red(e.message))
         return e.message
