@@ -52,7 +52,6 @@ jobs:
         repo: [
             'Nesga-ARC/auth-microservice',
             'Nesga-ARC/backend-microservice',
-            'Nesga-ARC/nesga-socket',
             'Nesga-ARC/season-microservice',
             'Nesga-ARC/shop-microservice',
             'Nesga-ARC/user-microservice',
