@@ -1,5 +1,6 @@
 const {Model} = require('objection')
 const {config} = require("../config/knex");
+const Workout = require("./workout");
 const guid = require('objection-guid')({
   field: 'seasonId',
 });
@@ -30,6 +31,20 @@ class Season extends guid(Model) {
         referredSeasonId: {type: 'string'},
       }
     };
+  }
+  static get relationMappings() {
+    const SeasonWorkout = require('./seasonWorkout');
+
+    return {
+      workouts: {
+        relation: Model.HasManyRelation,
+        modelClass: SeasonWorkout,
+        join: {
+          from: 'season.seasonId',
+          to: 'seasonWorkout.seasonId'
+        }
+      },
+    }
   }
 }
 
