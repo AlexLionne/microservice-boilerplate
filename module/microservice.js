@@ -102,7 +102,7 @@ class Microservice {
 
         let subscriptions = []
 
-        if (resources.pubsub) {
+        if (resources && resources.pubsub) {
             try {
                 log(chalk.yellow('Pub/Sub subscriptions : '))
                 for (let sub of resources.pubsub.subscriptions) {
