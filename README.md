@@ -1,3 +1,3 @@
 [![Microservice Updater](https://github.com/Nesga-ARC/microservice-boilerplate/actions/workflows/update-microservices-event.yml/badge.svg?branch=main)](https://github.com/Nesga-ARC/microservice-boilerplate/actions/workflows/update-microservices-event.yml)
-
-fuck
+[![Microservice Package](https://github.com/Nesga-ARC/microservice-boilerplate/actions/workflows/release-package.yml/badge.svg?branch=main)](https://github.com/Nesga-ARC/microservice-boilerplate/actions/workflows/release-package.yml)
+[![Tests](https://github.com/Nesga-ARC/microservice-boilerplate/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/Nesga-ARC/microservice-boilerplate/actions/workflows/run-tests.yml)
