@@ -1,4 +1,4 @@
-const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
+const {BUCKET_RESOURCE_OPTIONS} = require("../../../plugins/utils/bucket");
 const {Storage} = require('@google-cloud/storage');
 const WORKOUTS_VOICES = 'workouts-voices'
 const storage = new Storage();

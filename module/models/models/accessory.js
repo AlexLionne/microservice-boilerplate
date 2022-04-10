@@ -1,5 +1,5 @@
 const {Model} = require('objection')
-const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
+const {BUCKET_RESOURCE_OPTIONS} = require("../../../plugins/utils/bucket");
 const guid = require('objection-guid')({
   field: 'accessoryId',
 });

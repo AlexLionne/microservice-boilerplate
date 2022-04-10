@@ -9,7 +9,7 @@ const guid = require('objection-guid')({
     field: 'userTokenId',
 });
 
-const publicKey = fs.readFileSync(path.join(process.mainModule.filename, '../config/public.pem'));
+const publicKey = fs.readFileSync(path.join(require.main.filename, '../config/public.pem'));
 
 
 Model.knex(config)

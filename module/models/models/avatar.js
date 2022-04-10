@@ -1,4 +1,4 @@
-const {AVATARS_BUCKET, BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
+const {AVATARS_BUCKET, BUCKET_RESOURCE_OPTIONS} = require("../../../plugins/utils/bucket");
 
 const {Model} = require('objection')
 const {Storage} = require('@google-cloud/storage');

@@ -1,4 +1,4 @@
-const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
+const {BUCKET_RESOURCE_OPTIONS} = require("../../../plugins/utils/bucket");
 const {Model} = require('objection')
 const guid = require('objection-guid')({
     field: 'taskId',

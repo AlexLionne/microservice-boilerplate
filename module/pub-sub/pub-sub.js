@@ -1,3 +1,3 @@
 const {PubSub} = require('@google-cloud/pubsub');
 
-module.exports.PubSub = new PubSub()
+module.exports.pubsub = new PubSub()

@@ -1,3 +1,3 @@
 module.exports = {
-  handleRequests: require('./request')
+  http: require('./request')
 }

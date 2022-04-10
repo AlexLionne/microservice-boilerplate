@@ -1,4 +1,4 @@
-const {BUCKET_RESOURCE_OPTIONS} = require("../../utils/bucket");
+const {BUCKET_RESOURCE_OPTIONS} = require("../../../plugins/utils/bucket");
 const {Model} = require('objection')
 const {Storage} = require('@google-cloud/storage');
 const {config} = require("../config/knex");

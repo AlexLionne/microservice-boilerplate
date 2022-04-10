@@ -1,241 +1,130 @@
-let express, body, cors, path, microserver, log, chalk, moment, io, formData, session;
-
-log = console.log;
-formData = require('express-form-data');
-express = require('express');
-body = require('body-parser');
-cors = require('cors');
-path = require('path');
-session = require('express-session')
-microserver = express();
-chalk = require('chalk')
-moment = require('moment')
-
-// services messaging
-const {PubSub} = require('./pub-sub/pub-sub')
-
-microserver.use(body.urlencoded({limit: '5mb', extended: true}));
-microserver.use(body.json({limit: '5mb'}))
-microserver.use(formData.parse({autoClean: true}));
-microserver.use(formData.format());
-microserver.use(formData.stream());
-microserver.use(formData.union());
-microserver.use(session({secret: 'secret', cookie: {maxAge: 60000}, resave: false, saveUninitialized: false}));
-microserver.set('etag', false); // turn off etag check
+const log = console.log;
+const formData = require('express-form-data');
+const express = require('express');
+const body = require('body-parser');
+const cors = require('cors');
+const path = require('path');
+const session = require('express-session')
+const app = express();
+const chalk = require('chalk')
+const moment = require('moment')
+const compression = require('compression')
 
 require('dotenv').config()
 
+const server = require('http').createServer(app);
 
-const server = require('http').createServer(microserver);
 
-io = require('socket.io')(server, {
-    transports: ['websocket', 'polling'],
-    cookie: true,
-    secure: true,
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-})
 
 const {
-    _rateLimit,
-    _plugins,
-    _routingTree,
-    _scheduledFunctions,
-    _currentRoute,
-    _resources,
-    _port,
-    _routes,
-    _events,
-    _compression
+    rateLimit,
+    tree,
+    setupActions,
+    runActionsOnStartup,
+    currentRoute,
+    resources,
+    port,
+    pubsub,
+    socket,
+    routes
 } = require('./functions')
 
-_compression(microserver)
-_currentRoute(microserver)
+currentRoute(app)
 
-microserver.use((req, res, next) => {
+app.use(body.urlencoded({limit: '5mb', extended: true}));
+app.use(body.json({limit: '5mb'}))
+app.use(formData.parse({autoClean: true}));
+app.use(formData.format());
+app.use(formData.stream());
+app.use(formData.union());
+app.use(compression())
+app.use(session({secret: 'secret', cookie: {maxAge: 60000}, resave: false, saveUninitialized: false}));
+app.use((req, res, next) => {
     res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Authorization, Origin");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     res.header("Access-Control-Allow-Credentials", true);
-
     next()
 })
-const {handleRequests} = require('./http')
+const {http} = require('./http')
+
 /**
  * Microservice module
  *
  * handle express app with an yml configuration
- * @param config yml (readable as jspn) configuration file
+ * @param options yml (readable as jspn) configuration file
  */
 
-let config
-let jobs = []
-let plugins = []
 
-const handler = require(path.join(process.mainModule.filename))
+function microservice(options) {
 
-class Microservice {
 
-    constructor(cfg) {
+    let config = options || null
 
-        config = cfg
-
-        if (!config) {
-            log(chalk.red('No configuration file for Microservice(config)'), chalk.red('at ' + moment().format('DD/MM/YYYY hh:mm:ss')))
-            throw 'No configuration file for Microservice(config)'
-        }
-
-        plugins = _plugins(config)
-
-        _routingTree(config)
+    if (!config) {
+        log(chalk.red('No configuration file for Microservice(config)'), chalk.red('at ' + moment().format('DD/MM/YYYY hh:mm:ss')))
+        throw 'No configuration file for microservice'
     }
 
+    const handler = require(path.join(require.main.filename, config.functions))
 
-    start() {
-        let {resources, routes, port, scheduledFunctions, events, name: serviceName} = config
+    let microservice = new Map()
 
-        //_rateLimit(microserver)
-        _resources(resources)
-        _routes(microserver, routes, handleRequests, cors, handler, plugins, log)
+    /**
+     * State Manager
+     */
+    // pub sub subscriptions
+    microservice.set('subscriptions', [])
+    // express app instance
+    microservice.set('app', app)
+    // http server instance
+    microservice.set('server', server)
+    // http middlewares
+    microservice.set('http', http)
+    // static functions
+    microservice.set('handler', handler)
+    // scheduled actions
+    microservice.set('actions', [])
+    // scheduled actions state wrapper
+    microservice.set('actionsState', [])
+    // microservice config
+    microservice.set('config', config)
 
-        let subscriptions = []
-
-        if (resources && resources.pubsub) {
-            try {
-                log(chalk.yellow('Pub/Sub subscriptions : '))
-                for (let sub of resources.pubsub.subscriptions) {
-                    subscriptions.push({
-                        sub: PubSub.subscription(`${sub.subscription}`),
-                        handler: handler[sub.name],
-                        ...sub
-                    })
-                    log(chalk.green('- ' + sub.name))
-                }
-            } catch (e) {
-                log(chalk.red('An error occurred during subscriptions setup, please check that methods are exported or that subscriptions are defined in yaml config file : '))
-                log(chalk.red(e))
-            }
-        }
-        // websockets
-        io.models = require("../plugins/model-plugin/models");
-        io.on('connection', (client) => {
-            // PubSub to be used in the app
-            if (resources.pubsub) {
-                // create subscriptions for topics
-                try {
-                    for (let subscription of subscriptions) {
-                        subscription.sub.on('message', (message) => subscription.handler(message, client))
-                    }
-                    setTimeout(() => {
-                        try {
-                            for (let subscription of subscriptions) subscription.sub.removeListener('message', (message) => subscription.handler(message, client));
-                        } catch (e) {
-                            log(chalk.red('An error occurred during removeListener setup, please check :'))
-                            log(chalk.red(e))
-                        }
-                    }, 5 * 1000);
-                } catch (e) {
-                    log(chalk.red('An error occurred during subscriptions setup, please check that methods are exported or that subscriptions are defined in yaml config file : '))
-                    log(chalk.red(e))
-                }
-            }
+    // log the route tree
+    tree(microservice)
 
 
-            Object.keys(events).forEach(key => {
-                client.on(key, (data) => {
-                    handler[key](io, client, data)
-                })
-            })
-            client.on('disconnect', () => {
-                log(chalk.red('client disconnected'))
-                client.removeAllListeners();
-            })
-        })
-
-        port = process.env.PORT || _port(config)
-        jobs = _scheduledFunctions(scheduledFunctions, handler)
-
-        microserver.use((err, req, res, next) => {
-            if (err.name === 'UnauthorizedError') {
-                res.status(err.status).send('Unauthorized');
-                //logger.error(err);
-                return;
-            }
-            next();
-        })
-
-        microserver.use(function (err, req, res, next) {
-            console.log(err.stack);
-            res.status(500).send();
-        });
-
-        server.listen(port, () => {
-            log(
-                chalk.bold.green(config.name) + chalk.reset(' running on ') + port
-            )
-        })
-
-        return {jobs}
+    // stop server
+    function stop() {
+        get('server').close();
+        return new Date().toISOString()
     }
 
-
-    startJob(name, req, res) {
-
-        if (!jobs.length)
-            return
-
-        const {scheduledFunctions} = config
-        try {
-            if (scheduledFunctions) {
-                const cron = jobs.filter(job => job.name === name)[0]
-                //const index = jobs.indexOf(cron)
-
-                cron.job.start()
-
-                return {message: 'job ' + name + ' started'}
-            }
-        } catch (e) {
-            console.error(e)
-
-            res.status(500).send()
-        }
+    // get store
+    function get(tag = '*') {
+        if (tag === '*') return microservice
+        else return microservice.get(tag)
     }
 
-    getJobs() {
-        return jobs
+    // start server
+    function start() {
+        let {port: appPort} = config
+
+        rateLimit(microservice)
+        resources(microservice)
+        pubsub(microservice)
+        socket(microservice)
+        setupActions(microservice)
+        runActionsOnStartup(microservice)
+        routes(microservice)
+
+        server.listen(port(config), () => log(chalk.bold.green(config.name) + chalk.reset(' Running On ') + appPort))
+
+        return new Date().toISOString()
     }
 
-    stopJob(req, res) {
-        try {
-            const {name} = req.query
-
-            if (!jobs.length) {
-                res.status(404).send()
-                return
-            }
-
-            const cron = jobs.filter(job => job.name === name)[0]
-            const index = jobs.indexOf(cron)
-
-            if (index === -1) {
-                res.status(404).send()
-                return
-            }
-
-            cron.job.stop()
-
-            res.status(204).send()
-
-        } catch (e) {
-            console.error(e)
-
-            res.status(500).send()
-        }
-    }
-
+    return {start, stop, get}
 }
 
 
-module.exports = Microservice
+module.exports = microservice

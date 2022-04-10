@@ -5,8 +5,8 @@ const CronJob = require('cron').CronJob
 const path = require('path')
 const fs = require('fs')
 const morgan = require('morgan')
-const compression = require('compression')
-const rateLimit = require("express-rate-limit");
+const rateLimiter = require("express-rate-limit");
+const PubSub = require("../pub-sub/pub-sub");
 
 /**
  * Setup the port if needed
@@ -14,166 +14,195 @@ const rateLimit = require("express-rate-limit");
  * @returns {*} port
  * @private
  */
-function _port(config) {
-    let {port} = config
+function port(config) {
+    let {port = process.env.PORT} = config
     if (!port) {
         log(chalk.yellow('No port specified using ::3000'), chalk.yellow('at ' + moment().format('DD/MM/YYYY hh:mm:ss')))
         port = 3000
     }
-
     return port
 }
 
-/**
- * Setup a& dispatch all the routes
- * @param microservice microservice that use routes
- * @param routes routes to be used
- * @param handleRequests functions
- * @param cors function handler of cors
- * @param handler handler function that dispatch actions
- * @param plugins plugins to be loaded
- * @param log log function
- * @private
- */
-function _routes(microservice, routes, handleRequests, cors, handler, plugins, log) {
 
-    if (routes) {
-        Object.keys(routes).forEach(key => {
-            let route = routes[key]
-            //listen for requests
-            handleRequests(microservice, handler, plugins, route, log, _request)
+function resources(service) {
+
+    const app = service.get('app')
+    const config = service.get('config')
+
+    if (!config.resources) return
+
+    if (config.resources.storage) {
+        Object.keys(config.resources.storage).forEach(key => {
+            app.use(config.resources.storage[key], app.static(path.join(require.main.filename, '..', key)))
         })
     }
 }
 
-/**
- * Export resources to microservice
- * @param microservice microservice that use resources
- * @param express express module
- * @param resources storage or databases
- * @private
- */
-function _resources(microservice, express, resources) {
+function runActionsOnStartup(service) {
+    const actions = service.get('actions')
+    const actionsState = service.get('actionsState')
 
-    if (!resources || !microservice || !express)
-        return
+    actionsState.forEach(({name, id}) => {
+        const {action} = actions[id]
 
-    const {storage} = resources
+        if (actionsState[id].runOnStartup) {
+            if (actions.running) log(chalk.red(`Action ${name} already running, stop it to start it again`))
 
-    if (storage) {
-        Object.keys(storage).forEach(key => {
-            microservice.use(storage[key], express.static(path.join(process.mainModule.filename, '..', key)))
-        })
-    }
-}
-
-/**
- *
- * @param scheduledFunctions list of scheduled functions from config
- * @param handler handle the functions
- * @returns {*} list of jobs
- * @private
- */
-
-function _scheduledFunctions(scheduledFunctions, handler) {
-    if (!scheduledFunctions || !Object.keys(scheduledFunctions).length)
-        return
-
-    let jobs = []
-
-    Object.keys(scheduledFunctions).map((functionName) => {
-        try {
-            const job = new CronJob(scheduledFunctions[functionName].cronExpression, async () => {
-                await handler[functionName]()
-            })
-            jobs.push({name: functionName, job})
-        } catch (e) {
-            log(chalk.red(e.message))
-            throw e.message
+            action.start()
+            actionsState[id].running = true
         }
     })
 
-    return jobs
+    service.set('actionsState', actionsState)
 }
 
-function _compression(microservice) {
-    microservice.use(compression())
+function setupActions(service) {
+    const handler = service.get('handler')
+    const config = service.get('config')
+
+    let actions = []
+    let actionsState = []
+    if (config.actions) {
+        config.actions.forEach((action, index) => {
+
+                if (!action.cron)
+                    throw ('No periodicity provided !')
+                if (!action.name)
+                    throw ('No function provided !')
+
+                actions.push({
+                    id: index,
+                    action: new CronJob(action.cron, async () => {
+                        await handler[action.name]()
+                    })
+                })
+                actionsState.push({
+                    id: index,
+                    name: action.name,
+                    createdAt: new Date().toISOString(),
+                    running: false,
+                    runOnStartup: action.runOnStartup
+                })
+
+            }
+        )
+    }
+
+
+    service.set('actions', actions)
+    service.set('actionsState', actionsState)
 }
 
-function _currentRoute(microservice) {
+function startAction(service, id) {
+    try {
+        let actions = service.get('actions')
+        let actionsState = service.get('actionsState')
+        const {action} = actions[id]
+
+        if (actionsState[id].running) throw ('Action already running, stop it to start it again')
+
+        action.start()
+        actionsState[id].running = true
+
+        service.set('actionsState', actionsState)
+    } catch (e) {
+        throw (e)
+    }
+
+}
+
+function stopAction(service, id) {
+    try {
+        const actions = service.get('actions')
+        let actionsState = service.get('actionsState')
+        const {action} = actions[id]
+
+        if (!actionsState[id].running) throw ('Action not running, start it to stop it again')
+
+        action.stop()
+        actionsState[id].running = false
+
+        service.set('actionsState', actionsState)
+    } catch (e) {
+        throw (e)
+    }
+
+}
+
+function listActions(service) {
+    return service.get('actionsState')
+}
+
+function currentRoute(microservice) {
     microservice.use((req, res, next) => {
         log(chalk.yellow(req.method), chalk.yellow(req.path), 'at ' + moment().format('DD/MM/YYYY hh:mm:ss'))
-        if (req.path === '/')
-            return res.sendStatus(403)
+        if (req.path === '/') return res.sendStatus(403)
         return next()
     })
 }
 
-function _requestLogger(microservice) {
-    // create a write stream (in append mode)
+function requestLogger(microservice) {
     const accessLogStream = fs.createWriteStream(path.join(process.mainModule.filename, '../logs', 'access.log'), {flags: 'a'})
     microservice.use(morgan('combined', {stream: accessLogStream}))
 }
 
-function _plugins(config) {
-    let {plugins} = config
+function tree(service) {
+    const config = service.get('config')
 
-    if (!plugins || !plugins.length)
-        return
+    const {actions, routes, events} = config
 
-    plugins = plugins.map(plugin => {
-        const plug = require(path.join(__dirname, `../plugins/${plugin.name}/plugin`))
+    if (actions) {
+        if (!actions.length) {
+            log(chalk.red('No actions defined'))
+            return
+        }
 
-        plugins.push({
-            ...plugin,
-            plugin: plug
-        })
-    })
+        log(chalk.blue.yellow('Available scheduled actions (' + actions.length + ')'))
 
-    log(chalk.bold.cyan(process.env.NODE_ENV === 'production' ? 'Production Mode' : 'Development Mode'))
-
-    return _loadedPlugins(plugins)
-}
-
-function _loadedPlugins(plugins) {
-    let loadedPlugins = []
-    log('Loaded plugins : ' + chalk.bold(loadedPlugins.toString()))
-
-    return plugins.map(plugin => loadedPlugins.push(plugin.name))
-}
-
-function _routingTree(config) {
-    const {scheduledFunctions, routes} = config
-
-    if (scheduledFunctions) {
-        scheduledFunctions.length > 0 ? log(chalk.blue.yellow('Available scheduled Functions (' + scheduledFunctions.length + ')')) : null
-        Object.keys(scheduledFunctions).map((functionName) => {
-                if (!functionName)
+        actions.forEach((action) => {
+                if (!action)
                     throw 'No name specified for scheduled Function !'
 
                 log(
-                    chalk.blue('SCD'),
-                    chalk.blue(functionName),
+                    chalk.blue('Action '),
+                    chalk.blue(action.name),
                 )
-                log(scheduledFunctions[functionName].description ? chalk.green(scheduledFunctions[functionName].description) : chalk.grey('No description provided'),)
+                log(action.description ? chalk.green(action.description) : chalk.grey('No description provided'),)
             }
         )
     }
-    routes ?
-        log(chalk.blue.yellow('Available routes (' + Object.keys(routes).length + ')')) : null
+    if (routes) {
+        if (!routes.length) {
+            log(chalk.red('No routes defined'));
+            return
+        }
+        log(chalk.blue.yellow('Available routes (' + Object.keys(routes).length + ')'))
 
-    routes ?
-        Object.keys(routes)
-            .forEach(key => log(
-                chalk.blue(routes[key].method),
-                chalk.blue(routes[key].endpoint),
-                routes[key].description ? chalk.green('\n' + routes[key].description) : chalk.grey('\n' + 'No description provided'),
-                _params(routes[key].params)
-                + '\n'))
-        : log(chalk.red('No routes defined'));
+        routes.forEach(route =>
+            log(
+                chalk.blue(route.method),
+                chalk.blue(route.endpoint),
+                route.description ? chalk.green('\n' + route.description) : chalk.grey('\n' + 'No description provided'),
+                params(route.params)
+                + '\n')
+        )
+    }
+
+    if (events) {
+        if (!events.length) {
+            log(chalk.red('No events defined'));
+            return
+        }
+        events
+            .forEach(event => log(
+                chalk.cyan(event.name),
+                event.description ? chalk.cyanBright('\n' + event.description) : chalk.grey('\n' + 'No description provided')
+                    + '\n')
+            )
+    }
 }
 
-function _params(params) {
+function params(params) {
     if (!params)
         return ''
 
@@ -184,91 +213,134 @@ function _params(params) {
     if (params.optional && params.optional.length) log += '\n' + chalk.yellow('optional : ')
     if (params.optional && params.optional.length) params.optional.forEach(param => log += chalk.yellow(param) + ' ')
 
-
     return log
 }
 
-function _events(handler, io) {
-    log(chalk.yellow("Socket.io events"))
+async function request(microservice, route) {
+    try {
+        const http = microservice.get('http')
 
-    io.on('connection', (socket) => {
-       console.log('New connection')
-    })
-    io.on('error', (error) => {
-        console.log('error', error)
-    })
+        return await http(microservice, route)
+    } catch (e) {
+        log(chalk.red('Request fatal error', e.toString()))
+    }
 }
 
-async function _request(plugins, handler, req, res, next, route) {
-    let response, result
+function rateLimit(service, duration = 15 * 60 * 1000, limit = 100) {
+    const app = service.get('app')
 
-    const {profiles, name} = route
-
-    if (plugins && plugins.length > 0) {
-        let authPlugin = _plugin('auth-plugin', plugins)
-
-        if (!authPlugin)
-            return await handler[name](req, res, next)
-
-        const {plugin} = authPlugin
-
-        if (!profiles || !profiles.length)
-            log(chalk.bold.yellow('WARNING : Endpoint is registered as public (*) it means that all calls can access to the remote resource. set up an profile by adding profiles: [list] in the yaml config.'))
-
-        result = await plugin.onRequest(req, res, next, profiles)
-
-        if (result.code === 200 && result.request)
-            response = await handler[name](result.request, result.response, result.next)
-
-        else return result
-
-    } else {
-        response = await handler[name](req, res, next)
-    }
-    return response
-}
-
-function _plugin(name, plugins) {
-    //no name provided
-    if (!name) {
-        log(chalk.red('No plugin ' + name + 'found.'))
-        return
-    }
-    // no plugins in yml
-    if (!plugins || !plugins.length) {
-        log(chalk.red('No plugins registered in microservice.yml file. Consider adding plugin in microservice.yml before require it.'))
-        return
-    }
-    //name does not match plugins
-    if (!plugins.filter(plugin => plugin.name === name).length) {
-        log(chalk.red('The plugin does not match any provided plugins.'))
-        return
-    }
-
-    return plugins.filter(plugin => plugin.name === name)[0].plugin
-}
-
-function _rateLimit(microserver, limit) {
-    const limiter = rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100, // limit each IP to 100 requests per windowMs
+    const limiter = rateLimiter({
+        windowMs: duration,
+        max: limit,
+        standardHeaders: true,
         message: "TooManyRequests"
-    });
+    })
 
-//  apply to all requests
-    microserver.use(limiter);
+    app.use(limiter);
+}
+
+function socket(service) {
+    const handler = service.get('handler')
+    const server = service.get('server')
+    const config = service.get('config')
+    const subscriptions = service.get('subscriptions')
+
+    if (config.events && config.events.length) {
+        const io = require('socket.io')(server, {
+            transports: ['websocket', 'polling'],
+            cookie: true,
+            secure: true,
+            cors: {
+                origin: "*",
+                methods: ["GET", "POST"]
+            }
+        })
+
+        service.set('socket', io)
+
+        // websockets
+        io.models = require("../models/models");
+        io.on('connection', (client) => {
+            // PubSub to be used in the app
+            if (config.resources && config.resources.pubsub) {
+                // create subscriptions for topics
+                try {
+                    for (let subscription of subscriptions) {
+                        subscription.sub.on('message', (message) => subscription.handler(message, client))
+                    }
+                    setTimeout(() => {
+                        try {
+                            for (let subscription of subscriptions) subscription.sub.removeListener('message', (message) => subscription.handler(message, client));
+                        } catch (e) {
+                            log(chalk.red('An error occurred during removeListener setup, please check :'))
+                            log(chalk.red(e))
+                        }
+                    }, 5 * 1000);
+                } catch (e) {
+                    log(chalk.red('An error occurred during subscriptions setup, please check that methods are exported or that subscriptions are defined in yaml config file : '))
+                    log(chalk.red(e))
+                }
+            }
+
+            ((config.events && config.events.length) > 0) &&
+            (config.events).forEach(event => {
+                client.on(event, (data) => {
+                    handler[event](io, client, data)
+                })
+            })
+
+            client.on('disconnect', () => client.removeAllListeners())
+        })
+    }
+}
+
+function pubsub(service) {
+    const config = service.get('config')
+    const handler = service.get('handler')
+
+    let subscriptions = []
+
+    if (config.resources && config.resources.pubsub) {
+        try {
+            log(chalk.yellow('Pub/Sub subscriptions : '))
+            for (let sub of config.resources.pubsub.subscriptions) {
+                subscriptions.push({
+                    sub: PubSub.subscription(`${sub.subscription}`),
+                    handler: handler[sub.name],
+                    ...sub
+                })
+                log(chalk.green('- ' + sub.name))
+            }
+        } catch (e) {
+            log(chalk.red('An error occurred during subscriptions setup, please check that methods are exported or that subscriptions are defined in yaml config file : '))
+            log(chalk.red(e))
+        }
+    }
+    service.set('pubsub', PubSub)
+    service.set('subscriptions', subscriptions)
+}
+
+function routes(service) {
+    const config = service.get('config')
+    if (config.routes) {
+        config.routes.forEach(route => request(service, route))
+    } else log(chalk.red('no appRoutes'))
 }
 
 module.exports = {
-    _rateLimit,
-    _compression,
-    _routes,
-    _requestLogger,
-    _plugins,
-    _routingTree,
-    _currentRoute,
-    _resources,
-    _port,
-    _scheduledFunctions,
-    _events,
+    rateLimit,
+    request,
+    requestLogger,
+    tree,
+    currentRoute,
+    resources,
+    port,
+    setupActions,
+    runActionsOnStartup,
+    listActions,
+    startAction,
+    stopAction,
+    socket,
+    routes,
+    pubsub
 }
