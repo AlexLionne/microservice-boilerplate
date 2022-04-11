@@ -25,6 +25,7 @@ jobs:
       - run: npm ci
       - run: npm run test
   version:
+    needs: test
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, '[RELEASE]')"
     steps:
