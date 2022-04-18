@@ -1,6 +1,6 @@
 const {Model} = require('objection')
 const knex = require('knex')
-const {config} = require("../config/knex");
+const {config} = require("../../config/knex");
 
 const guid = require('objection-guid')({
     field: 'id',

@@ -11,7 +11,6 @@ module.exports = {
     Accessory: require('./sport/accessory'),
     Activation: require('./sport/activation'),
     ActivationTask: require('./sport/activationTask'),
-    SeasonWorkout: require('./sport/seasonWorkout'),
 
     // user
     Information: require('./user/information'),
@@ -30,6 +29,7 @@ module.exports = {
     User: require('./main/user'),
     Level: require('./main/level'),
     Season: require('./main/season'),
+    SeasonWorkout: require('./main/workout'),
     Auth: require('./main/auth'),
     Token: require('./main/token'),
     FirstUser: require('./main/firstUser'),
