@@ -126,50 +126,6 @@ describe('Microservice socket test', () => {
         expect(socket.connected).toBe(false)
     });
 })
-describe('Microservice pub sub functions test', () => {
-    const options = {
-        name: 'test microservice', functions: '../functions/index.js', port: 4300, routes: [{
-            name: 'sendPubSubEvent',
-            description: "action list endpoint",
-            method: 'POST',
-            endpoint: '/test/pubsub',
-            cors: true,
-            logged: false
-        }]
-    }
-
-    let {start, stop} = microservice(options)
-
-    const instance = request.create({
-        baseURL: `http://127.0.0.1:${options.port}`, timeout: 60000 * 2,
-    });
-
-    beforeAll(() => start())
-    afterAll(() => stop())
-
-    it('should send data to CREATE flow', async function () {
-        const response = await instance.post('/test/pubsub', {
-            topic: 'projects/rapid-spider-310916/topics/create', data: new Date().toISOString()
-        })
-
-        expect(response.status).toBe(200)
-    });
-    it('should send data to UPDATE flow', async function () {
-        const response = await instance.post('/test/pubsub', {
-            topic: 'projects/rapid-spider-310916/topics/update', data: new Date().toISOString()
-        })
-
-        expect(response.status).toBe(200)
-    });
-    it('should send data to DELETE flow', async function () {
-        const response = await instance.post('/test/pubsub', {
-            topic: 'projects/rapid-spider-310916/topics/delete', data: new Date().toISOString()
-        })
-
-        expect(response.status).toBe(200)
-    });
-
-})
 describe('Microservice ES functions test', () => {
     const options = {
         name: 'test microservice', functions: '../functions/index.js', port: 4300,
