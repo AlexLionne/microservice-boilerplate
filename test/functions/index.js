@@ -33,3 +33,16 @@ module.exports.actionStop = (req, res) => {
 
     res.status(204).send()
 }
+
+module.exports.sendPubSubEvent = async (req, res) => {
+    const {eventsManager} = req
+    const {topic, data} = req.body
+    try {
+        const messageId = await eventsManager.publish(topic, data)
+
+        res.status(200).send(messageId)
+    } catch (e) {
+        console.log(e)
+        res.status(500).send()
+    }
+}

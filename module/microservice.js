@@ -9,11 +9,9 @@ const app = express();
 const chalk = require('chalk')
 const moment = require('moment')
 const compression = require('compression')
-
 require('dotenv').config()
 
 const server = require('http').createServer(app);
-
 
 
 const {
@@ -24,7 +22,7 @@ const {
     currentRoute,
     resources,
     port,
-    pubsub,
+    setUpPubSub,
     socket,
     routes
 } = require('./functions')
@@ -93,7 +91,6 @@ function microservice(options) {
     // log the route tree
     tree(microservice)
 
-
     // stop server
     function stop() {
         get('server').close();
@@ -108,17 +105,16 @@ function microservice(options) {
 
     // start server
     function start() {
-        let {port: appPort} = config
+        const appPort = port(config)
 
         rateLimit(microservice)
         resources(microservice)
-        pubsub(microservice)
         socket(microservice)
         setupActions(microservice)
         runActionsOnStartup(microservice)
         routes(microservice)
 
-        server.listen(port(config), () => log(chalk.bold.green(config.name) + chalk.reset(' Running On ') + appPort))
+        server.listen(appPort, () => log(chalk.bold.green(config.name) + chalk.reset(' Running on ') + appPort))
 
         return new Date().toISOString()
     }

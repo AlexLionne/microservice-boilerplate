@@ -6,7 +6,8 @@ const path = require('path')
 const fs = require('fs')
 const morgan = require('morgan')
 const rateLimiter = require("express-rate-limit");
-const PubSub = require("../pub-sub/pub-sub");
+const {PubSub} = require('@google-cloud/pubsub');
+const {io} = require("socket.io-client");
 
 /**
  * Setup the port if needed
@@ -41,19 +42,22 @@ function resources(service) {
 function runActionsOnStartup(service) {
     const actions = service.get('actions')
     const actionsState = service.get('actionsState')
+    try {
+        actionsState.forEach(({name, id}) => {
 
-    actionsState.forEach(({name, id}) => {
-        const {action} = actions[id]
+            if (actionsState[id].runOnStartup) {
+                if (actions.running) log(chalk.red(`Action ${name} already running, stop it to start it again`))
 
-        if (actionsState[id].runOnStartup) {
-            if (actions.running) log(chalk.red(`Action ${name} already running, stop it to start it again`))
+                log(chalk.green(`Action ${name} started`))
 
-            action.start()
-            actionsState[id].running = true
-        }
-    })
+                startAction(service, id)
 
-    service.set('actionsState', actionsState)
+            }
+        })
+    } catch (e) {
+        console.log(e)
+    }
+
 }
 
 function setupActions(service) {
@@ -65,27 +69,25 @@ function setupActions(service) {
     if (config.actions) {
         config.actions.forEach((action, index) => {
 
-                if (!action.cron)
-                    throw ('No periodicity provided !')
-                if (!action.name)
-                    throw ('No function provided !')
+            if (!action.cron) throw ('No periodicity provided !')
+            if (!action.name) throw ('No function provided !')
 
-                actions.push({
-                    id: index,
-                    action: new CronJob(action.cron, async () => {
-                        await handler[action.name]()
-                    })
+            actions.push({
+                id: index, action: new CronJob(action.cron, async () => {
+                    await handler[action.name](// pass useful functions
+                        {
+                            action, publish: (topic, message) => publishMessage(service, topic, message),
+                        })
                 })
-                actionsState.push({
-                    id: index,
-                    name: action.name,
-                    createdAt: new Date().toISOString(),
-                    running: false,
-                    runOnStartup: action.runOnStartup
-                })
-
-            }
-        )
+            })
+            actionsState.push({
+                id: index,
+                name: action.name,
+                createdAt: new Date().toISOString(),
+                running: false,
+                runOnStartup: action.runOnStartup
+            })
+        })
     }
 
 
@@ -106,6 +108,7 @@ function startAction(service, id) {
 
         service.set('actionsState', actionsState)
     } catch (e) {
+        console.log(e)
         throw (e)
     }
 
@@ -160,16 +163,11 @@ function tree(service) {
         log(chalk.blue.yellow('Available scheduled actions (' + actions.length + ')'))
 
         actions.forEach((action) => {
-                if (!action)
-                    throw 'No name specified for scheduled Function !'
+            if (!action) throw 'No name specified for scheduled Function !'
 
-                log(
-                    chalk.blue('Action '),
-                    chalk.blue(action.name),
-                )
-                log(action.description ? chalk.green(action.description) : chalk.grey('No description provided'),)
-            }
-        )
+            log(chalk.blue('Action '), chalk.blue(action.name),)
+            log(action.description ? chalk.green(action.description) : chalk.grey('No description provided'),)
+        })
     }
     if (routes) {
         if (!routes.length) {
@@ -178,14 +176,7 @@ function tree(service) {
         }
         log(chalk.blue.yellow('Available routes (' + Object.keys(routes).length + ')'))
 
-        routes.forEach(route =>
-            log(
-                chalk.blue(route.method),
-                chalk.blue(route.endpoint),
-                route.description ? chalk.green('\n' + route.description) : chalk.grey('\n' + 'No description provided'),
-                params(route.params)
-                + '\n')
-        )
+        routes.forEach(route => log(chalk.blue(route.method), chalk.blue(route.endpoint), route.description ? chalk.green('\n' + route.description) : chalk.grey('\n' + 'No description provided'), params(route.params) + '\n'))
     }
 
     if (events) {
@@ -194,17 +185,12 @@ function tree(service) {
             return
         }
         events
-            .forEach(event => log(
-                chalk.cyan(event.name),
-                event.description ? chalk.cyanBright('\n' + event.description) : chalk.grey('\n' + 'No description provided')
-                    + '\n')
-            )
+            .forEach(event => log(chalk.cyan(event.name), event.description ? chalk.cyanBright('\n' + event.description) : chalk.grey('\n' + 'No description provided') + '\n'))
     }
 }
 
 function params(params) {
-    if (!params)
-        return ''
+    if (!params) return ''
 
     let log = ''
     if (params.required && params.required.length) log += '\n' + chalk.red('required : ')
@@ -230,12 +216,8 @@ function rateLimit(service, duration = 15 * 60 * 1000, limit = 100) {
     const app = service.get('app')
 
     const limiter = rateLimiter({
-        windowMs: duration,
-        max: limit,
-        standardHeaders: true,
-        message: "TooManyRequests"
+        windowMs: duration, max: limit, standardHeaders: true, message: "TooManyRequests"
     })
-
     app.use(limiter);
 }
 
@@ -243,81 +225,96 @@ function socket(service) {
     const handler = service.get('handler')
     const server = service.get('server')
     const config = service.get('config')
-    const subscriptions = service.get('subscriptions')
 
+
+    // act as client
+    if (config.eventSource) {
+        switch (process.env.ENV) {
+            // prod setup
+            case 'production':
+                break;
+            default:
+                const {io} = require("socket.io-client");
+                const client = io.connect(`http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`, {
+                    'reconnection delay': 0,
+                    'reopen delay': 0,
+                    'force new connection': true,
+                    transports: ['websocket', 'polling'],
+                    query: {clientType: 'service'}
+                });
+                client.on("connect", () => {
+                    console.log(`Connected to Event Source provider at : http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`)
+                    service.set('eventSource', client)
+                });
+
+                // client
+                // catch eventSource events
+                client.on('event', (data) => handler['event'](io, client, data))
+                break;
+        }
+    }
+
+    // act as websocket server
     if (config.events && config.events.length) {
         const io = require('socket.io')(server, {
-            transports: ['websocket', 'polling'],
-            cookie: true,
-            secure: true,
-            cors: {
-                origin: "*",
-                methods: ["GET", "POST"]
+            transports: ['websocket', 'polling'], cookie: true, secure: true, cors: {
+                origin: "*", methods: ["GET", "POST"]
             }
         })
-
         service.set('socket', io)
 
-        // websockets
+        // server
         io.models = require("../models/models");
         io.on('connection', (client) => {
-            // PubSub to be used in the app
-            if (config.resources && config.resources.pubsub) {
-                // create subscriptions for topics
-                try {
-                    for (let subscription of subscriptions) {
-                        subscription.sub.on('message', (message) => subscription.handler(message, client))
-                    }
-                    setTimeout(() => {
-                        try {
-                            for (let subscription of subscriptions) subscription.sub.removeListener('message', (message) => subscription.handler(message, client));
-                        } catch (e) {
-                            log(chalk.red('An error occurred during removeListener setup, please check :'))
-                            log(chalk.red(e))
-                        }
-                    }, 5 * 1000);
-                } catch (e) {
-                    log(chalk.red('An error occurred during subscriptions setup, please check that methods are exported or that subscriptions are defined in yaml config file : '))
-                    log(chalk.red(e))
-                }
+
+            const query = client.handshake.query
+            // it's a service, register it to event room
+            if (query && query.clientType && query.clientType === 'service') {
+                client.join("event");
             }
 
-            ((config.events && config.events.length) > 0) &&
-            (config.events).forEach(event => {
-                client.on(event, (data) => {
-                    handler[event](io, client, data)
-                })
-            })
+            // PubSub to be used in the app
+            if ((config.events && config.events.length) > 0) {
+                (config.events).forEach(event => {
+                    client.on(event.name, (data) => {
 
-            client.on('disconnect', () => client.removeAllListeners())
+                        if (event.name === 'event') {
+                            // reserved event !
+                            // just broadcast it to other connected services
+                            console.log(`Getting Event [${event.name}] -> Broadcast to event room`)
+                            handler['event'](io, client, data)
+                            client.to("event").emit(event.name, data);
+                        } else {
+                            handler[event.name](io, client, data)
+                        }
+                    })
+                })
+            }
+
+
+            client.on('disconnect', () => {
+                client.leave('event')
+                client.removeAllListeners()
+            })
         })
+
+
     }
 }
 
-function pubsub(service) {
+async function publishMessage(service, topic, message) {
+    const socket = service.get('eventSource')
     const config = service.get('config')
-    const handler = service.get('handler')
 
-    let subscriptions = []
+    if (!socket) return
 
-    if (config.resources && config.resources.pubsub) {
-        try {
-            log(chalk.yellow('Pub/Sub subscriptions : '))
-            for (let sub of config.resources.pubsub.subscriptions) {
-                subscriptions.push({
-                    sub: PubSub.subscription(`${sub.subscription}`),
-                    handler: handler[sub.name],
-                    ...sub
-                })
-                log(chalk.green('- ' + sub.name))
-            }
-        } catch (e) {
-            log(chalk.red('An error occurred during subscriptions setup, please check that methods are exported or that subscriptions are defined in yaml config file : '))
-            log(chalk.red(e))
-        }
+    try {
+        socket.emit(topic, {...message, source: config.name, createdAt: new Date().toISOString()});
+
+        return new Date().toISOString()
+    } catch (e) {
+        console.log(e)
     }
-    service.set('pubsub', PubSub)
-    service.set('subscriptions', subscriptions)
 }
 
 function routes(service) {
@@ -337,10 +334,10 @@ module.exports = {
     port,
     setupActions,
     runActionsOnStartup,
+    publishMessage,
     listActions,
     startAction,
     stopAction,
     socket,
     routes,
-    pubsub
 }

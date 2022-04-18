@@ -1,11 +1,9 @@
 const chalk = require('chalk')
 const models = require("../../module/models/models");
-const {PubSub} = require("../pub-sub/pub-sub");
-const {startAction, stopAction, listActions} = require("../functions");
+const {startAction, stopAction, listActions, publishMessage} = require("../functions");
 const log = console.log
 
 module.exports = function http(service, route) {
-
     const microservice = service.get('app')
     const handler = service.get('handler')
 
@@ -26,20 +24,6 @@ module.exports = function http(service, route) {
             log(chalk.red(e))
             return res.status(500).send()
         }
-    }
-
-    function actionManager(req, res, next) {
-        req.actionManager = {
-            start: (id) => startAction(service, id),
-            stop: (id) => stopAction(service, id),
-            actions: () => listActions(service)
-        }
-        next()
-    }
-
-    async function servicesMessaging(req, res, next) {
-        req.PubSub = service.get('pubsub')
-        next()
     }
 
     async function authenticate(req, res, next) {
@@ -65,12 +49,32 @@ module.exports = function http(service, route) {
         }
     }
 
+    function actionManager(req, res, next) {
+        req.actionManager = {
+            start: (id) => startAction(service, id),
+            stop: (id) => stopAction(service, id),
+            actions: () => listActions(service)
+        }
+        next()
+    }
+
+    function socketServer(req, res, next) {
+        req.socketServer = service.get('socket')
+        next()
+    }
+
+    function eventSourcing(req, res, next) {
+        req.eventsManager = {
+            publish: (topic, message) => publishMessage(service, topic, message),
+        }
+        next()
+    }
 
     try {
-        if (method.toLowerCase() === 'get') microservice.get(endpoint, actionManager, servicesMessaging, authenticate, middleware)
-        if (method.toLowerCase() === 'post') microservice.post(endpoint, actionManager, servicesMessaging, authenticate, middleware)
-        if (method.toLowerCase() === 'put') microservice.put(endpoint, actionManager, servicesMessaging, authenticate, middleware)
-        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, actionManager, servicesMessaging, authenticate, middleware)
+        if (method.toLowerCase() === 'get') microservice.get(endpoint, socketServer, actionManager, eventSourcing, authenticate, middleware)
+        if (method.toLowerCase() === 'post') microservice.post(endpoint, socketServer, actionManager, eventSourcing, authenticate, middleware)
+        if (method.toLowerCase() === 'put') microservice.put(endpoint, socketServer, actionManager, eventSourcing, authenticate, middleware)
+        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, socketServer, actionManager, eventSourcing, authenticate, middleware)
     } catch (e) {
         log(chalk.red(e.message))
         return e.message

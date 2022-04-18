@@ -4,9 +4,7 @@ const {io} = require("socket.io-client");
 
 describe('Microservice core test', () => {
     const options = {
-        name: 'test microservice',
-        functions: '../functions/index.js',
-        port: 4300,
+        name: 'test microservice', functions: '../functions/index.js', port: 4300,
     }
 
     let {get, start, stop} = microservice(options)
@@ -29,50 +27,41 @@ describe('Microservice core test', () => {
 describe('Microservice requests test', () => {
 
     const options = {
-        name: 'test microservice',
-        functions: '../functions/index.js',
-        port: 4300,
-        routes: [
-            {
-                name: 'testGet',
-                description: "test endpoint",
-                method: 'GET',
-                endpoint: '/test/get',
-                cors: true,
-                logged: false
-            },
-            {
-                name: 'testPost',
-                description: "test endpoint",
-                method: 'POST',
-                endpoint: '/test/get',
-                cors: true,
-                logged: false
-            },
-            {
-                name: 'testPut',
-                description: "test endpoint",
-                method: 'PUT',
-                endpoint: '/test/get',
-                cors: true,
-                logged: false
-            },
-            {
-                name: 'testDelete',
-                description: "test endpoint",
-                method: 'DELETE',
-                endpoint: '/test/get',
-                cors: true,
-                logged: false
-            }
-        ]
+        name: 'test microservice', functions: '../functions/index.js', port: 4300, routes: [{
+            name: 'testGet',
+            description: "test endpoint",
+            method: 'GET',
+            endpoint: '/test/get',
+            cors: true,
+            logged: false
+        }, {
+            name: 'testPost',
+            description: "test endpoint",
+            method: 'POST',
+            endpoint: '/test/get',
+            cors: true,
+            logged: false
+        }, {
+            name: 'testPut',
+            description: "test endpoint",
+            method: 'PUT',
+            endpoint: '/test/get',
+            cors: true,
+            logged: false
+        }, {
+            name: 'testDelete',
+            description: "test endpoint",
+            method: 'DELETE',
+            endpoint: '/test/get',
+            cors: true,
+            logged: false
+        }]
     }
 
     let {start, stop} = microservice(options)
 
     const instance = request.create({
-        baseURL: `http://127.0.0.1:${options.port}`,
-        timeout: 60000 * 2,
+        baseURL: `http://127.0.0.1:${options.port}`, timeout: 60000 * 2,
     });
 
     beforeAll(() => start())
@@ -97,15 +86,9 @@ describe('Microservice requests test', () => {
 })
 describe('Microservice socket test', () => {
     const options = {
-        name: 'Test Socket Microservice',
-        functions: '../functions/index.js',
-        port: 4300,
-        events: [
-            {
-                name: 'ping',
-                description: 'test ping socket'
-            }
-        ]
+        name: 'Test Socket Microservice', functions: '../functions/index.js', port: 4300, events: [{
+            name: 'ping', description: 'test ping socket'
+        }]
     }
 
     let {start, stop, get} = microservice(options)
@@ -116,10 +99,7 @@ describe('Microservice socket test', () => {
         // Setup
         // Do not hardcode server port and address, square brackets are used for IPv6
         socket = io.connect(`http://127.0.0.1:${options.port}`, {
-            'reconnection delay': 0,
-            'reopen delay': 0,
-            'force new connection': true,
-            transports: ['websocket'],
+            'reconnection delay': 0, 'reopen delay': 0, 'force new connection': true, transports: ['websocket'],
         });
         socket.on('connect', () => {
             done();
@@ -146,52 +126,124 @@ describe('Microservice socket test', () => {
         expect(socket.connected).toBe(false)
     });
 })
-describe('Microservice actions functions test', () => {
+describe('Microservice pub sub functions test', () => {
     const options = {
-        name: 'test microservice',
-        functions: '../functions/index.js',
-        port: 4300,
-        routes: [
-            {
-                name: 'actionsList',
-                description: "action list endpoint",
-                method: 'GET',
-                endpoint: '/test/actions',
-                cors: true,
-                logged: false
-            },
-            {
-                name: 'actionStop',
-                description: "action stop endpoint",
-                method: 'POST',
-                endpoint: '/test/actions/:actionId/stop',
-                cors: true,
-                logged: false
-            },
-            {
-                name: 'actionStart',
-                description: "action start endpoint",
-                method: 'POST',
-                endpoint: '/test/actions/:actionId/start',
-                cors: true,
-                logged: false
+        name: 'test microservice', functions: '../functions/index.js', port: 4300, routes: [{
+            name: 'sendPubSubEvent',
+            description: "action list endpoint",
+            method: 'POST',
+            endpoint: '/test/pubsub',
+            cors: true,
+            logged: false
+        }]
+    }
+
+    let {start, stop} = microservice(options)
+
+    const instance = request.create({
+        baseURL: `http://127.0.0.1:${options.port}`, timeout: 60000 * 2,
+    });
+
+    beforeAll(() => start())
+    afterAll(() => stop())
+
+    it('should send data to CREATE flow', async function () {
+        const response = await instance.post('/test/pubsub', {
+            topic: 'projects/rapid-spider-310916/topics/create', data: new Date().toISOString()
+        })
+
+        expect(response.status).toBe(200)
+    });
+    it('should send data to UPDATE flow', async function () {
+        const response = await instance.post('/test/pubsub', {
+            topic: 'projects/rapid-spider-310916/topics/update', data: new Date().toISOString()
+        })
+
+        expect(response.status).toBe(200)
+    });
+    it('should send data to DELETE flow', async function () {
+        const response = await instance.post('/test/pubsub', {
+            topic: 'projects/rapid-spider-310916/topics/delete', data: new Date().toISOString()
+        })
+
+        expect(response.status).toBe(200)
+    });
+
+})
+describe('Microservice ES functions test', () => {
+    const options = {
+        name: 'test microservice', functions: '../functions/index.js', port: 4300,
+        eventSource: {
+            server: {
+                production:
+                    {
+                        name: 'events-microservice',
+                        endpoint: '127.0.0.1',
+                        port: 3002
+                    },
+                development:
+                    {
+                        name: 'events-microservice',
+                        endpoint: '127.0.0.1',
+                        port: 3002
+                    }
             }
-        ],
-        actions: [
+        },
+        events: [
             {
-                cron: '* * * * *',
-                name: 'actionTest1Seconds',
-                description: "action that log each 2 second",
-                runOnStartup: true,
+                name: 'event', description: 'listen to eventSource'
             }
         ]
     }
 
     let {start, stop} = microservice(options)
 
+    beforeAll(() => start())
+    afterAll(() => stop())
+
+    it('should send data to CREATE flow', async function () {
+    });
+    it('should send data to UPDATE flow', async function () {
+    });
+    it('should send data to DELETE flow', async function () {
+    });
+
+})
+describe('Microservice actions functions test', () => {
+    const options = {
+        name: 'test microservice', functions: '../functions/index.js', port: 4300, routes: [{
+            name: 'actionsList',
+            description: "action list endpoint",
+            method: 'GET',
+            endpoint: '/test/actions',
+            cors: true,
+            logged: false
+        }, {
+            name: 'actionStop',
+            description: "action stop endpoint",
+            method: 'POST',
+            endpoint: '/test/actions/:actionId/stop',
+            cors: true,
+            logged: false
+        }, {
+            name: 'actionStart',
+            description: "action start endpoint",
+            method: 'POST',
+            endpoint: '/test/actions/:actionId/start',
+            cors: true,
+            logged: false
+        }], actions: [{
+            cron: '* * * * *',
+            name: 'actionTest1Seconds',
+            description: "action that log each 2 second",
+            runOnStartup: true,
+        }]
+    }
+
+    let {start, stop} = microservice(options)
+
     const instance = request.create({
-        baseURL: `http://127.0.0.1:${options.port}`,
-        timeout: 60000 * 2,
+        baseURL: `http://127.0.0.1:${options.port}`, timeout: 60000 * 2,
     });
 
     beforeAll(() => start())
@@ -204,7 +256,7 @@ describe('Microservice actions functions test', () => {
             await instance.post(`/test/actions/${action.id}/stop`)
         }
 
-       return stop()
+        return stop()
     })
     it('should list 1 action', async function () {
         const response = await instance.get('/test/actions')
