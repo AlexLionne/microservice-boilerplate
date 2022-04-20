@@ -38,10 +38,14 @@ class Auth extends guid(Model) {
         return {
             type: 'object',
             properties: {
-                id: {type: 'string'},
+                id: {type: 'uuid'},
                 email: {type: 'string'},
                 password: {type: 'string'},
                 provider: {type: 'string'},
+                googleId: {type: 'string'},
+                facebookId: {type: 'string'},
+                appleId: {type: 'string'},
+                admin: {type: 'bool'},
             }
         };
     }
@@ -100,8 +104,8 @@ class Auth extends guid(Model) {
             {
                 aud: 'api.nesga.fr',
                 iss: 'nesga-api-issuer',
-                sub: this.authId,
-                authId: this.authId,
+                sub: this.id,
+                authId: this.id,
                 exp: moment().add('7', 'days').unix(),
                 expiresIn: '7d'
             },

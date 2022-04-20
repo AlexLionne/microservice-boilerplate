@@ -24,6 +24,7 @@ class Event extends guid(Model) {
                 action: {type: 'string'},
                 resource: {type: 'string'},
                 source: {type: 'string'},
+                payload: {type: 'json'},
             }
         };
     }

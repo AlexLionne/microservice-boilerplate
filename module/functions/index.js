@@ -222,87 +222,102 @@ function rateLimit(service, duration = 15 * 60 * 1000, limit = 100) {
 }
 
 function socket(service) {
-    const handler = service.get('handler')
-    const server = service.get('server')
-    const config = service.get('config')
+    try {
 
 
-    // act as client
-    if (config.eventSource) {
-        switch (process.env.ENV) {
-            // prod setup
-            case 'production':
-                break;
-            default:
-                const {io} = require("socket.io-client");
-                const client = io.connect(`http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`, {
-                    'reconnection delay': 0,
-                    'reopen delay': 0,
-                    'force new connection': true,
-                    transports: ['websocket', 'polling'],
-                    query: {clientType: 'service'}
-                });
-                client.on("connect", () => {
-                    console.log(`Connected to Event Source provider at : http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`)
-                    service.set('eventSource', client)
-                });
+        const handler = service.get('handler')
+        const server = service.get('server')
+        const config = service.get('config')
 
-                // client
-                // catch eventSource events
-                client.on('event', (data) => handler['event'](io, client, data))
-                break;
+
+        // act as client
+        if (config.eventSource) {
+            switch (process.env.ENV) {
+                // prod setup
+                case 'production':
+                    break;
+                default:
+                    const {io} = require("socket.io-client");
+
+                    io.models = require("../models/models");
+                    io.eventsManager = {
+                        publish: (topic, message) => publishMessage(service, topic, message)
+                    }
+
+                    const client = io.connect(`http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`, {
+                        'reconnection delay': 0,
+                        'reopen delay': 0,
+                        'force new connection': true,
+                        transports: ['websocket', 'polling'],
+                        query: {clientType: 'service'}
+                    });
+                    client.on("connect", () => {
+                        console.log(`Connected to Event Source provider at : http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`)
+                        service.set('eventSource', client)
+                    });
+
+                    // client
+                    // catch eventSource events
+                    if (handler['event']) client.on('event', (data) => handler['event'](io, client, data))
+                    break;
+            }
         }
-    }
 
-    // act as websocket server
-    if (config.events && config.events.length) {
-        const io = require('socket.io')(server, {
-            transports: ['websocket', 'polling'], cookie: true, secure: true, cors: {
-                origin: "*", methods: ["GET", "POST"]
-            }
-        })
-        service.set('socket', io)
-
-        // server
-        io.models = require("../models/models");
-        io.on('connection', (client) => {
-
-            const query = client.handshake.query
-            // it's a service, register it to event room
-            if (query && query.clientType && query.clientType === 'service') {
-                client.join("event");
-            }
-
-            // PubSub to be used in the app
-            if ((config.events && config.events.length) > 0) {
-                (config.events).forEach(event => {
-                    client.on(event.name, (data) => {
-
-                        if (event.name === 'event') {
-                            // reserved event !
-                            // just broadcast it to other connected services
-                            console.log(`Getting Event [${event.name}] -> Broadcast to event room`)
-                            handler['event'](io, client, data)
-                            client.to("event").emit(event.name, data);
-                        } else {
-                            handler[event.name](io, client, data)
-                        }
-                    })
-                })
-            }
-
-
-            client.on('disconnect', () => {
-                client.leave('event')
-                client.removeAllListeners()
+        // act as websocket server
+        if (config.events && config.events.length) {
+            const io = require('socket.io')(server, {
+                transports: ['websocket', 'polling'], cookie: true, secure: true, cors: {
+                    origin: "*", methods: ["GET", "POST"]
+                }
             })
-        })
+            service.set('socket', io)
+
+            // server
+            io.models = require("../models/models");
+            io.eventsManager = {
+                publish: (topic, message) => publishMessage(service, topic, message)
+            }
+            io.on('connection', (client) => {
+
+                const query = client.handshake.query
+                // it's a service, register it to event room
+                if (query && query.clientType && query.clientType === 'service') {
+                    client.join("event");
+                }
+
+                // PubSub to be used in the app
+                if ((config.events && config.events.length) > 0) {
+                    (config.events).forEach(event => {
+                        client.on(event.name, (data) => {
+
+                            if (event.name === 'event') {
+                                // reserved event !
+                                // just broadcast it to other connected services
+                                console.log(`Getting Event [${event.name}] -> Broadcast to event room`)
+                                if (handler['event'])
+                                    handler['event'](io, client, data)
+                                client.to("event").emit(event.name, data);
+                            } else {
+                                handler[event.name](io, client, data)
+                            }
+                        })
+                    })
+                }
+
+                client.on('disconnect', () => {
+                    client.leave('event')
+                    client.removeAllListeners()
+                })
+            })
 
 
+        }
+    } catch (e) {
+        console.log(e)
     }
 }
 
-async function publishMessage(service, topic, message) {
+function publishMessage(service, topic = 'event', message = {}) {
     const socket = service.get('eventSource')
     const config = service.get('config')
 

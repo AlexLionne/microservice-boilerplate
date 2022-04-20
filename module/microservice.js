@@ -22,7 +22,6 @@ const {
     currentRoute,
     resources,
     port,
-    setUpPubSub,
     socket,
     routes
 } = require('./functions')

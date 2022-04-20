@@ -1,6 +1,5 @@
 const {Model} = require('objection');
 const {config} = require("../../config/knex");
-const jwt = require('jsonwebtoken');
 const User = require("./user");
 const fs = require("fs");
 const path = require("path");
@@ -55,12 +54,12 @@ class Token extends guid(Model) {
             if (!authId)
                 return false
 
-            const {userId} = await User.query().where('authId', '=', authId).first()
+            const {id} = await User.query().where('authId', '=', authId).first()
 
-            if (!userId)
+            if (!id)
                 return false
 
-            return userId
+            return id
 
         } catch (e) {
             console.log(e)

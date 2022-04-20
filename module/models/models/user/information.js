@@ -7,7 +7,7 @@ const guid = require('objection-guid')({
 
 Model.knex(config)
 
-class UserData extends guid(Model) {
+class Information extends guid(Model) {
 
     static get tableName() {
         return 'user.information';
@@ -21,8 +21,8 @@ class UserData extends guid(Model) {
         return {
             type: 'object',
             properties: {
-                id: {type: 'string'},
-                userId: {type: 'string'},
+                id: {type: 'uuid'},
+                userId: {type: 'uuid'},
                 firstname: {type: 'string'},
                 lastname: {type: 'string'},
                 username: {type: 'string'},
@@ -41,12 +41,8 @@ class UserData extends guid(Model) {
                 lastConnectionDate: {type: 'string'},
                 timezone: {type: 'string'},
                 FCMToken: {type: 'string'},
-                googleId: {type: 'string'},
-                appleId: {type: 'string'},
-                facebookId: {type: 'string'},
-                active: {type: 'tinyint'},
-                ban: {type: 'tinyint'},
-                admin: {type: 'tinyint'},
+                active: {type: 'bool'},
+                ban: {type: 'bool'},
             }
         };
     }
@@ -67,4 +63,4 @@ class UserData extends guid(Model) {
     }
 }
 
-module.exports = UserData
+module.exports = Information

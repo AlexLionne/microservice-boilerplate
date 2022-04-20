@@ -21,11 +21,13 @@ class Season extends guid(Model) {
         return {
             type: 'object',
             properties: {
-                id: {type: 'string'},
-                seasonId: {type: 'string'},
-                userId: {type: 'string'},
+                id: {type: 'uuid'},
+                seasonId: {type: 'uuid'},
+                userId: {type: 'uuid'},
                 completion: {type: 'float'},
-                experience: {type: 'long'},
+                experience: {type: 'int'},
+                workoutsCount: {type: 'int'},
+                bestSeries: {type: 'int'},
             }
         };
     }

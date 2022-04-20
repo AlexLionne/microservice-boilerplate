@@ -36,11 +36,11 @@ module.exports = function http(service, route) {
             // current route require logged privilege in config.yml
             if (logged) {
                 //authenticate the user with jwt, returns userId
-                const userId = await req.models.Token.handleToken(req, res)
+                const id = await req.models.Token.handleToken(req, res)
 
-                if (!userId) return res.status(403).send()
+                if (!id) return res.status(403).send()
 
-                req.userId = userId
+                req.id = id
             }
             next()
         } catch (e) {
