@@ -55,6 +55,18 @@ describe('Microservice requests test', () => {
             endpoint: '/test/get',
             cors: true,
             logged: false
+        }, {
+            name: 'testMiddlewareOK',
+            description: "test endpoint",
+            method: 'GET',
+            endpoint: '/test/login',
+            middlewares: ['authorized']
+        }, {
+            name: 'testMiddlewareKO',
+            description: "test endpoint",
+            method: 'GET',
+            endpoint: '/test/hackNasa',
+            middlewares: ['authorized', 'unAuthorized']
         }]
     }
 
@@ -67,6 +79,17 @@ describe('Microservice requests test', () => {
     beforeAll(() => start())
     afterAll(() => stop())
 
+    it('should pass authorized middleware', async function () {
+        const response = await instance.get('/test/login')
+        expect(response.status).toBe(204)
+    });
+    it('should not pass authorized middleware', async function () {
+        try {
+            await instance.get('/test/hackNasa')
+        } catch (e) {
+            expect(e.message.includes("403")).toBe(true)
+        }
+    });
     it('should do a get request', async function () {
         const response = await instance.get('/test/get')
         expect(response.status).toBe(204)
@@ -128,28 +151,17 @@ describe('Microservice socket test', () => {
 })
 describe('Microservice ES functions test', () => {
     const options = {
-        name: 'test microservice', functions: '../functions/index.js', port: 4300,
-        eventSource: {
+        name: 'test microservice', functions: '../functions/index.js', port: 4300, eventSource: {
             server: {
-                production:
-                    {
-                        name: 'events-microservice',
-                        endpoint: '127.0.0.1',
-                        port: 3002
-                    },
-                development:
-                    {
-                        name: 'events-microservice',
-                        endpoint: '127.0.0.1',
-                        port: 3002
-                    }
+                production: {
+                    name: 'events-microservice', endpoint: '127.0.0.1', port: 3002
+                }, development: {
+                    name: 'events-microservice', endpoint: '127.0.0.1', port: 3002
+                }
             }
-        },
-        events: [
-            {
-                name: 'event', description: 'listen to eventSource'
-            }
-        ]
+        }, events: [{
+            name: 'event', description: 'listen to eventSource'
+        }]
     }
 
     let {start, stop} = microservice(options)
