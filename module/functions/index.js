@@ -339,6 +339,20 @@ function routes(service) {
     } else log(chalk.red('no appRoutes'))
 }
 
+
+function setUpExpressMiddleware(service) {
+    const config = service.get('config')
+    const middlewares = []
+    const handler = service.get('handler')
+    if (config.middlewares) {
+        config.middlewares.forEach(middleware => {
+            middlewares.push((req, res, next) => handler[middleware](req, res, next))
+        })
+    } else log(chalk.red('no middleware'))
+
+    service.set('middlewares', middlewares)
+}
+
 module.exports = {
     rateLimit,
     request,
@@ -355,4 +369,5 @@ module.exports = {
     stopAction,
     socket,
     routes,
+    setUpExpressMiddleware,
 }
