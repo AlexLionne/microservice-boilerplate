@@ -6,31 +6,24 @@ module.exports = function http(service, route) {
     const microservice = service.get('app')
     const handler = service.get('handler')
 
-    const {endpoint, method, name, middlewares: mdw} = route
+    const {endpoint, method, name, middlewares} = route
 
     if (!endpoint || !endpoint.includes('/') || (!['get', 'post', 'put', 'delete', 'options', 'option', 'patch'].includes(method.toLowerCase()))) return log(chalk.red('Check endpoint configuration nor method used in the configuration file'))
 
     // handle middlewares
-    let middlewares = []
-    for (const middleware of mdw) {
-        if (handler[middleware])
-            middlewares.push((req, res, next) => handler(middleware)(req, res, next))
+    let actions = []
+    if (middlewares && middlewares.length) {
+        for (const middleware of middlewares) {
+            if (handler[middleware]) actions.push((req, res, next) => handler[middleware](req, res, next))
+        }
     }
 
-
     async function middleware(req, res, next) {
-
         try {
             if (!handler[name]) {
                 log(chalk.red('No functions associated with this route'))
                 log(chalk.red('Handler could be null to'))
             }
-
-            res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Authorization, Origin");
-            res.header("Access-Control-Allow-Origin", "*");
-            res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-            res.header("Access-Control-Allow-Credentials", true);
-
             await handler[name](req, res, next)
         } catch (e) {
             log(chalk.red(e))
@@ -48,6 +41,11 @@ module.exports = function http(service, route) {
     }
 
     function socketServer(req, res, next) {
+        res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Authorization, Origin");
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+        res.header("Access-Control-Allow-Credentials", true);
+
         req.socketServer = service.get('socket')
         next()
     }
@@ -60,12 +58,12 @@ module.exports = function http(service, route) {
     }
 
     try {
-        if (method.toLowerCase() === 'get') microservice.get(endpoint, socketServer, actionManager, eventSourcing, middlewares, middleware)
-        if (method.toLowerCase() === 'post') microservice.post(endpoint, socketServer, actionManager, eventSourcing, middlewares, middleware)
-        if (method.toLowerCase() === 'put') microservice.put(endpoint, socketServer, actionManager, eventSourcing, middlewares, middleware)
-        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, socketServer, actionManager, eventSourcing, middlewares, middleware)
+        if (method.toLowerCase() === 'get') microservice.get(endpoint, socketServer, actionManager, eventSourcing, actions, middleware)
+        if (method.toLowerCase() === 'post') microservice.post(endpoint, socketServer, actionManager, eventSourcing, actions, middleware)
+        if (method.toLowerCase() === 'put') microservice.put(endpoint, socketServer, actionManager, eventSourcing, actions, middleware)
+        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, socketServer, actionManager, eventSourcing, actions, middleware)
     } catch (e) {
-        log(chalk.red(e.message))
+        log(chalk.red(e))
         return e.message
     }
 
