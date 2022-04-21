@@ -67,12 +67,13 @@ jobs:
     strategy:
       matrix:
         repo: [
-            'Nesga-ARC/auth-microservice',
-            'Nesga-ARC/backend-microservice',
-            'Nesga-ARC/season-microservice',
-            'Nesga-ARC/shop-microservice',
-            'Nesga-ARC/user-microservice',
-            'Nesga-ARC/watcher-microservice',
+          'Nesga-ARC/backend-microservice',
+          'Nesga-ARC/nesga-service',
+          'Nesga-ARC/events-microservice',
+          'Nesga-ARC/sport-microservice',
+          'Nesga-ARC/shop-microservice',
+          'Nesga-ARC/user-microservice',
+          'Nesga-ARC/watcher-microservice',
         ]
     runs-on: ubuntu-latest
     steps:
