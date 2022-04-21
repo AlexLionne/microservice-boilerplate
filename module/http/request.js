@@ -6,9 +6,17 @@ module.exports = function http(service, route) {
     const microservice = service.get('app')
     const handler = service.get('handler')
 
-    const {endpoint, method, name} = route
+    const {endpoint, method, name, middlewares: mdw} = route
 
     if (!endpoint || !endpoint.includes('/') || (!['get', 'post', 'put', 'delete', 'options', 'option', 'patch'].includes(method.toLowerCase()))) return log(chalk.red('Check endpoint configuration nor method used in the configuration file'))
+
+    // handle middlewares
+    let middlewares = []
+    for (const middleware of mdw) {
+        if (handler[middleware])
+            middlewares.push((req, res, next) => handler(middleware)(req, res, next))
+    }
+
 
     async function middleware(req, res, next) {
 
@@ -16,7 +24,6 @@ module.exports = function http(service, route) {
             if (!handler[name]) {
                 log(chalk.red('No functions associated with this route'))
                 log(chalk.red('Handler could be null to'))
-                return res.status(500).send()
             }
 
             res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Authorization, Origin");
@@ -53,10 +60,10 @@ module.exports = function http(service, route) {
     }
 
     try {
-        if (method.toLowerCase() === 'get') microservice.get(endpoint, socketServer, actionManager, eventSourcing, service.get('middlewares'), middleware)
-        if (method.toLowerCase() === 'post') microservice.post(endpoint, socketServer, actionManager, eventSourcing, service.get('middlewares'), middleware)
-        if (method.toLowerCase() === 'put') microservice.put(endpoint, socketServer, actionManager, eventSourcing, service.get('middlewares'), middleware)
-        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, socketServer, actionManager, eventSourcing, service.get('middlewares'), middleware)
+        if (method.toLowerCase() === 'get') microservice.get(endpoint, socketServer, actionManager, eventSourcing, middlewares, middleware)
+        if (method.toLowerCase() === 'post') microservice.post(endpoint, socketServer, actionManager, eventSourcing, middlewares, middleware)
+        if (method.toLowerCase() === 'put') microservice.put(endpoint, socketServer, actionManager, eventSourcing, middlewares, middleware)
+        if (method.toLowerCase() === 'delete') microservice.delete(endpoint, socketServer, actionManager, eventSourcing, middlewares, middleware)
     } catch (e) {
         log(chalk.red(e.message))
         return e.message

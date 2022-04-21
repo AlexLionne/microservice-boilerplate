@@ -22,7 +22,7 @@ const {
     resources,
     port,
     socket,
-    routes, setUpExpressMiddleware
+    routes,
 } = require('./functions')
 
 currentRoute(app)
@@ -85,8 +85,6 @@ function microservice(options) {
     microservice.set('actionsState', [])
     // microservice config
     microservice.set('config', config)
-    // express middlewares
-    microservice.set('middlewares', [])
     // log the route tree
     tree(microservice)
 
@@ -112,7 +110,6 @@ function microservice(options) {
         setupActions(microservice)
         runActionsOnStartup(microservice)
         routes(microservice)
-        setUpExpressMiddleware(microservice)
 
         server.listen(appPort, () => log(chalk.bold.green(config.name) + chalk.reset(' Running on ') + appPort))
 
