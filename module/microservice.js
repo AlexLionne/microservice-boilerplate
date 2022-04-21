@@ -2,7 +2,6 @@ const log = console.log;
 const formData = require('express-form-data');
 const express = require('express');
 const body = require('body-parser');
-const cors = require('cors');
 const path = require('path');
 const session = require('express-session')
 const app = express();
@@ -23,7 +22,7 @@ const {
     resources,
     port,
     socket,
-    routes
+    routes, setUpExpressMiddleware
 } = require('./functions')
 
 currentRoute(app)
@@ -86,7 +85,8 @@ function microservice(options) {
     microservice.set('actionsState', [])
     // microservice config
     microservice.set('config', config)
-
+    // express middlewares
+    microservice.set('middlewares', [])
     // log the route tree
     tree(microservice)
 
@@ -112,6 +112,7 @@ function microservice(options) {
         setupActions(microservice)
         runActionsOnStartup(microservice)
         routes(microservice)
+        setUpExpressMiddleware(microservice)
 
         server.listen(appPort, () => log(chalk.bold.green(config.name) + chalk.reset(' Running on ') + appPort))
 
