@@ -6,8 +6,6 @@ const path = require('path')
 const fs = require('fs')
 const morgan = require('morgan')
 const rateLimiter = require("express-rate-limit");
-const {PubSub} = require('@google-cloud/pubsub');
-const {io} = require("socket.io-client");
 
 /**
  * Setup the port if needed
