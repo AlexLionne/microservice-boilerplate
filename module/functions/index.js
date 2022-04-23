@@ -237,7 +237,6 @@ function socket(service) {
                 default:
                     const {io} = require("socket.io-client");
 
-                    io.models = require("../models/models");
                     io.eventsManager = {
                         publish: (topic, message) => publishMessage(service, topic, message)
                     }
@@ -270,8 +269,6 @@ function socket(service) {
             })
             service.set('socket', io)
 
-            // server
-            io.models = require("../models/models");
             io.eventsManager = {
                 publish: (topic, message) => publishMessage(service, topic, message)
             }
