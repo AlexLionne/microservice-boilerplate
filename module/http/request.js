@@ -14,7 +14,10 @@ module.exports = function http(service, route) {
     let actions = []
     if (middlewares && middlewares.length) {
         for (const middleware of middlewares) {
-            if (handler[middleware]) actions.push((req, res, next) => handler[middleware](req, res, next))
+            if (!handler[middleware])
+                throw `[${middleware}] - No handler for this middleware`
+
+            actions.push((req, res, next) => handler[middleware](req, res, next))
         }
     }
 

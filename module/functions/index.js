@@ -267,7 +267,6 @@ function socket(service) {
                     origin: "*", methods: ["GET", "POST"]
                 }
             })
-            service.set('socket', io)
 
             io.eventsManager = {
                 publish: (topic, message) => publishMessage(service, topic, message)
@@ -304,7 +303,8 @@ function socket(service) {
                     client.removeAllListeners()
                 })
             })
-
+            
+            service.set('socket', io)
 
         }
     } catch (e) {
