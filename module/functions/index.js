@@ -210,7 +210,7 @@ async function request(microservice, route) {
     }
 }
 
-function rateLimit(service, duration = 15 * 60 * 1000, limit = 100) {
+function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
     const app = service.get('app')
 
     const limiter = rateLimiter({
@@ -303,7 +303,7 @@ function socket(service) {
                     client.removeAllListeners()
                 })
             })
-            
+
             service.set('socket', io)
 
         }
