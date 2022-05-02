@@ -216,7 +216,7 @@ function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
     const limiter = rateLimiter({
         windowMs: duration, max: limit, standardHeaders: true, message: "TooManyRequests"
     })
-    app.use(limiter);
+    //app.use(limiter);
 }
 
 function socket(service) {
