@@ -17,7 +17,7 @@ function port(config) {
     let {port = process.env.PORT} = config
     if (!port) {
         log(chalk.yellow('No port specified using ::3000'), chalk.yellow('at ' + moment().format('DD/MM/YYYY hh:mm:ss')))
-        port = 3000
+        port = 8080
     }
     return port
 }
