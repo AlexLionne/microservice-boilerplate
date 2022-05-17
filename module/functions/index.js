@@ -250,7 +250,7 @@ function socket(service) {
             }
 
             const client = io.connect(url, {
-                transports: ['websocket'],
+                transports: ['websocket', 'polling'],
                 query: {clientType: 'service'}
             });
 
@@ -266,7 +266,7 @@ function socket(service) {
         // act as websocket server
         if (config.events && config.events.length) {
             const io = require('socket.io')(server, {
-                transports: ['websocket'],
+                transports: ['websocket', 'polling'],
                 cors: {
                     origin: "*", methods: ["GET", "POST"]
                 }
