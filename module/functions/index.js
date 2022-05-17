@@ -6,6 +6,7 @@ const path = require('path')
 const fs = require('fs')
 const morgan = require('morgan')
 const rateLimiter = require("express-rate-limit");
+const {io} = require("socket.io-client");
 
 /**
  * Setup the port if needed
@@ -230,34 +231,40 @@ function socket(service) {
 
         // act as client
         if (config.eventSource) {
-            switch (process.env.ENV) {
+            let url
+
+            switch (process.env.NODE_ENV) {
                 // prod setup
                 case 'production':
+                    url = `https://${config.eventSource.server.production.endpoint}`
                     break;
                 default:
-                    const {io} = require("socket.io-client");
-
-                    io.eventsManager = {
-                        publish: (topic, message) => publishMessage(service, topic, message)
-                    }
-
-                    const client = io.connect(`http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`, {
-                        'reconnection delay': 0,
-                        'reopen delay': 0,
-                        'force new connection': true,
-                        transports: ['websocket', 'polling'],
-                        query: {clientType: 'service'}
-                    });
-                    client.on("connect", () => {
-                        console.log(`Connected to Event Source provider at : http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`)
-                        service.set('eventSource', client)
-                    });
-
-                    // client
-                    // catch eventSource events
-                    if (handler['event']) client.on('event', (data) => handler['event'](io, client, data))
+                    url = `https://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`
                     break;
             }
+            
+            const {io} = require("socket.io-client");
+
+            io.eventsManager = {
+                publish: (topic, message) => publishMessage(service, topic, message)
+            }
+
+            const client = io.connect(url, {
+                'reconnection delay': 0,
+                'reopen delay': 0,
+                'force new connection': true,
+                transports: ['websocket', 'polling'],
+                query: {clientType: 'service'}
+            });
+
+            client.on("connect", () => {
+                console.log(`Connected to Event Source provider at : ${url}`)
+                service.set('eventSource', client)
+            });
+
+            // client
+            // catch eventSource events
+            if (handler['event']) client.on('event', (data) => handler['event'](io, client, data))
         }
 
         // act as websocket server
