@@ -6,7 +6,6 @@ const path = require('path')
 const fs = require('fs')
 const morgan = require('morgan')
 const rateLimiter = require("express-rate-limit");
-const {io} = require("socket.io-client");
 
 /**
  * Setup the port if needed
@@ -41,6 +40,7 @@ function resources(service) {
 function runActionsOnStartup(service) {
     const actions = service.get('actions')
     const actionsState = service.get('actionsState')
+
     try {
         actionsState.forEach(({name, id}) => {
 
@@ -242,7 +242,7 @@ function socket(service) {
                     url = `https://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`
                     break;
             }
-            
+
             const {io} = require("socket.io-client");
 
             io.eventsManager = {
@@ -270,7 +270,7 @@ function socket(service) {
         // act as websocket server
         if (config.events && config.events.length) {
             const io = require('socket.io')(server, {
-                transports: ['websocket', 'polling'], cookie: true, secure: true, cors: {
+                transports: ['websocket', 'polling'], cors: {
                     origin: "*", methods: ["GET", "POST"]
                 }
             })
