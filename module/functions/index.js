@@ -250,14 +250,14 @@ function socket(service) {
             }
 
             const client = io.connect(url, {
-                transports: ['websocket', 'polling'], query: {clientType: 'service'}
+                transports: ['websocket'],
+                query: {clientType: 'service'}
             });
 
             client.on("connect", () => {
                 console.log(`Connected to Event Source provider at : ${url}`)
                 service.set('eventSource', client)
             });
-
             // client
             // catch eventSource events
             if (handler['event']) client.on('event', (data) => handler['event'](io, client, data))
@@ -266,7 +266,8 @@ function socket(service) {
         // act as websocket server
         if (config.events && config.events.length) {
             const io = require('socket.io')(server, {
-                transports: ['websocket', 'polling'], secure: true, cors: {
+                transports: ['websocket'],
+                cors: {
                     origin: "*", methods: ["GET", "POST"]
                 }
             })
