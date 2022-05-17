@@ -250,11 +250,7 @@ function socket(service) {
             }
 
             const client = io.connect(url, {
-                'reconnection delay': 0,
-                'reopen delay': 0,
-                'force new connection': true,
-                transports: ['websocket', 'polling'],
-                query: {clientType: 'service'}
+                transports: ['websocket', 'polling'], query: {clientType: 'service'}
             });
 
             client.on("connect", () => {
@@ -270,7 +266,7 @@ function socket(service) {
         // act as websocket server
         if (config.events && config.events.length) {
             const io = require('socket.io')(server, {
-                transports: ['websocket', 'polling'], cors: {
+                transports: ['websocket', 'polling'], secure: true, cors: {
                     origin: "*", methods: ["GET", "POST"]
                 }
             })
@@ -295,8 +291,7 @@ function socket(service) {
                                 // reserved event !
                                 // just broadcast it to other connected services
                                 console.log(`Getting Event [${event.name}] -> Broadcast to event room`)
-                                if (handler['event'])
-                                    handler['event'](io, client, data)
+                                if (handler['event']) handler['event'](io, client, data)
                                 client.to("event").emit(event.name, data);
                             } else {
                                 handler[event.name](io, client, data)
