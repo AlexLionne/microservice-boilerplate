@@ -286,16 +286,16 @@ function socket(service) {
                 // PubSub to be used in the app
                 if ((config.events && config.events.length) > 0) {
                     (config.events).forEach(event => {
-                        client.on(event.name, (data) => {
+                        client.on(event.name, async (data) => {
 
                             if (event.name === 'event') {
                                 // reserved event !
                                 // just broadcast it to other connected services
                                 console.log(`Getting Event [${event.name}] -> Broadcast to event room`)
-                                if (handler['event']) handler['event'](io, client, data)
+                                if (handler['event']) await handler['event'](io, client, data)
                                 client.to("event").emit(event.name, data);
                             } else {
-                                handler[event.name](io, client, data)
+                                await handler[event.name](io, client, data)
                             }
                         })
                     })
@@ -308,7 +308,6 @@ function socket(service) {
             })
 
             service.set('socket', io)
-
         }
     } catch (e) {
         console.log(e)
