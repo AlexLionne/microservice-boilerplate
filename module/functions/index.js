@@ -255,12 +255,19 @@ function socket(service) {
             });
 
             client.on("connect", () => {
-                console.log(`Connected to Event Source provider at : ${url}`)
+                console.log(`[CLIENT] Connected to Event Source provider at : ${url}`)
                 service.set('eventSource', client)
             });
             // client
             // catch eventSource events
-            if (handler['event']) client.on('event', (data) => handler['event'](io, client, data))
+            if ((config.eventSource.events && config.eventSource.events.length) > 0) {
+                (config.eventSource.events).forEach(event => {
+                    client.on(event.name, (data) => {
+                        console.log(`[CLIENT] Getting Event [${event.name}] <- From event source`)
+                        if (handler[event.name]) handler[event.name](io, client, data)
+                    })
+                })
+            }
         }
 
         // act as websocket server
@@ -275,34 +282,31 @@ function socket(service) {
             io.eventsManager = {
                 publish: (topic, message) => publishMessage(service, topic, message)
             }
-            io.on('connection', (client) => {
 
+            io.on('connection', (client) => {
+                console.log(`[SERVER] New connection`)
                 const query = client.handshake.query
                 // it's a service, register it to event room
                 if (query && query.clientType && query.clientType === 'service') {
-                    client.join("event");
+                    client.join("event-room");
                 }
 
                 // PubSub to be used in the app
                 if ((config.events && config.events.length) > 0) {
                     (config.events).forEach(event => {
-                        client.on(event.name, async (data) => {
+                        client.on(event.name, (data) => {
+                            if (config.service.type === 'event-source') {
+                                console.log(`[SERVER] Getting Event [${event.name}] -> Broadcast to other services via event-room`)
+                                if (handler['event']) handler['event'](io, client, data)
+                                client.to("event-room").emit(event.name, data);
+                            } else handler[event.name](io, client, data)
 
-                            if (event.name === 'event') {
-                                // reserved event !
-                                // just broadcast it to other connected services
-                                console.log(`Getting Event [${event.name}] -> Broadcast to event room`)
-                                if (handler['event']) await handler['event'](io, client, data)
-                                client.to("event").emit(event.name, data);
-                            } else {
-                                await handler[event.name](io, client, data)
-                            }
                         })
                     })
                 }
 
                 client.on('disconnect', () => {
-                    client.leave('event')
+                    client.leave('event-room')
                     client.removeAllListeners()
                 })
             })
