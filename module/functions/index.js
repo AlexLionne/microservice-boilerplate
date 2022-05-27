@@ -294,12 +294,13 @@ function socket(service) {
                 // PubSub to be used in the app
                 if ((config.events && config.events.length) > 0) {
                     (config.events).forEach(event => {
+                        console.log('[SERVER] Event : ', event.name)
                         client.on(event.name, (data) => {
                             if (config.service.type === 'event-source') {
                                 console.log(`[SERVER] Getting Event [${event.name}] -> Broadcast to other services via event-room`)
                                 if (handler['event']) handler['event'](io, client, data)
                                 client.to("event-room").emit(event.name, data);
-                            } else handler[event.name](io, client, data)
+                            } else if (handler[event.name]) handler[event.name](io, client, data)
 
                         })
                     })
