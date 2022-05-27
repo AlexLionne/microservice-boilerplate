@@ -274,6 +274,8 @@ function socket(service) {
         if (config.events && config.events.length) {
             const io = require('socket.io')(server, {
                 transports: ['websocket', 'polling'],
+                cookie: true,
+                secure: true,
                 cors: {
                     origin: "*", methods: ["GET", "POST"]
                 }
