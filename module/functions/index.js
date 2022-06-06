@@ -26,13 +26,14 @@ function port(config) {
 function resources(service) {
 
     const app = service.get('app')
+    const express = service.get('express')
     const config = service.get('config')
 
     if (!config.resources) return
 
     if (config.resources.storage) {
         Object.keys(config.resources.storage).forEach(key => {
-            app.use(config.resources.storage[key], app.static(path.join(require.main.filename, '..', key)))
+            app.use(config.resources.storage[key], express.static(path.join(require.main.filename, '..', key)))
         })
     }
 }

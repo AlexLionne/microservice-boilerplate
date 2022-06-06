@@ -78,6 +78,8 @@ function microservice(options) {
     microservice.set('subscriptions', [])
     // express app instance
     microservice.set('app', app)
+
+    microservice.set('express', express)
     // http server instance
     microservice.set('server', server)
     // http middlewares
