@@ -237,7 +237,7 @@ function socket (service) {
           url = `https://${config.eventSource.server.production.endpoint}`
           break
         default:
-          url = `https://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`
+          url = `http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`
           break
       }
 
@@ -249,7 +249,7 @@ function socket (service) {
 
       const client = io.connect(url, {
         transports: ['websocket'],
-        query: { clientType: 'service' }
+        query: { clientType: 'service', client: config.name }
       })
 
       client.on('connect', () => {
@@ -287,11 +287,8 @@ function socket (service) {
         console.log(`[SERVER] New connection`)
         const query = client.handshake.query
         // it's a service, register it to event room
-        // todo - Define :
-        // todo - ClientType (service, application)
-        // todo - ClientId (service-id, application-id)
 
-        const { clientType, clientId } = query
+        const { clientType, clientId, name } = query
 
         if (!['service', 'application'].includes(clientType) || !['service-', 'application-'].includes(clientId)) {
           console.log(`[JOIN] -> client not defined`)
@@ -300,7 +297,11 @@ function socket (service) {
 
         if (query && query.clientType && query.clientType === 'service') {
           // add client to connections
-          client.join('event-room')
+          if (!clients.get(name)) {
+            clients.set(name, true)
+            client.join('event-room')
+            service.set('clients', clients)
+          }
         }
 
         // PubSub to be used in the app
