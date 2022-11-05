@@ -288,19 +288,21 @@ function socket (service) {
         const query = client.handshake.query
         // it's a service, register it to event room
 
-        const { clientType, clientId, name } = query
+        const { clientType, clientId } = query
 
+        console.log(clientType, ' wants to join')
         if (!['service', 'application'].includes(clientType) || !['service-', 'application-'].includes(clientId)) {
           console.log(`[JOIN] -> client not defined`)
           return
         }
 
-        if (query && query.clientType && query.clientType === 'service') {
+        if (query && clientType === 'service') {
           // add client to connections
-          if (!clients.get(name)) {
-            clients.set(name, true)
+          if (!clients.get(client.id)) {
+            clients.set(client.id, true)
             client.join('event-room')
             service.set('clients', clients)
+            console.log('connected clients', clients)
           }
         }
 
