@@ -286,23 +286,18 @@ function socket (service) {
       io.on('connection', (client) => {
         console.log(`[SERVER] New connection`)
         const query = client.handshake.query
-        // it's a service, register it to event room
 
-        const { clientType, clientId } = query
+        const { clientType } = query
 
         console.log(clientType, ' wants to join')
-        if (!['service', 'application'].includes(clientType) || !['service-', 'application-'].includes(clientId)) {
-          console.log(`[JOIN] -> client not defined`)
-          return
-        }
 
-        if (query && clientType === 'service') {
+        if (query && (clientType === 'service' || clientType === 'application' || clientType === 'service-' || clientType === 'application-')) {
           // add client to connections
           if (!clients.get(client.id)) {
             clients.set(client.id, true)
             client.join('event-room')
             service.set('clients', clients)
-            console.log('connected clients', clients)
+            console.log('[SERVER] Connected clients', clients)
           }
         }
 
