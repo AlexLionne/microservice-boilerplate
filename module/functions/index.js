@@ -317,8 +317,10 @@ function socket (service) {
 
         client.on('disconnect', () => {
           // remove client to connections
+          clients.delete(client.id)
           client.leave('event-room')
           client.removeAllListeners()
+          service.set('clients', clients)
         })
       })
       service.set('socket', io)
