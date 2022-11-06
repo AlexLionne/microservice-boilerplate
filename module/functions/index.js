@@ -289,8 +289,6 @@ function socket (service) {
 
         const { clientType } = query
 
-        console.log(clientType, ' wants to join')
-
         if (query && (clientType === 'service' || clientType === 'application' || clientType === 'service-' || clientType === 'application-')) {
           // add client to connections
           if (!clients.get(client.id)) {
@@ -321,6 +319,7 @@ function socket (service) {
           client.leave('event-room')
           client.removeAllListeners()
           service.set('clients', clients)
+          console.log('[SERVER] Connected clients', clients)
         })
       })
       service.set('socket', io)
