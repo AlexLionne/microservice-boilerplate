@@ -253,7 +253,7 @@ function socket (service) {
       })
 
       client.on('connect', () => {
-        console.log(`[CLIENT] Connected to Event Source provider at : ${url}`)
+        console.log(`[${config.name}] Connected to Event Source provider at : ${url}`)
         service.set('eventSource', client)
       })
       // client
@@ -261,7 +261,7 @@ function socket (service) {
       if ((config.eventSource.events && config.eventSource.events.length) > 0) {
         (config.eventSource.events).forEach(event => {
           client.on(event.name, (data) => {
-            console.log(`[CLIENT] Getting Event [${event.name}] <- From event source`)
+            console.log(`[${config.name}] Getting Event [${event.name}] <- From event source`)
             if (handler[event.name]) handler[event.name](io, client, data)
           })
         })
@@ -289,11 +289,12 @@ function socket (service) {
 
         const { clientType, client: name } = query
 
+        console.log(query)
         if (query && (clientType === 'service' || clientType === 'application' || clientType === 'service-' || clientType === 'application-')) {
           // add client to connections
           const connected = clients.get(name)
 
-          if (client) {
+          if (connected) {
             connected.disconnect()
             clients.delete(name)
           }
@@ -320,6 +321,7 @@ function socket (service) {
 
         client.on('disconnect', () => {
           // remove client to connections
+          console.log('[SERVER] Disconnected', name)
           clients.get(name).disconnect()
           clients.delete(name)
           service.set('clients', clients)
