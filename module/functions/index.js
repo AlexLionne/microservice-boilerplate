@@ -287,16 +287,21 @@ function socket (service) {
         console.log(`[SERVER] New connection`)
         const query = client.handshake.query
 
-        const { clientType } = query
+        const { clientType, client: name } = query
 
         if (query && (clientType === 'service' || clientType === 'application' || clientType === 'service-' || clientType === 'application-')) {
           // add client to connections
-          if (!clients.get(client.id)) {
-            clients.set(client.id, true)
-            client.join('event-room')
-            service.set('clients', clients)
-            console.log('[SERVER] Connected clients', clients)
+          const connected = clients.get(name)
+
+          if (client) {
+            connected.disconnect()
+            clients.delete(name)
           }
+
+          clients.set(name, client)
+          client.join('event-room')
+          service.set('clients', clients)
+          console.log('[SERVER] Connected clients', clients.size)
         }
 
         // PubSub to be used in the app
@@ -315,11 +320,10 @@ function socket (service) {
 
         client.on('disconnect', () => {
           // remove client to connections
-          clients.delete(client.id)
-          client.leave('event-room')
-          client.removeAllListeners()
+          clients.get(name).disconnect()
+          clients.delete(name)
           service.set('clients', clients)
-          console.log('[SERVER] Connected clients', clients)
+          console.log('[SERVER] Connected clients', clients.size)
         })
       })
       service.set('socket', io)
