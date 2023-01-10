@@ -307,7 +307,7 @@ function socket (service) {
           clients.set(name, client)
           client.join('event-room')
           service.set('clients', clients)
-          console.log('[SERVER] Connected clients', clients.size)
+          console.log('[SERVER] Connected clients', clients.size, clients)
         }
 
         // PubSub to be used in the app
