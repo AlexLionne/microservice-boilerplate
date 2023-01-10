@@ -259,7 +259,7 @@ function socket (service) {
 
       client.on('disconnect', () => {
         console.log(`[${config.name}] Disconnected from Event Source provider `)
-        client.connect()
+        //client.connect()
       })
       // client
       // catch eventSource events
