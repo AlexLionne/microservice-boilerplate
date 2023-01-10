@@ -256,6 +256,10 @@ function socket (service) {
         console.log(`[${config.name}] Connected to Event Source provider at : ${url}`)
         service.set('eventSource', client)
       })
+      
+      client.on('disconnect', () => {
+        console.log('disconnected from socket event-source')
+      })
       // client
       // catch eventSource events
       if ((config.eventSource.events && config.eventSource.events.length) > 0) {
