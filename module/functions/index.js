@@ -256,7 +256,7 @@ function socket (service) {
         console.log(`[${config.name}] Connected to Event Source provider at : ${url}`)
         service.set('eventSource', client)
       })
-      
+
       client.on('disconnect', () => {
         console.log(`[${config.name}] Disconnected from Event Source provider `)
         client.connect()
@@ -279,7 +279,7 @@ function socket (service) {
         transports: ['websocket'],
         cookie: true,
         secure: true,
-        
+
         cors: {
           origin: '*', methods: ['GET', 'POST']
         }
@@ -307,7 +307,7 @@ function socket (service) {
           clients.set(name, client)
           client.join('event-room')
           service.set('clients', clients)
-          console.log('[SERVER] Connected clients', clients.size, clients)
+          console.log('[SERVER] Connected clients', clients.size, clients.keys())
         }
 
         // PubSub to be used in the app
@@ -326,8 +326,8 @@ function socket (service) {
 
         client.on('disconnect', (reason) => {
           // remove client to connections
-          console.log('[SERVER] Disconnected', name, "reason", reason)
-          
+          console.log('[SERVER] Disconnected', name, 'reason', reason)
+
           if (name) {
             clients.get(name).disconnect()
             clients.delete(name)
