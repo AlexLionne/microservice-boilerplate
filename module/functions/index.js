@@ -329,10 +329,8 @@ function socket (service) {
 
         client.on('disconnect', (reason) => {
           // remove client to connections
-          console.log('[SERVER] Disconnected', name, 'reason', reason)
-
           if (name) {
-            clients.get(name).disconnect()
+            console.log('[SERVER] Disconnected', name, 'reason', reason)
             clients.delete(name)
             service.set('clients', clients.keys())
             console.log('[SERVER] Connected clients', clients.size)
