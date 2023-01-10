@@ -331,7 +331,7 @@ function socket (service) {
           if (name) {
             clients.get(name).disconnect()
             clients.delete(name)
-            service.set('clients', clients)
+            service.set('clients', clients.keys())
             console.log('[SERVER] Connected clients', clients.size)
           }
         })
