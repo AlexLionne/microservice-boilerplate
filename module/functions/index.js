@@ -319,10 +319,11 @@ function socket (service) {
           })
         }
 
-        client.on('disconnect', () => {
+        client.on('disconnect', (reason) => {
           // remove client to connections
-          console.log('[SERVER] Disconnected', name)
-          if (name) {
+          console.log('[SERVER] Disconnected', name, reason)
+          
+          if (name && clientType !== 'service') {
             clients.get(name).disconnect()
             clients.delete(name)
             service.set('clients', clients)
