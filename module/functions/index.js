@@ -299,6 +299,7 @@ function socket (service) {
           const connected = clients.get(name)
 
           if (connected) {
+            console.log(`[SERVER] Client ${name} already connected, disconnecting`)
             connected.disconnect()
             clients.delete(name)
           }
