@@ -274,6 +274,7 @@ function socket (service) {
         transports: ['websocket'],
         cookie: true,
         secure: true,
+        
         cors: {
           origin: '*', methods: ['GET', 'POST']
         }
@@ -289,7 +290,6 @@ function socket (service) {
 
         const { clientType, client: name } = query
 
-        console.log(query)
         if (query && (clientType === 'service' || clientType === 'application' || clientType === 'service-' || clientType === 'application-')) {
           // add client to connections
           const connected = clients.get(name)
@@ -321,10 +321,9 @@ function socket (service) {
 
         client.on('disconnect', (reason) => {
           // remove client to connections
-          console.log('[SERVER] Disconnected', name, reason)
+          console.log('[SERVER] Disconnected', name, "reason", reason)
           
           if (name && clientType !== 'service') {
-            clients.get(name).disconnect()
             clients.delete(name)
             service.set('clients', clients)
             console.log('[SERVER] Connected clients', clients.size)
