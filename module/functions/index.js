@@ -299,6 +299,7 @@ function socket (service) {
           const connected = clients.get(name)
 
           if (connected) {
+            connected.leave('event-room')
             console.log(`[SERVER] Client ${name} already connected, update client reference (connection update)`)
           }
           // update client
