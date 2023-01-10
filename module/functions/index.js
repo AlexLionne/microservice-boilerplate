@@ -299,11 +299,9 @@ function socket (service) {
           const connected = clients.get(name)
 
           if (connected) {
-            console.log(`[SERVER] Client ${name} already connected, disconnecting`)
-            connected.disconnect()
-            clients.delete(name)
+            console.log(`[SERVER] Client ${name} already connected, update client reference (connection update)`)
           }
-
+          // update client
           clients.set(name, client)
           client.join('event-room')
           service.set('clients', clients)
