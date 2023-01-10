@@ -300,12 +300,13 @@ function socket (service) {
 
           if (connected) {
             connected.leave('event-room')
+            connected.disconnect()
             console.log(`[SERVER] Client ${name} already connected, update client reference (connection update)`)
           }
           // update client
-          clients.set(name, client)
           client.join('event-room')
           service.set('clients', clients)
+          clients.set(name, client)
           console.log('[SERVER] Connected clients', clients.size, clients.keys())
         }
 
@@ -327,6 +328,7 @@ function socket (service) {
           // remove client to connections
           if (name) {
             console.log('[SERVER] Disconnected', name, 'reason', reason)
+            clients.get(name).disconnect()
             clients.delete(name)
             service.set('clients', clients.keys())
             console.log('[SERVER] Connected clients', clients.size)
