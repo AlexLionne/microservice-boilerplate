@@ -257,9 +257,12 @@ function socket (service) {
         service.set('eventSource', client)
       })
 
-      client.on('disconnect', () => {
-        console.log(`[${config.name}] Disconnected from Event Source provider `)
-        //client.connect()
+      client.on('disconnect', (reason) => {
+        console.log(`[${config.name}] Disconnected from Event Source provider for ${reason}`)
+        if (reason === 'io server disconnect') {
+          // disconnect initiated by server. Manually reconnect
+          client.connect()
+        }
       })
       // client
       // catch eventSource events
