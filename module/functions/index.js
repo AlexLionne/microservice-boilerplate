@@ -258,7 +258,8 @@ function socket (service) {
       })
       
       client.on('disconnect', () => {
-        console.log('disconnected from socket event-source')
+        console.log(`[${config.name}] Disconnected from Event Source provider `)
+        service.set('eventSource', null)
       })
       // client
       // catch eventSource events
@@ -327,7 +328,8 @@ function socket (service) {
           // remove client to connections
           console.log('[SERVER] Disconnected', name, "reason", reason)
           
-          if (name && clientType !== 'service') {
+          if (name) {
+            clients.get(name).disconnect()
             clients.delete(name)
             service.set('clients', clients)
             console.log('[SERVER] Connected clients', clients.size)
