@@ -293,46 +293,52 @@ function socket (service) {
         const query = client.handshake.query
 
         const { clientType, client: name } = query
-        const connected = clients.get(name)
 
-        if (query && (clientType === 'service' || clientType === 'application' || clientType === 'service-' || clientType === 'application-')) {
-          // add client to connections
+        if (clientType) {
 
-          clients.set(name, client)
-          
-          if (!connected) {
-            console.log(`[SERVER] Client ${name} not connected, update client reference (connection update)`)
+          if (query && (clientType === 'service' || clientType === 'application' || clientType === 'service-' || clientType === 'application-')) {
+            // add client to connections
+
+            clients.set(name, client)
+            service.set('clients', clients)
+            const connected = clients.get(name)
+
+            if (connected) {
+              console.log(`[SERVER] Client ${name} not connected, update client reference (connection update)`)
+              console.log('[SERVER] Connected clients', clients.size, clients.keys())
+              connected.leave('event-room')
+            }
 
             // update client
-            client.join('event-room')
-            service.set('clients', clients)
-            console.log('[SERVER] Connected clients', clients.size, clients.keys())
-          }
 
-          // PubSub to be used in the app
-          if ((config.events && config.events.length) > 0) {
-            (config.events).forEach(event => {
-              console.log('[SERVER] Event : ', event.name)
-              connected.on(event.name, (data) => {
-                if (config.service.type === 'event-source') {
-                  console.log(`[SERVER] Getting Event [${event.name}] -> Broadcast to other services via event-room`)
-                  if (handler['event']) handler['event'](io, client, data)
-                  connected.to('event-room').emit(event.name, data)
-                } else if (handler[event.name]) handler[event.name](io, client, data)
+            connected.join('event-room')
+
+            // PubSub to be used in the app
+            if ((config.events && config.events.length) > 0) {
+              (config.events).forEach(event => {
+                console.log('[SERVER] Event : ', event.name)
+                connected.on(event.name, (data) => {
+                  if (config.service.type === 'event-source') {
+                    console.log(`[SERVER] Getting Event [${event.name}] -> Broadcast to other services via event-room`)
+                    if (handler['event']) handler['event'](io, client, data)
+                    connected.to('event-room').emit(event.name, data)
+                  } else if (handler[event.name]) handler[event.name](io, client, data)
+                })
               })
-            })
-          }
-
-          connected.on('disconnect', (reason) => {
-            // remove client to connections
-            if (name) {
-              console.log('[SERVER] Disconnected', name, 'reason', reason)
-              clients.delete(name)
-              service.set('clients', clients.keys())
-              console.log('[SERVER] Connected clients', clients.size)
             }
-          })
-          service.set('socket', io)
+
+            connected.on('disconnect', (reason) => {
+              // remove client to connections
+              if (name) {
+                connected.leave('event-room')
+                console.log('[SERVER] Disconnected', name, 'reason', reason)
+                clients.delete(name)
+                service.set('clients', clients.keys())
+                console.log('[SERVER] Connected clients', clients.size)
+              }
+            })
+            service.set('socket', io)
+          }
         }
       })
     }
