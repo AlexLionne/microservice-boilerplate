@@ -293,14 +293,12 @@ function socket (service) {
         const query = client.handshake.query
 
         const { clientType, client: name } = query
+        const connected = clients.get(name)
 
         if (query && (clientType === 'service' || clientType === 'application' || clientType === 'service-' || clientType === 'application-')) {
           // add client to connections
-          const connected = clients.get(name)
 
           if (connected) {
-            connected.leave('event-room')
-            connected.disconnect(2)
             console.log(`[SERVER] Client ${name} already connected, update client reference (connection update)`)
           }
           // update client
@@ -314,21 +312,20 @@ function socket (service) {
         if ((config.events && config.events.length) > 0) {
           (config.events).forEach(event => {
             console.log('[SERVER] Event : ', event.name)
-            client.on(event.name, (data) => {
+            connected.on(event.name, (data) => {
               if (config.service.type === 'event-source') {
                 console.log(`[SERVER] Getting Event [${event.name}] -> Broadcast to other services via event-room`)
                 if (handler['event']) handler['event'](io, client, data)
-                client.to('event-room').emit(event.name, data)
+                connected.to('event-room').emit(event.name, data)
               } else if (handler[event.name]) handler[event.name](io, client, data)
             })
           })
         }
 
-        client.on('disconnect', (reason) => {
+        connected.on('disconnect', (reason) => {
           // remove client to connections
           if (name) {
             console.log('[SERVER] Disconnected', name, 'reason', reason)
-            clients.get(name).disconnect(2)
             clients.delete(name)
             service.set('clients', clients.keys())
             console.log('[SERVER] Connected clients', clients.size)
