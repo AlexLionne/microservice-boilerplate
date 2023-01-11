@@ -252,6 +252,8 @@ function socket (service) {
         query: { clientType: 'service', client: config.name }
       })
 
+      service.set('socket', io)
+      
       client.on('connect', () => {
         console.log(`[${config.name}] Connected to Event Source provider at : ${url}`)
         service.set('eventSource', client)
@@ -337,7 +339,6 @@ function socket (service) {
                 console.log('[SERVER] Connected clients', clients.size)
               }
             })
-            service.set('socket', io)
           }
         }
       })
