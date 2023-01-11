@@ -6,6 +6,7 @@ const path = require('path')
 const fs = require('fs')
 const morgan = require('morgan')
 const rateLimiter = require('express-rate-limit')
+const { io } = require('socket.io-client')
 
 /**
  * Setup the port if needed
@@ -252,8 +253,6 @@ function socket (service) {
         query: { clientType: 'service', client: config.name }
       })
 
-      service.set('socket', io)
-      
       client.on('connect', () => {
         console.log(`[${config.name}] Connected to Event Source provider at : ${url}`)
         service.set('eventSource', client)
@@ -342,6 +341,7 @@ function socket (service) {
           }
         }
       })
+      service.set('socket', io)
     }
   } catch (e) {
     console.log(e)
