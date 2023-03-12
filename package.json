@@ -20,6 +20,7 @@
   "author": "alexandre@nesga.fr",
   "license": "ISC",
   "dependencies": {
+    "@segment/analytics-node": "^1.0.0-beta.23",
     "axios": "^0.26.1",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",

@@ -37,6 +37,7 @@ app.use((req, res, next) => {
   next()
 })
 const { http } = require('./http')
+const { track } = require('../plugins/analytics/segment')
 
 /**
  * Microservice module
@@ -66,6 +67,8 @@ function microservice (options) {
   microservice.set('subscriptions', [])
   // express app instance
   microservice.set('app', app)
+  // anyalitics module
+  microservice.set('analytics', track)
   // socket clients
   microservice.set('clients', new Map())
   // express instance
