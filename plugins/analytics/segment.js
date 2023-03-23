@@ -1,6 +1,6 @@
 const { Analytics } = require('@segment/analytics-node')
 
-const segmentClient = new Analytics({ writeKey: process.env.ANALYTICS_API_KEY })
+const segmentClient = new Analytics({ writeKey: process.env.ANALYTICS_API_KEY || 'ZM4ZrlEYJB6AchcCpmMlqEDJqlgc7Sc7' })
 
 module.exports.EVENTS = {
   // Service Oriented
