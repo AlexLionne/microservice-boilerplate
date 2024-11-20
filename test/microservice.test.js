@@ -36,28 +36,24 @@ describe('Microservice requests test', () => {
       method: 'GET',
       endpoint: '/test/get',
       cors: true,
-      logged: false
     }, {
       name: 'testPost',
       description: 'test endpoint',
       method: 'POST',
       endpoint: '/test/get',
-      cors: true,
-      logged: false
+      cors: true
     }, {
       name: 'testPut',
       description: 'test endpoint',
       method: 'PUT',
       endpoint: '/test/get',
-      cors: true,
-      logged: false
+      cors: true
     }, {
       name: 'testDelete',
       description: 'test endpoint',
       method: 'DELETE',
       endpoint: '/test/get',
-      cors: true,
-      logged: false
+      cors: true
     }, {
       name: 'testMiddlewareOK',
       description: 'test endpoint',
@@ -191,22 +187,19 @@ describe('Microservice actions functions test', () => {
       description: 'action list endpoint',
       method: 'GET',
       endpoint: '/test/actions',
-      cors: true,
-      logged: false
+      cors: true
     }, {
       name: 'actionStop',
       description: 'action stop endpoint',
       method: 'POST',
       endpoint: '/test/actions/:actionId/stop',
-      cors: true,
-      logged: false
+      cors: true
     }, {
       name: 'actionStart',
       description: 'action start endpoint',
       method: 'POST',
       endpoint: '/test/actions/:actionId/start',
-      cors: true,
-      logged: false
+      cors: true
     }], actions: [{
       cron: '* * * * *',
       name: 'actionTest1Seconds',

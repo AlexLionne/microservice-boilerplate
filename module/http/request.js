@@ -1,13 +1,10 @@
 const chalk = require('chalk')
 const { startAction, stopAction, listActions, publishMessage } = require('../functions')
-const { track, EVENTS } = require('../../plugins/analytics/segment')
 const log = console.log
 
 module.exports = function http (service, route) {
   const microservice = service.get('app')
-  const analytics = service.get('analytics')
   const handler = service.get('handler')
-  const config = service.get('config')
 
   const { endpoint, method, name, middlewares } = route
 
@@ -57,10 +54,6 @@ module.exports = function http (service, route) {
   }
 
   function segment (req, res, next) {
-    req.analytics = analytics
-    track(config.name, EVENTS.MS_HTTP_REQUEST, {
-      endpoint, method, name
-    })
     next()
   }
 
@@ -73,14 +66,11 @@ module.exports = function http (service, route) {
 
 // send event
   try {
-    if (method.toLowerCase() === 'get') microservice.get(endpoint, socketServer, actionManager, eventSourcing, actions, segment, middleware)
-    if (method.toLowerCase() === 'post') microservice.post(endpoint, socketServer, actionManager, eventSourcing, actions, segment, middleware)
-    if (method.toLowerCase() === 'put') microservice.put(endpoint, socketServer, actionManager, eventSourcing, actions, segment, middleware)
-    if (method.toLowerCase() === 'delete') microservice.delete(endpoint, socketServer, actionManager, eventSourcing, actions, segment, middleware)
+    if (method.toLowerCase() === 'get') microservice.get(endpoint, socketServer, actionManager, eventSourcing, actions, middleware)
+    if (method.toLowerCase() === 'post') microservice.post(endpoint, socketServer, actionManager, eventSourcing, actions, middleware)
+    if (method.toLowerCase() === 'put') microservice.put(endpoint, socketServer, actionManager, eventSourcing, actions, middleware)
+    if (method.toLowerCase() === 'delete') microservice.delete(endpoint, socketServer, actionManager, eventSourcing, actions, middleware)
   } catch (e) {
-    track(config.name, EVENTS.MS_ERROR, {
-      endpoint, method, name
-    })
     log(chalk.red(e))
     return e.message
   }
