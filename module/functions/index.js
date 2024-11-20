@@ -82,10 +82,12 @@ function setupActions(service) {
                                     action, publish: (topic, message) => publishMessage(service, topic, message),
                                 })
                         }) :
-                        handler[action.name](
+                        {
+                            start: async () => await handler[action.name](
                             {
                                 action, publish: (topic, message) => publishMessage(service, topic, message),
                             })
+                        }
             })
             actionsState.push({
                 id: index,
