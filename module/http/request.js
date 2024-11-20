@@ -53,9 +53,6 @@ module.exports = function http (service, route) {
     next()
   }
 
-  function segment (req, res, next) {
-    next()
-  }
 
   function eventSourcing (req, res, next) {
     req.eventsManager = {
