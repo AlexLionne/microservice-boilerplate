@@ -14,7 +14,7 @@ const rateLimiter = require('express-rate-limit')
  * @private
  */
 function port(config) {
-    if (process.env.PORT) return parseInt(process.env.PORT)
+    if (process.env.PORT) return process.env.PORT
     let {port} = config
     if (!port) {
         log(chalk.yellow('No port specified using ::3000'), chalk.yellow('at ' + moment().format('DD/MM/YYYY hh:mm:ss')))

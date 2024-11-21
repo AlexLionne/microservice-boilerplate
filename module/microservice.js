@@ -110,9 +110,9 @@ function microservice (options) {
     routes(microservice)
 
     if (process.env.NODE_ENV === 'development') {
-      server.listen(appPort, '0.0.0.0', () => log(chalk.bold.green(config.name) + chalk.reset(' Running development on ') + appPort))
+      server.listen(parseInt(appPort), '0.0.0.0', () => log(chalk.bold.green(config.name) + chalk.reset(' Running development on ') + parseInt(appPort)))
     } else {
-      server.listen(appPort, () => log(chalk.bold.green(config.name) + chalk.reset(' Running production on ') + appPort))
+      server.listen(parseInt(appPort), () => log(chalk.bold.green(config.name) + chalk.reset(' Running production on ') + parseInt(appPort)))
 
     }
 
