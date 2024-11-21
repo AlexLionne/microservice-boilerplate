@@ -100,7 +100,7 @@ function microservice (options) {
 
 // start server
   function start () {
-    const appPort = port(config)
+    const appPort = process.env.PORT || port(config)
 
     rateLimit(microservice)
     resources(microservice)
