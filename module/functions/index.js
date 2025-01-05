@@ -30,6 +30,7 @@ function resources(service) {
     const config = service.get('config')
 
     if (!config.resources) return
+    if (config.resources.viewEngine) app.set('view engine', config.resources.viewEngine);
 
     if (config.resources.storage) {
         Object.keys(config.resources.storage).forEach(key => {
