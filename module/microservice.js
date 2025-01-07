@@ -3,7 +3,7 @@ const formData = require('express-form-data')
 const express = require('express')
 const body = require('body-parser')
 const path = require('path')
-const session = require('express-session')
+//const session = require('cookie-session')
 const app = express()
 const chalk = require('chalk')
 const moment = require('moment')
@@ -25,8 +25,28 @@ app.use(formData.format())
 app.use(formData.stream())
 app.use(formData.union())
 app.use(compression())
-app.use(session({ secret: 'secret', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }))
 
+
+/// todo handle session
+
+/*
+
+app.use(session({
+cookie:{
+    secure: true,
+    maxAge:60000
+       },
+store: new RedisStore(),
+secret: 'secret',
+saveUninitialized: true,
+resave: false
+}));
+
+app.use(function(req,res,next){
+if(!req.session){
+    return next(new Error('Oh no')) //handle error
+}
+ */
 if (process.env.NODE_ENV === 'development') app.disable('etag')
 
 app.use((req, res, next) => {
