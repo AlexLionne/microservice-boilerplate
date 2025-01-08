@@ -1,7 +1,7 @@
 {
   "name": "microservice-boilerplate",
   "repository": "https://github.com/AlexLionne/microservice-boilerplate",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Microservice Package",
   "main": "module/microservice.js",
   "scripts": {
