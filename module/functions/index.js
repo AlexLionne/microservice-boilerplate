@@ -222,13 +222,40 @@ async function request(microservice, route) {
     }
 }
 
+function redisSession(service) {
+    const app = service.get('app')
+    const session = require('express-session')
+    const RedisStore = require('connect-redis')(session)
+    const { createClient } = require("redis")
+    const redisClient = createClient({
+        host: process.env.REDIS_HOST || 'localhost',
+        port: 6379,
+        password: process.env.REDIS_PASSWORD || '',
+        legacyMode: true // NOTE: important
+    });
+    redisClient.connect().catch(console.error)
+    app.use(session({
+        secret: process.env.SESSION_SECRET || 'secret',
+        resave: false,
+        saveUninitialized: true,
+        store: new RedisStore({
+            client: redisClient,
+            logErrors: true,
+            ttl: 10 // in seconds
+        }),
+        cookie: {
+            maxAge: 10000
+        }
+    }));
+}
+
 function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
     const app = service.get('app')
 
     const limiter = rateLimiter({
         windowMs: duration, max: limit, standardHeaders: true, message: 'TooManyRequests'
     })
-    //app.use(limiter);
+    app.use(limiter);
 }
 
 function socket(service) {
@@ -383,6 +410,7 @@ function routes(service) {
 
 module.exports = {
     rateLimit,
+    redisSession,
     request,
     requestLogger,
     tree,

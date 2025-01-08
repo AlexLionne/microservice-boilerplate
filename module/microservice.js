@@ -3,7 +3,6 @@ const formData = require('express-form-data')
 const express = require('express')
 const body = require('body-parser')
 const path = require('path')
-//const session = require('cookie-session')
 const app = express()
 const chalk = require('chalk')
 const moment = require('moment')
@@ -13,7 +12,7 @@ require('dotenv').config()
 const server = require('http').createServer(app)
 
 const {
-  rateLimit, tree, setupActions, runActionsOnStartup, currentRoute, resources, port, socket, routes,
+  rateLimit, tree, setupActions, runActionsOnStartup, currentRoute, resources, port, socket, routes, redisSession,
 } = require('./functions')
 
 currentRoute(app)
@@ -28,25 +27,6 @@ app.use(compression())
 
 
 /// todo handle session
-
-/*
-
-app.use(session({
-cookie:{
-    secure: true,
-    maxAge:60000
-       },
-store: new RedisStore(),
-secret: 'secret',
-saveUninitialized: true,
-resave: false
-}));
-
-app.use(function(req,res,next){
-if(!req.session){
-    return next(new Error('Oh no')) //handle error
-}
- */
 if (process.env.NODE_ENV === 'development') app.disable('etag')
 
 app.use((req, res, next) => {
@@ -122,6 +102,7 @@ function microservice (options) {
   function start () {
     const appPort = port(config)
 
+    redisSession(microservice)
     rateLimit(microservice)
     resources(microservice)
     socket(microservice)
