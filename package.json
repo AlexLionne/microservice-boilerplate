@@ -1,9 +1,6 @@
 {
-  "name": "@nesga-arc/microservice-boilerplate",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
-  "repository": "git://github.com/nesga-arc/microservice-boilerplate.git",
+  "name": "microservice-boilerplate",
+  "repository": "https://github.com/AlexLionne/microservice-boilerplate",
   "version": "2.0.2",
   "description": "Microservice Package",
   "main": "module/microservice.js",
