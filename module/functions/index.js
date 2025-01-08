@@ -34,7 +34,7 @@ function resources(service) {
 
     if (config.resources.storage) {
         Object.keys(config.resources.storage).forEach(key => {
-            app.use(config.resources.storage[key], express.static(path.join(require.main.filename, '..', key)))
+            app.use(config.resources.storage[key], express.static(path.join(require.main.filename, key)))
         })
     }
 }
