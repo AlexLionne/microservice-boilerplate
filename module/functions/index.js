@@ -236,7 +236,8 @@ function redisSession(service) {
     redisClient.connect().then(
         () => console.log('[SERVER] Redis connected')
     ).catch(console.error)
-    app.use(session({
+
+    const sess = {
         secret: process.env.SESSION_SECRET || 'secret',
         resave: false,
         saveUninitialized: true,
@@ -248,7 +249,13 @@ function redisSession(service) {
         cookie: {
             maxAge: 10000
         }
-    }));
+    }
+    if (app.get('env') === 'production') {
+        app.set('trust proxy', 1) // trust first proxy
+        sess.cookie.secure = true // serve secure cookies
+    }
+
+    app.use(session(sess));
 }
 
 function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
