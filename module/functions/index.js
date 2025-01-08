@@ -233,7 +233,9 @@ function redisSession(service) {
         password: process.env.REDIS_PASSWORD || '',
         legacyMode: true // NOTE: important
     });
-    redisClient.connect().catch(console.error)
+    redisClient.connect().then(
+        () => console.log('[SERVER] Redis connected')
+    ).catch(console.error)
     app.use(session({
         secret: process.env.SESSION_SECRET || 'secret',
         resave: false,
