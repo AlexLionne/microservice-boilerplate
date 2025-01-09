@@ -223,6 +223,9 @@ async function request(microservice, route) {
 }
 
 function redisSession(service) {
+    const config = service.get('config')
+    if (!config.session) return
+
     const app = service.get('app')
     const session = require('express-session')
     const RedisStore = require('connect-redis')(session)

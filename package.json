@@ -14,7 +14,7 @@
     "node": ">=10.6.0"
   },
   "keywords": [],
-  "author": "alexandre@nesga.fr",
+  "author": "alexandre@dhomes.fr",
   "license": "ISC",
   "dependencies": {
     "@segment/analytics-node": "^1.0.0-beta.23",
