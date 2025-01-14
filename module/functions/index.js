@@ -330,7 +330,7 @@ function socket(service) {
       switch (process.env.NODE_ENV) {
         // prod setup
         case "production":
-          url = `https://${config.eventSource.server.production.endpoint}`;
+          url = `http://${config.eventSource.server.production.endpoint}:${config.eventSource.server.production.port}`;
           break;
         default:
           url = `http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`;
