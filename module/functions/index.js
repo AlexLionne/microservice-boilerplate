@@ -86,16 +86,16 @@ function setupActions(service) {
           ? new CronJob(action.cron, async () => {
               await handler[action.name]({
                 action,
-                publish: (topic, message) =>
-                  publishMessage(service, topic, message),
+                publish: (topic, message, onAck, onNack) =>
+                  publishMessage(service, topic, message, onAck, onNack),
               });
             })
           : {
               start: async () =>
                 await handler[action.name]({
                   action,
-                  publish: (topic, message) =>
-                    publishMessage(service, topic, message),
+                  publish: (topic, message, onAck, onNack) =>
+                    publishMessage(service, topic, message, onAck, onNack),
                 }),
             },
       });
@@ -340,7 +340,8 @@ function socket(service) {
       const { io } = require("socket.io-client");
 
       io.eventsManager = {
-        publish: (topic, message) => publishMessage(service, topic, message),
+        publish: (topic, message, onAck, onNack) =>
+          publishMessage(service, topic, message, onAck, onNack),
       };
 
       const client = io.connect(url, {
@@ -388,7 +389,8 @@ function socket(service) {
       });
 
       io.eventsManager = {
-        publish: (topic, message) => publishMessage(service, topic, message),
+        publish: (topic, message, onAck, onNack) =>
+          publishMessage(service, topic, message, onAck, onNack),
       };
 
       io.on("connection", (client) => {
@@ -424,13 +426,27 @@ function socket(service) {
             }
 
             // update client
-
             connected.join("event-room");
 
             // PubSub to be used in the app
             if ((config.events && config.events.length) > 0) {
-              config.events.forEach((event) => {
-                console.log("[SERVER] Event : ", event.name);
+              config.events = config.events.reduce((acc, event) => {
+                return [
+                  ...acc,
+                  event,
+                  {
+                    name: `ack:${event.name}`,
+                    description: `Acknowledgement for ${event.name}`,
+                  },
+                  {
+                    name: `nack:${event.name}`,
+                    description: `Nacknowledgement for ${event.name}`,
+                  },
+                ];
+              }, []);
+
+              for (const event of config.events) {
+                console.log(`[SERVER] Registering event ${event.name}`);
                 connected.on(event.name, (data) => {
                   if (config.service.type === "event-source") {
                     console.log(
@@ -441,7 +457,7 @@ function socket(service) {
                   } else if (handler[event.name])
                     handler[event.name](io, client, data);
                 });
-              });
+              }
             }
 
             connected.on("disconnect", (reason) => {
@@ -464,7 +480,7 @@ function socket(service) {
   }
 }
 
-function publishMessage(service, topic = "event", message = {}) {
+function publishMessage(service, topic = "event", message = {}, onAck, onNack) {
   const socket = service.get("eventSource");
   const config = service.get("config");
 
@@ -476,8 +492,12 @@ function publishMessage(service, topic = "event", message = {}) {
       source: config.name,
       createdAt: new Date().toISOString(),
     });
-
-    return new Date().toISOString();
+    socket.on(`ack:${topic}`, (data) => {
+      onAck && onAck(data);
+    });
+    socket.on(`nack:${topic}`, (data) => {
+      onNack && onNack(data);
+    });
   } catch (e) {
     console.log(e);
   }
