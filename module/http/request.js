@@ -2,7 +2,8 @@ const {
   startAction,
   stopAction,
   listActions,
-  publishMessage,
+  publishInternalMessage,
+  publishExternalMessage,
 } = require("../functions");
 
 module.exports = function http(service, route) {
@@ -73,9 +74,17 @@ module.exports = function http(service, route) {
   }
 
   function eventSourcing(req, res, next) {
-    req.eventsManager = {
-      publish: (topic, message) => publishMessage(service, topic, message),
+    req.messaging = {
+      internal: {
+        publish: (topic, message) =>
+          publishInternalMessage(service, topic, message),
+      },
+      external: {
+        publish: (topic, message) =>
+          publishExternalMessage(service, topic, message),
+      },
     };
+
     next();
   }
 

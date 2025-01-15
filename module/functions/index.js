@@ -1,4 +1,4 @@
-const moment = require("moment");
+const amqp = require("amqplib");
 const CronJob = require("cron").CronJob;
 const path = require("path");
 const fs = require("fs");
@@ -80,16 +80,20 @@ function setupActions(service) {
           ? new CronJob(action.cron, async () => {
               await handler[action.name]({
                 action,
-                publish: (topic, message, onAck, onNack) =>
-                  publishMessage(service, topic, message, onAck, onNack),
+                publishInternalMessage: (topic, message) =>
+                  publishInternalMessage(service, topic, message),
+                publishExternalMessage: (topic, message) =>
+                  publishExternalMessage(service, topic, message),
               });
             })
           : {
               start: async () =>
                 await handler[action.name]({
                   action,
-                  publish: (topic, message, onAck, onNack) =>
-                    publishMessage(service, topic, message, onAck, onNack),
+                  publishInternalMessage: (topic, message) =>
+                    publishInternalMessage(service, topic, message),
+                  publishExternalMessage: (topic, message) =>
+                    publishExternalMessage(service, topic, message),
                 }),
             },
       });
@@ -156,19 +160,11 @@ function currentRoute(microservice, logger) {
   });
 }
 
-function requestLogger(microservice) {
-  const accessLogStream = fs.createWriteStream(
-    path.join(process.mainModule.filename, "../logs", "access.log"),
-    { flags: "a" }
-  );
-  microservice.use(morgan("combined", { stream: accessLogStream }));
-}
-
 function tree(service) {
   const config = service.get("config");
   const logger = service.get("logger");
 
-  const { actions, routes, events } = config;
+  const { actions, routes, messaging } = config;
 
   if (actions) {
     if (!actions.length) {
@@ -211,12 +207,28 @@ function tree(service) {
     );
   }
 
-  if (events) {
-    if (!events.length) {
-      logger.info.error("No events defined");
+  if (messaging.internal.events) {
+    if (!messaging.internal.events.length) {
+      logger.info.error("No internal events defined");
       return;
     }
-    events.forEach((event) =>
+    messaging.internal.events.forEach((event) =>
+      logger.info(
+        [
+          event.name,
+          event.description
+            ? "\n" + event.description
+            : "\n" + "No description provided" + "\n",
+        ].join(" ")
+      )
+    );
+  }
+  if (messaging.external.events) {
+    if (!messaging.external.events.length) {
+      logger.info.error("No events external defined");
+      return;
+    }
+    messaging.internal.events.forEach((event) =>
       logger.info(
         [
           event.name,
@@ -309,163 +321,125 @@ function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
   app.use(limiter);
 }
 
-function socket(service) {
+async function messaging(service) {
   const logger = service.get("logger");
   try {
     const handler = service.get("handler");
     const server = service.get("server");
     const config = service.get("config");
     const clients = service.get("clients");
+    const connection = await amqp.connect(
+      process.env.RABBITMQ_URL || "amqp://localhost"
+    );
+    const channel = await connection.createChannel();
+    service.set("channel", channel);
 
-    // act as client
-    if (config.eventSource) {
-      let url;
-
-      switch (process.env.NODE_ENV) {
-        // prod setup
-        case "production":
-          url = `http://${config.eventSource.server.production.endpoint}:${config.eventSource.server.production.port}`;
-          break;
-        default:
-          url = `http://${config.eventSource.server.development.endpoint}:${config.eventSource.server.development.port}`;
-          break;
-      }
-
-      const { io } = require("socket.io-client");
-
-      io.eventsManager = {
-        publish: (topic, message, onAck, onNack) =>
-          publishMessage(service, topic, message, onAck, onNack),
-      };
-
-      const client = io.connect(url, {
-        transports: ["websocket"],
-        query: { clientType: "service", client: config.name },
-      });
-
-      client.on("connect", () => {
-        logger.info(
-          `[${config.name}] Connected to Event Source provider at : ${url}`
-        );
-        service.set("eventSource", client);
-      });
-
-      client.on("disconnect", (reason) => {
-        logger.info(
-          `[${config.name}] Disconnected from Event Source provider for ${reason}`
-        );
-      });
-      // client
-      // catch eventSource events
-      if ((config.eventSource.events && config.eventSource.events.length) > 0) {
-        config.eventSource.events.forEach((event) => {
-          client.on(event.name, (data) => {
-            logger.info(
-              `[${config.name}] Getting Event [${event.name}] <- From event source`
-            );
-            if (handler[event.name]) handler[event.name](io, client, data);
-          });
-        });
-      }
-    }
-
-    // act as websocket server
-    if (config.events && config.events.length) {
-      const io = require("socket.io")(server, {
-        transports: ["websocket"],
-        cookie: true,
-        secure: true,
-
-        cors: {
-          origin: "*",
-          methods: ["GET", "POST"],
-        },
-      });
-
-      io.eventsManager = {
-        publish: (topic, message, onAck, onNack) =>
-          publishMessage(service, topic, message, onAck, onNack),
-      };
-
-      io.on("connection", (client) => {
-        logger.info(`New connection`);
-        const query = client.handshake.query;
-
-        const { clientType, client: name } = query;
-
-        if (clientType) {
-          if (
-            query &&
-            (clientType === "service" ||
-              clientType === "application" ||
-              clientType === "service-" ||
-              clientType === "application-")
-          ) {
-            // add client to connections
-
-            clients.set(name, client);
-            const connected = clients.get(name);
-
-            if (connected) {
+    if (config.messaging) {
+      // setup amqp
+      if (config.messaging.internal) {
+        for (const queue of config.messaging.internal.events) {
+          await channel.assertQueue(queue);
+          await channel.consume(
+            queue,
+            (message) => {
+              const content = message.content.toString();
               logger.info(
-                `Client ${name} not connected, update client reference (connection update)`
+                `[${config.name}] Getting Event [${queue}] <- From event source`
               );
-              logger.info(
-                ["Connected clients", clients.size, clients.keys()].join(" ")
-              );
-              connected.leave("event-room");
-            }
-
-            // update client
-            connected.join("event-room");
-
-            // PubSub to be used in the app
-            if ((config.events && config.events.length) > 0) {
-              const events = config.events.flatMap((event) => [
-                event,
-                { name: `ack:${event.name}`, description: `Ack ${event.name}` },
-                {
-                  name: `nack:${event.name}`,
-                  description: `Nack ${event.name}`,
-                },
-              ]);
-              logger.info(`${events.length} events to register`);
-              for (const event of events) {
-                logger.info(`Registering event ${event.name}`);
-                connected.on(event.name, (data) => {
-                  if (config.service.type === "event-source") {
-                    logger.info(
-                      `Getting Event [${event.name}] -> Broadcast to other services via event-room`
-                    );
-                    if (handler["event"]) handler["event"](io, client, data);
-                    connected.to("event-room").emit(event.name, data);
-                  } else if (handler[event.name])
-                    handler[event.name](io, client, data);
-                });
+              if (!handler[queue]) {
+                logger.error(
+                  `[${config.name}] Getting Event [${queue}] <- From event source`
+                );
               }
-            }
-
-            connected.on("disconnect", (reason) => {
-              // remove client to connections
-              if (name) {
-                connected.leave("event-room");
-                logger.info(["Disconnected", name, "reason", reason].join(" "));
-                clients.delete(name);
-                service.set("clients", clients.keys());
-                logger.info(["Connected clients", clients.size].join(" "));
-              }
-            });
-          }
+              handler[queue](content, channel);
+            },
+            { noAck: false }
+          );
         }
-      });
-      service.set("socket", io);
+      }
+      // setup websockets
+      if (config.messaging.external) {
+        const io = require("socket.io")(server, {
+          transports: ["websocket"],
+          cookie: true,
+          secure: true,
+
+          cors: {
+            origin: "*",
+            methods: ["GET", "POST"],
+          },
+        });
+
+        io.on("connection", (client) => {
+          logger.info(`New connection`);
+          const query = client.handshake.query;
+
+          const { clientType, client: name } = query;
+
+          if (clientType) {
+            if (
+              query &&
+              (clientType === "service" ||
+                clientType === "application" ||
+                clientType === "service-" ||
+                clientType === "application-")
+            ) {
+              // add client to connections
+
+              clients.set(name, client);
+              const connected = clients.get(name);
+
+              if (connected) {
+                logger.info(
+                  `Client ${name} not connected, update client reference (connection update)`
+                );
+                logger.info(
+                  ["Connected clients", clients.size, clients.keys()].join(" ")
+                );
+                connected.leave("event-room");
+              }
+
+              // update client
+              connected.join("event-room");
+
+              // PubSub to be used in the app
+              if (
+                (config.messaging.external.events &&
+                  config.messaging.external.events.length) > 0
+              ) {
+                logger.info(`${config.events.length} events to register`);
+                for (const event of config.messaging.external.events) {
+                  logger.info(`Registering event ${event.name}`);
+                  connected.on(event.name, (data) =>
+                    handler[event.name](io, client, data)
+                  );
+                }
+              }
+
+              connected.on("disconnect", (reason) => {
+                // remove client to connections
+                if (name) {
+                  connected.leave("event-room");
+                  logger.info(
+                    ["Disconnected", name, "reason", reason].join(" ")
+                  );
+                  clients.delete(name);
+                  service.set("clients", clients.keys());
+                  logger.info(["Connected clients", clients.size].join(" "));
+                }
+              });
+            }
+          }
+        });
+        service.set("socket", io);
+      }
     }
   } catch (e) {
     logger.error(e);
   }
 }
 
-function publishMessage(service, topic = "event", message = {}, onAck, onNack) {
+async function publishExternalMessage(service, topic = "event", message = {}) {
   const socket = service.get("eventSource");
   const config = service.get("config");
 
@@ -477,42 +451,41 @@ function publishMessage(service, topic = "event", message = {}, onAck, onNack) {
       source: config.name,
       createdAt: new Date().toISOString(),
     });
-    socket.on(`ack:${topic}`, (data) => {
-      console.log("ack", data);
-      onAck && onAck(data);
-    });
-    socket.on(`nack:${topic}`, (data) => {
-      console.log("nack", data);
-      onNack && onNack(data);
-    });
   } catch (e) {
     console.log(e);
   }
 }
+async function publishInternalMessage(service, topic = "event", message = {}) {
+  const channel = service.get("channel");
 
+  try {
+    await channel.assertQueue(topic);
+    channel.sendToQueue(topic, Buffer.from(message));
+  } catch (e) {
+    console.log(e);
+  }
+}
 function routes(service) {
   const config = service.get("config");
   const logger = service.get("logger");
-  if (config.routes) {
-    config.routes.forEach((route) => request(service, route));
-  } else logger.error("no appRoutes");
+  if (config.routes) config.routes.forEach((route) => request(service, route));
+  else logger.error("no appRoutes");
 }
 
 module.exports = {
   rateLimit,
   redisSession,
-  request,
-  requestLogger,
   tree,
   currentRoute,
   resources,
   port,
   setupActions,
   runActionsOnStartup,
-  publishMessage,
+  publishInternalMessage,
+  publishExternalMessage,
   listActions,
   startAction,
   stopAction,
-  socket,
+  messaging,
   routes,
 };

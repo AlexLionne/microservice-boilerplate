@@ -20,6 +20,7 @@
     "@logtail/node": "^0.5.2",
     "@logtail/winston": "^0.5.2",
     "@segment/analytics-node": "^1.0.0-beta.23",
+    "amqplib": "^0.10.5",
     "axios": "^0.26.1",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",

@@ -29,7 +29,7 @@ const {
   currentRoute,
   resources,
   port,
-  socket,
+  messaging,
   routes,
   redisSession,
 } = require("./functions");
@@ -129,7 +129,7 @@ function microservice(options) {
     redisSession(microservice);
     rateLimit(microservice);
     resources(microservice);
-    socket(microservice);
+    messaging(microservice);
     setupActions(microservice);
     runActionsOnStartup(microservice);
     routes(microservice);
