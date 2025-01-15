@@ -1,5 +1,3 @@
-const chalk = require("chalk");
-const log = console.log;
 const moment = require("moment");
 const CronJob = require("cron").CronJob;
 const path = require("path");
@@ -17,10 +15,6 @@ function port(config) {
   if (process.env.PORT) return process.env.PORT;
   let { port } = config;
   if (!port) {
-    log(
-      chalk.yellow("No port specified using ::3000"),
-      chalk.yellow("at " + moment().format("DD/MM/YYYY hh:mm:ss"))
-    );
     port = 8080;
   }
   return port;
@@ -48,18 +42,17 @@ function resources(service) {
 function runActionsOnStartup(service) {
   const actions = service.get("actions");
   const actionsState = service.get("actionsState");
+  const logger = service.get("logger");
 
   try {
     actionsState.forEach(({ name, id }) => {
       if (actionsState[id].runOnStartup) {
         if (actions.running)
-          log(
-            chalk.red(
-              `Action ${name} already running, stop it to start it again`
-            )
+          logger.error(
+            `Action ${name} already running, stop it to start it again`
           );
 
-        log(chalk.green(`Action ${name} started`));
+        logger.info(`Action ${name} started`);
 
         startAction(service, id);
       }
@@ -72,12 +65,13 @@ function runActionsOnStartup(service) {
 function setupActions(service) {
   const handler = service.get("handler");
   const config = service.get("config");
+  const logger = service.get("logger");
 
   let actions = [];
   let actionsState = [];
   if (config.actions) {
     config.actions.forEach((action, index) => {
-      if (!action.cron) console.warn("No periodicity provided !");
+      if (!action.cron) logger.warn("No periodicity provided !");
       if (!action.name) throw "No function provided !";
 
       actions.push({
@@ -154,13 +148,9 @@ function listActions(service) {
   return service.get("actionsState");
 }
 
-function currentRoute(microservice) {
+function currentRoute(microservice, logger) {
   microservice.use((req, res, next) => {
-    log(
-      chalk.yellow(req.method),
-      chalk.yellow(req.path),
-      "at " + moment().format("DD/MM/YYYY hh:mm:ss")
-    );
+    logger.info(req.method, req.path);
     if (req.path === "/") return res.sendStatus(403);
     return next();
   });
@@ -176,46 +166,43 @@ function requestLogger(microservice) {
 
 function tree(service) {
   const config = service.get("config");
+  const logger = service.get("logger");
 
   const { actions, routes, events } = config;
 
   if (actions) {
     if (!actions.length) {
-      log(chalk.red("No actions defined"));
+      logger.error("No actions defined");
       return;
     }
 
-    log(
-      chalk.blue.yellow("Available scheduled actions (" + actions.length + ")")
-    );
+    logger.info("Available scheduled actions (" + actions.length + ")");
 
     actions.forEach((action) => {
       if (!action) throw "No name specified for scheduled Function !";
 
-      log(chalk.blue("Action "), chalk.blue(action.name));
-      log(
-        action.description
-          ? chalk.green(action.description)
-          : chalk.grey("No description provided")
+      logger.info(
+        "Action ",
+        action.name,
+        logger.info,
+        action.description ? action.description : "No description provided"
       );
     });
   }
   if (routes) {
     if (!routes.length) {
-      log(chalk.red("No routes defined"));
+      logger.info("No routes defined");
       return;
     }
-    log(
-      chalk.blue.yellow("Available routes (" + Object.keys(routes).length + ")")
-    );
+    logger.info("Available routes (" + Object.keys(routes).length + ")");
 
     routes.forEach((route) =>
-      log(
-        chalk.blue(route.method),
-        chalk.blue(route.endpoint),
+      logger.info(
+        route.method,
+        route.endpoint,
         route.description
-          ? chalk.green("\n" + route.description)
-          : chalk.grey("\n" + "No description provided"),
+          ? "\n" + route.description
+          : "\n" + "No description provided",
         params(route.params) + "\n"
       )
     );
@@ -223,15 +210,15 @@ function tree(service) {
 
   if (events) {
     if (!events.length) {
-      log(chalk.red("No events defined"));
+      logger.info.error("No events defined");
       return;
     }
     events.forEach((event) =>
-      log(
-        chalk.cyan(event.name),
+      logger.info(
+        event.name,
         event.description
-          ? chalk.cyanBright("\n" + event.description)
-          : chalk.grey("\n" + "No description provided") + "\n"
+          ? "\n" + event.description
+          : "\n" + "No description provided" + "\n"
       )
     );
   }
@@ -241,31 +228,32 @@ function params(params) {
   if (!params) return "";
 
   let log = "";
+  if (params.required && params.required.length) log += "\n" + "required : ";
   if (params.required && params.required.length)
-    log += "\n" + chalk.red("required : ");
-  if (params.required && params.required.length)
-    params.required.forEach((param) => (log += chalk.red(param) + " "));
+    params.required.forEach((param) => (log += param + " "));
 
+  if (params.optional && params.optional.length) log += "\n" + "optional : ";
   if (params.optional && params.optional.length)
-    log += "\n" + chalk.yellow("optional : ");
-  if (params.optional && params.optional.length)
-    params.optional.forEach((param) => (log += chalk.yellow(param) + " "));
+    params.optional.forEach((param) => (log += param + " "));
 
   return log;
 }
 
 async function request(microservice, route) {
+  const logger = microservice.get("logger");
+
   try {
     const http = microservice.get("http");
 
     return await http(microservice, route);
   } catch (e) {
-    log(chalk.red("Request fatal error", e.toString()));
+    logger.error("Request fatal error", e.toString());
   }
 }
 
 function redisSession(service) {
   const config = service.get("config");
+  const logger = service.get("logger");
   if (!config.session) return;
 
   const app = service.get("app");
@@ -280,7 +268,7 @@ function redisSession(service) {
   });
   redisClient
     .connect()
-    .then(() => console.log("[SERVER] Redis connected"))
+    .then(() => logger.info("Redis connected"))
     .catch(console.error);
 
   const sess = {
@@ -317,6 +305,7 @@ function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
 }
 
 function socket(service) {
+  const logger = service.get("logger");
   try {
     const handler = service.get("handler");
     const server = service.get("server");
@@ -350,14 +339,14 @@ function socket(service) {
       });
 
       client.on("connect", () => {
-        console.log(
+        logger.info(
           `[${config.name}] Connected to Event Source provider at : ${url}`
         );
         service.set("eventSource", client);
       });
 
       client.on("disconnect", (reason) => {
-        console.log(
+        logger.info(
           `[${config.name}] Disconnected from Event Source provider for ${reason}`
         );
       });
@@ -366,7 +355,7 @@ function socket(service) {
       if ((config.eventSource.events && config.eventSource.events.length) > 0) {
         config.eventSource.events.forEach((event) => {
           client.on(event.name, (data) => {
-            console.log(
+            logger.info(
               `[${config.name}] Getting Event [${event.name}] <- From event source`
             );
             if (handler[event.name]) handler[event.name](io, client, data);
@@ -394,7 +383,7 @@ function socket(service) {
       };
 
       io.on("connection", (client) => {
-        console.log(`[SERVER] New connection`);
+        logger.info(`New connection`);
         const query = client.handshake.query;
 
         const { clientType, client: name } = query;
@@ -410,18 +399,14 @@ function socket(service) {
             // add client to connections
 
             clients.set(name, client);
-            service.set("clients", clients);
+            logger.info("clients", clients);
             const connected = clients.get(name);
 
             if (connected) {
-              console.log(
-                `[SERVER] Client ${name} not connected, update client reference (connection update)`
+              logger.info(
+                `Client ${name} not connected, update client reference (connection update)`
               );
-              console.log(
-                "[SERVER] Connected clients",
-                clients.size,
-                clients.keys()
-              );
+              logger.info("Connected clients", clients.size, clients.keys());
               connected.leave("event-room");
             }
 
@@ -446,11 +431,11 @@ function socket(service) {
               }, []);
 
               for (const event of config.events) {
-                console.log(`[SERVER] Registering event ${event.name}`);
+                logger.info(`Registering event ${event.name}`);
                 connected.on(event.name, (data) => {
                   if (config.service.type === "event-source") {
-                    console.log(
-                      `[SERVER] Getting Event [${event.name}] -> Broadcast to other services via event-room`
+                    logger.info(
+                      `Getting Event [${event.name}] -> Broadcast to other services via event-room`
                     );
                     if (handler["event"]) handler["event"](io, client, data);
                     connected.to("event-room").emit(event.name, data);
@@ -464,10 +449,10 @@ function socket(service) {
               // remove client to connections
               if (name) {
                 connected.leave("event-room");
-                console.log("[SERVER] Disconnected", name, "reason", reason);
+                logger.info("Disconnected", name, "reason", reason);
                 clients.delete(name);
                 service.set("clients", clients.keys());
-                console.log("[SERVER] Connected clients", clients.size);
+                logger.info("Connected clients", clients.size);
               }
             });
           }
@@ -476,7 +461,7 @@ function socket(service) {
       service.set("socket", io);
     }
   } catch (e) {
-    console.log(e);
+    logger.error(e);
   }
 }
 
@@ -505,9 +490,10 @@ function publishMessage(service, topic = "event", message = {}, onAck, onNack) {
 
 function routes(service) {
   const config = service.get("config");
+  const logger = service.get("logger");
   if (config.routes) {
     config.routes.forEach((route) => request(service, route));
-  } else log(chalk.red("no appRoutes"));
+  } else logger.error("no appRoutes");
 }
 
 module.exports = {
