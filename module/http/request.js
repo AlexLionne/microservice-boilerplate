@@ -75,14 +75,11 @@ module.exports = function http(service, route) {
 
   function eventSourcing(req, res, next) {
     req.messaging = {
-      internal: {
-        publish: (topic, message) =>
-          publishInternalMessage(service, topic, message),
-      },
-      external: {
-        publish: (topic, message) =>
-          publishExternalMessage(service, topic, message),
-      },
+      publishInternalMessage: (topic, message) =>
+        publishInternalMessage(service, topic, message),
+
+      publishExternalMessage: (topic, message) =>
+        publishExternalMessage(service, topic, message),
     };
 
     next();
