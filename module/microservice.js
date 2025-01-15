@@ -68,6 +68,7 @@ app.use((req, res, next) => {
   next();
 });
 const { http } = require("./http");
+
 /**
  * Microservice module
  *
@@ -79,8 +80,8 @@ function microservice(options) {
   let config = options || null;
 
   if (!config) {
-    logger.error("No configuration file for Microservice(config)"),
-      throw "No configuration file for microservice";
+    logger.error("No configuration file for Microservice(config)");
+    throw "No configuration file for microservice";
   }
 
   const handler = require(path.join(require.main.filename, config.functions));
