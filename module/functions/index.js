@@ -364,7 +364,7 @@ async function messaging(service) {
               }
               handler[queue](content, channel);
             },
-            { noAck: false }
+            { noAck: true }
           );
         }
       }
