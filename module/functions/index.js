@@ -351,7 +351,7 @@ async function messaging(service) {
         for (const queue of config.messaging.internal.events) {
           await channel.assertQueue(queue.name);
           await channel.consume(
-            queue,
+            queue.name,
             (message) => {
               const content = message.content.toString();
               logger.info(
