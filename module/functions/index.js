@@ -429,7 +429,7 @@ function socket(service) {
                   description: `Nack ${event.name}`,
                 },
               ]);
-              logger.info(`${events} events to register`);
+              logger.info(`${events.length} events to register`);
               for (const event of events) {
                 logger.info(`Registering event ${event.name}`);
                 connected.on(event.name, (data) => {
