@@ -349,17 +349,17 @@ async function messaging(service) {
       // setup amqp
       if (config.messaging.internal) {
         for (const queue of config.messaging.internal.events) {
-          await channel.assertQueue(queue);
+          await channel.assertQueue(queue.name);
           await channel.consume(
             queue,
             (message) => {
               const content = message.content.toString();
               logger.info(
-                `[${config.name}] Getting Event [${queue}] <- From event source`
+                `[${config.name}] Getting Event [${queue.name}] <- From event source`
               );
               if (!handler[queue]) {
                 logger.error(
-                  `[${config.name}] Getting Event [${queue}] <- From event source`
+                  `[${config.name}] Getting Event [${queue.name}] <- From event source`
                 );
               }
               handler[queue](content, channel);
