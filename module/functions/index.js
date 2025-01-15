@@ -421,7 +421,7 @@ function socket(service) {
 
             // PubSub to be used in the app
             if ((config.events && config.events.length) > 0) {
-              config.events = config.events.flatMap((event) => [
+              const events = config.events.flatMap((event) => [
                 event,
                 { name: `ack:${event.name}`, description: `Ack ${event.name}` },
                 {
@@ -429,8 +429,8 @@ function socket(service) {
                   description: `Nack ${event.name}`,
                 },
               ]);
-              logger.info(`${config.events.length} events to register`);
-              for (const event of config.events) {
+              logger.info(`${events} events to register`);
+              for (const event of events) {
                 logger.info(`Registering event ${event.name}`);
                 connected.on(event.name, (data) => {
                   if (config.service.type === "event-source") {
