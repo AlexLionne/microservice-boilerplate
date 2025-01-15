@@ -150,7 +150,7 @@ function listActions(service) {
 
 function currentRoute(microservice, logger) {
   microservice.use((req, res, next) => {
-    logger.info(req.method, req.path);
+    logger.info(`${req.method} ${req.path}`);
     if (req.path === "/") return res.sendStatus(403);
     return next();
   });
@@ -182,10 +182,12 @@ function tree(service) {
       if (!action) throw "No name specified for scheduled Function !";
 
       logger.info(
-        "Action ",
-        action.name,
-        logger.info,
-        action.description ? action.description : "No description provided"
+        [
+          "Action ",
+          action.name,
+          logger.info,
+          action.description ? action.description : "No description provided",
+        ].join(" ")
       );
     });
   }
@@ -198,12 +200,14 @@ function tree(service) {
 
     routes.forEach((route) =>
       logger.info(
-        route.method,
-        route.endpoint,
-        route.description
-          ? "\n" + route.description
-          : "\n" + "No description provided",
-        params(route.params) + "\n"
+        [
+          route.method,
+          route.endpoint,
+          route.description
+            ? "\n" + route.description
+            : "\n" + "No description provided",
+          params(route.params) + "\n",
+        ].join(" ")
       )
     );
   }
@@ -215,10 +219,12 @@ function tree(service) {
     }
     events.forEach((event) =>
       logger.info(
-        event.name,
-        event.description
-          ? "\n" + event.description
-          : "\n" + "No description provided" + "\n"
+        [
+          event.name,
+          event.description
+            ? "\n" + event.description
+            : "\n" + "No description provided" + "\n",
+        ].join(" ")
       )
     );
   }
@@ -247,7 +253,7 @@ async function request(microservice, route) {
 
     return await http(microservice, route);
   } catch (e) {
-    logger.error("Request fatal error", e.toString());
+    logger.error(e.toString());
   }
 }
 
@@ -399,14 +405,15 @@ function socket(service) {
             // add client to connections
 
             clients.set(name, client);
-            logger.info("clients", clients);
             const connected = clients.get(name);
 
             if (connected) {
               logger.info(
                 `Client ${name} not connected, update client reference (connection update)`
               );
-              logger.info("Connected clients", clients.size, clients.keys());
+              logger.info(
+                ["Connected clients", clients.size, clients.keys()].join(" ")
+              );
               connected.leave("event-room");
             }
 
@@ -443,10 +450,10 @@ function socket(service) {
               // remove client to connections
               if (name) {
                 connected.leave("event-room");
-                logger.info("Disconnected", name, "reason", reason);
+                logger.info(["Disconnected", name, "reason", reason].join(" "));
                 clients.delete(name);
                 service.set("clients", clients.keys());
-                logger.info("Connected clients", clients.size);
+                logger.info(["Connected clients", clients.size].join(" "));
               }
             });
           }
