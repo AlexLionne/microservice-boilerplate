@@ -2,18 +2,11 @@ const winston = require("winston");
 const { Logtail } = require("@logtail/node");
 const { LogtailTransport } = require("@logtail/winston");
 let logger = {};
-const { combine, timestamp, printf, colorize, align } = winston.format;
+const { combine, colorize } = winston.format;
 if (process.env.LOGTAIL_TOKEN) {
   const logtail = new Logtail(process.env.LOGTAIL_TOKEN);
   logger = winston.createLogger({
-    format: combine(
-      colorize({ all: true }),
-      timestamp({
-        format: "YYYY-MM-DD hh:mm:ss.SSS A",
-      }),
-      align(),
-      printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`)
-    ),
+    format: combine(colorize({ all: true })),
     transports: [new LogtailTransport(logtail)],
   });
 }
