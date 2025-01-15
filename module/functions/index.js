@@ -460,7 +460,7 @@ async function publishInternalMessage(service, topic = "event", message = {}) {
 
   try {
     await channel.assertQueue(topic);
-    channel.sendToQueue(topic, Buffer.from(message));
+    channel.sendToQueue(topic, Buffer.from(JSON.stringify(message)));
   } catch (e) {
     console.log(e);
   }
