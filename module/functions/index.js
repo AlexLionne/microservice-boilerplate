@@ -330,7 +330,17 @@ async function messaging(service) {
     const server = service.get("server");
     const config = service.get("config");
     const clients = service.get("clients");
-    const connection = await amqp.connect(process.env.RABBITMQ_URL);
+    const connection = await amqp.connect({
+      protocol: "amqp",
+      hostname: process.env.RABBITMQ_HOST || "localhost",
+      port: process.env.RABBITMQ_PORT || 5672,
+      username: process.env.RABBITMQ_USER || "guest",
+      password: process.env.RABBITMQ_PASSWORD || "<PASSWORD>",
+      vhost: process.env.RABBITMQ_VHOST || "/",
+      heartbeat: 10,
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
+    });
     logger.info("Amqp connected");
     const channel = await connection.createChannel();
     service.set("channel", channel);
