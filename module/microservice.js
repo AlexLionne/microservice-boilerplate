@@ -123,16 +123,15 @@ function microservice(options) {
   }
 
   // start server
-  function start() {
+  async function start() {
     const appPort = port(config);
-
+    await messaging(microservice);
     redisSession(microservice);
     rateLimit(microservice);
     resources(microservice);
     setupActions(microservice);
     runActionsOnStartup(microservice);
     routes(microservice);
-    messaging(microservice);
 
     if (process.env.NODE_ENV === "development") {
       server.listen(parseInt(appPort), "0.0.0.0", () =>
