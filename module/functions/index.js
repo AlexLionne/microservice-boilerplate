@@ -330,9 +330,7 @@ async function messaging(service) {
     const server = service.get("server");
     const config = service.get("config");
     const clients = service.get("clients");
-    const connection = await amqp.connect(
-      process.env.RABBITMQ_URL || "amqp://localhost"
-    );
+    const connection = await amqp.connect(process.env.RABBITMQ_URL);
     logger.info("Amqp connected");
     const channel = await connection.createChannel();
     service.set("channel", channel);
