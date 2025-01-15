@@ -73,7 +73,9 @@ module.exports = function http(service, route) {
     next();
   }
 
-  function eventSourcing(req, res, next) {
+  function messaging(req, res, next) {
+    const { channel } = service.get("channel");
+    req.channel = channel;
     req.messaging = {
       publishInternalMessage: (topic, message) =>
         publishInternalMessage(service, topic, message),
@@ -92,7 +94,7 @@ module.exports = function http(service, route) {
         endpoint,
         socketServer,
         actionManager,
-        eventSourcing,
+        messaging,
         actions,
         middleware
       );
@@ -101,7 +103,7 @@ module.exports = function http(service, route) {
         endpoint,
         socketServer,
         actionManager,
-        eventSourcing,
+        messaging,
         actions,
         middleware
       );
@@ -110,7 +112,7 @@ module.exports = function http(service, route) {
         endpoint,
         socketServer,
         actionManager,
-        eventSourcing,
+        messaging,
         actions,
         middleware
       );
@@ -119,7 +121,7 @@ module.exports = function http(service, route) {
         endpoint,
         socketServer,
         actionManager,
-        eventSourcing,
+        messaging,
         actions,
         middleware
       );

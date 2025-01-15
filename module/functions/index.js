@@ -451,7 +451,7 @@ async function messaging(service) {
 }
 
 async function publishExternalMessage(service, topic = "event", message = {}) {
-  const socket = service.get("eventSource");
+  const socket = service.get("socket");
   const config = service.get("config");
 
   if (!socket) return;
