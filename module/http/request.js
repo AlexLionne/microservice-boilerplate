@@ -97,8 +97,8 @@ module.exports = function http(service, route) {
   try {
     if (method.toLowerCase() === "get")
       microservice.get(
-        loggerMiddleware,
         endpoint,
+        loggerMiddleware,
         socketServer,
         actionManager,
         messaging,
@@ -107,8 +107,8 @@ module.exports = function http(service, route) {
       );
     if (method.toLowerCase() === "post")
       microservice.post(
-        loggerMiddleware,
         endpoint,
+        loggerMiddleware,
         socketServer,
         actionManager,
         messaging,
@@ -117,8 +117,8 @@ module.exports = function http(service, route) {
       );
     if (method.toLowerCase() === "put")
       microservice.put(
-        loggerMiddleware,
         endpoint,
+        loggerMiddleware,
         socketServer,
         actionManager,
         messaging,
@@ -127,8 +127,8 @@ module.exports = function http(service, route) {
       );
     if (method.toLowerCase() === "delete")
       microservice.delete(
-        loggerMiddleware,
         endpoint,
+        loggerMiddleware,
         socketServer,
         actionManager,
         messaging,

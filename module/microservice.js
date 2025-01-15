@@ -129,10 +129,10 @@ function microservice(options) {
     redisSession(microservice);
     rateLimit(microservice);
     resources(microservice);
-    messaging(microservice);
     setupActions(microservice);
     runActionsOnStartup(microservice);
     routes(microservice);
+    messaging(microservice);
 
     if (process.env.NODE_ENV === "development") {
       server.listen(parseInt(appPort), "0.0.0.0", () =>
