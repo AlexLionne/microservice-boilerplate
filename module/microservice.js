@@ -6,7 +6,7 @@ const { combine, colorize } = winston.format;
 if (process.env.LOGTAIL_TOKEN) {
   const logtail = new Logtail(process.env.LOGTAIL_TOKEN);
   logger = winston.createLogger({
-    format: combine(colorize({ all: true })),
+    format: combine(colorize({ message: true })),
     transports: [new LogtailTransport(logtail)],
   });
 }
