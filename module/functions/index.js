@@ -416,18 +416,16 @@ function socket(service) {
             // PubSub to be used in the app
             if ((config.events && config.events.length) > 0) {
               config.events = config.events.reduce((acc, event) => {
-                return [
-                  ...acc,
-                  event,
-                  {
-                    name: `ack:${event.name}`,
-                    description: `Acknowledgement for ${event.name}`,
-                  },
-                  {
-                    name: `nack:${event.name}`,
-                    description: `Nacknowledgement for ${event.name}`,
-                  },
-                ];
+                acc.push({ ...event });
+                acc.push({
+                  name: `nack:${event.name}`,
+                  description: `Nack ${event.name}`,
+                });
+                acc.push({
+                  name: `ack:${event.name}`,
+                  description: `Ack ${event.name}`,
+                });
+                return acc;
               }, []);
 
               for (const event of config.events) {
