@@ -357,12 +357,12 @@ async function messaging(service) {
               logger.info(
                 `[${config.name}] Getting Event [${queue.name}] <- From event source`
               );
-              if (!handler[queue]) {
+              if (!handler[queue.name]) {
                 logger.error(
                   `[${config.name}] Getting Event [${queue.name}] <- From event source`
                 );
               }
-              handler[queue](content, channel);
+              handler[queue.name](content, channel);
             },
             { noAck: true }
           );

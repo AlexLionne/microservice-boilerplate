@@ -48,6 +48,12 @@ module.exports = function http(service, route) {
     }
   }
 
+  function loggerMiddleware(req, res, next) {
+    const { logger } = service.get("logger");
+    req.logger = logger;
+    next();
+  }
+
   function actionManager(req, res, next) {
     req.actionManager = {
       start: (id) => startAction(service, id),
@@ -91,6 +97,7 @@ module.exports = function http(service, route) {
   try {
     if (method.toLowerCase() === "get")
       microservice.get(
+        loggerMiddleware,
         endpoint,
         socketServer,
         actionManager,
@@ -100,6 +107,7 @@ module.exports = function http(service, route) {
       );
     if (method.toLowerCase() === "post")
       microservice.post(
+        loggerMiddleware,
         endpoint,
         socketServer,
         actionManager,
@@ -109,6 +117,7 @@ module.exports = function http(service, route) {
       );
     if (method.toLowerCase() === "put")
       microservice.put(
+        loggerMiddleware,
         endpoint,
         socketServer,
         actionManager,
@@ -118,6 +127,7 @@ module.exports = function http(service, route) {
       );
     if (method.toLowerCase() === "delete")
       microservice.delete(
+        loggerMiddleware,
         endpoint,
         socketServer,
         actionManager,
