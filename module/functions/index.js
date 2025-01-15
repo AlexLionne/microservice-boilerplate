@@ -478,9 +478,11 @@ function publishMessage(service, topic = "event", message = {}, onAck, onNack) {
       createdAt: new Date().toISOString(),
     });
     socket.on(`ack:${topic}`, (data) => {
+      console.log("ack", data);
       onAck && onAck(data);
     });
     socket.on(`nack:${topic}`, (data) => {
+      console.log("nack", data);
       onNack && onNack(data);
     });
   } catch (e) {
