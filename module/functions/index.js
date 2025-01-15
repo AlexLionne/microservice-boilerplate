@@ -185,7 +185,6 @@ function tree(service) {
         [
           "Action ",
           action.name,
-          logger.info,
           action.description ? action.description : "No description provided",
         ].join(" ")
       );
