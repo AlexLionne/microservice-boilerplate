@@ -331,6 +331,7 @@ async function messaging(service) {
     const connection = await amqp.connect(
       process.env.RABBITMQ_URL || "amqp://localhost"
     );
+    logger.info("Amqp connected");
     const channel = await connection.createChannel();
     service.set("channel", channel);
 
