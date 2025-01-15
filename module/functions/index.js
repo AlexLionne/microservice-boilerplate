@@ -1,8 +1,6 @@
 const amqp = require("amqplib");
 const CronJob = require("cron").CronJob;
 const path = require("path");
-const fs = require("fs");
-const morgan = require("morgan");
 const rateLimiter = require("express-rate-limit");
 
 /**
