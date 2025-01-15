@@ -207,37 +207,41 @@ function tree(service) {
     );
   }
 
-  if (messaging.internal.events) {
-    if (!messaging.internal.events.length) {
-      logger.info.error("No internal events defined");
-      return;
+  if (messaging.internal) {
+    if (messaging.internal.events) {
+      if (!messaging.internal.events.length) {
+        logger.info.error("No internal events defined");
+        return;
+      }
+      messaging.internal.events.forEach((event) =>
+        logger.info(
+          [
+            event.name,
+            event.description
+              ? "\n" + event.description
+              : "\n" + "No description provided" + "\n",
+          ].join(" ")
+        )
+      );
     }
-    messaging.internal.events.forEach((event) =>
-      logger.info(
-        [
-          event.name,
-          event.description
-            ? "\n" + event.description
-            : "\n" + "No description provided" + "\n",
-        ].join(" ")
-      )
-    );
   }
-  if (messaging.external.events) {
-    if (!messaging.external.events.length) {
-      logger.info.error("No events external defined");
-      return;
+  if (messaging.external) {
+    if (messaging.external.events) {
+      if (!messaging.external.events.length) {
+        logger.info.error("No events external defined");
+        return;
+      }
+      messaging.internal.events.forEach((event) =>
+        logger.info(
+          [
+            event.name,
+            event.description
+              ? "\n" + event.description
+              : "\n" + "No description provided" + "\n",
+          ].join(" ")
+        )
+      );
     }
-    messaging.internal.events.forEach((event) =>
-      logger.info(
-        [
-          event.name,
-          event.description
-            ? "\n" + event.description
-            : "\n" + "No description provided" + "\n",
-        ].join(" ")
-      )
-    );
   }
 }
 
@@ -456,6 +460,7 @@ async function publishExternalMessage(service, topic = "event", message = {}) {
     console.log(e);
   }
 }
+
 async function publishInternalMessage(service, topic = "event", message = {}) {
   const channel = service.get("channel");
 
@@ -466,6 +471,7 @@ async function publishInternalMessage(service, topic = "event", message = {}) {
     console.log(e);
   }
 }
+
 function routes(service) {
   const config = service.get("config");
   const logger = service.get("logger");
