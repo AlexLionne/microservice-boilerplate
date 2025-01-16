@@ -366,14 +366,15 @@ async function messaging(service) {
                   `[${config.name}] Getting Event [${queue.name}] <- From event source`
                 );
               }
-              handler[queue.name](content, {
-                waitForMessage: (topic, cb) =>
-                  waitForMessage(service, topic, cb),
-                publishInternalMessage: (topic, message) =>
-                  publishInternalMessage(service, topic, message),
-                publishExternalMessage: (topic, message) =>
-                  publishExternalMessage(service, topic, message),
-              });
+              if (handler[queue.name])
+                handler[queue.name](content, {
+                  waitForMessage: (topic, cb) =>
+                    waitForMessage(service, topic, cb),
+                  publishInternalMessage: (topic, message) =>
+                    publishInternalMessage(service, topic, message),
+                  publishExternalMessage: (topic, message) =>
+                    publishExternalMessage(service, topic, message),
+                });
             },
             { noAck: true }
           );
