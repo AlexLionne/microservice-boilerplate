@@ -497,7 +497,7 @@ function waitForMessage(service, topic, cb) {
     channel.consume(
       topic,
       (message) => {
-        logger.error(`[SERVER] Getting message from topic ${topic}`);
+        logger.info(`[SERVER] Getting message from topic ${topic}`);
         cb(message.content.toString());
       },
       {
