@@ -50,7 +50,7 @@ module.exports = function http(service, route) {
   }
 
   function loggerMiddleware(req, res, next) {
-    const { logger } = service.get("logger");
+    const logger = service.get("logger");
     req.logger = logger;
     next();
   }
