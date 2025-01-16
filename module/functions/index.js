@@ -494,9 +494,16 @@ function waitForMessage(service, topic, cb) {
     return;
   }
   try {
-    channel.consume(topic, (message) => cb(message.content.toString()), {
-      noAck: true,
-    });
+    channel.consume(
+      topic,
+      (message) => {
+        logger.error(`[SERVER] Getting message from topic ${topic}`);
+        cb(message.content.toString());
+      },
+      {
+        noAck: true,
+      }
+    );
   } catch (e) {
     console.log(e);
   }
