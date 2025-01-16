@@ -369,14 +369,18 @@ async function messaging(service) {
                 );
               }
               if (handler[queue.name]) {
-                handler[queue.name](content, {
-                  waitForMessage: (topic, cb) =>
-                    waitForMessage(service, topic, cb),
-                  publishInternalMessage: (topic, message) =>
-                    publishInternalMessage(service, topic, message),
-                  publishExternalMessage: (topic, message) =>
-                    publishExternalMessage(service, topic, message),
-                });
+                handler[queue.name](
+                  content,
+                  {
+                    waitForMessage: (topic, cb) =>
+                      waitForMessage(service, topic, cb),
+                    publishInternalMessage: (topic, message) =>
+                      publishInternalMessage(service, topic, message),
+                    publishExternalMessage: (topic, message) =>
+                      publishExternalMessage(service, topic, message),
+                  },
+                  { logger }
+                );
               }
             },
             { noAck: true }
@@ -389,7 +393,6 @@ async function messaging(service) {
           transports: ["websocket"],
           cookie: true,
           secure: true,
-
           cors: {
             origin: "*",
             methods: ["GET", "POST"],
