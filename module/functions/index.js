@@ -78,6 +78,8 @@ function setupActions(service) {
           ? new CronJob(action.cron, async () => {
               await handler[action.name]({
                 action,
+                waitForMessage: (topic, cb) =>
+                  waitForMessage(service, topic, cb),
                 publishInternalMessage: (topic, message) =>
                   publishInternalMessage(service, topic, message),
                 publishExternalMessage: (topic, message) =>
@@ -88,6 +90,8 @@ function setupActions(service) {
               start: async () =>
                 await handler[action.name]({
                   action,
+                  waitForMessage: (topic, cb) =>
+                    waitForMessage(service, topic, cb),
                   publishInternalMessage: (topic, message) =>
                     publishInternalMessage(service, topic, message),
                   publishExternalMessage: (topic, message) =>
@@ -362,7 +366,14 @@ async function messaging(service) {
                   `[${config.name}] Getting Event [${queue.name}] <- From event source`
                 );
               }
-              handler[queue.name](content, channel);
+              handler[queue.name](content, {
+                waitForMessage: (topic, cb) =>
+                  waitForMessage(service, topic, cb),
+                publishInternalMessage: (topic, message) =>
+                  publishInternalMessage(service, topic, message),
+                publishExternalMessage: (topic, message) =>
+                  publishExternalMessage(service, topic, message),
+              });
             },
             { noAck: true }
           );
@@ -467,6 +478,23 @@ async function publishExternalMessage(service, topic = "event", message = {}) {
   }
 }
 
+function waitForMessage(service, topic, cb) {
+  const channel = service.get("channel");
+  const logger = service.get("logger");
+
+  if (!topic) {
+    logger.error("No topic provided");
+    return;
+  }
+  try {
+    channel.consume(topic, (message) => cb(message.content.toString()), {
+      noAck: true,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 async function publishInternalMessage(service, topic = "event", message = {}) {
   const channel = service.get("channel");
 
@@ -494,6 +522,7 @@ module.exports = {
   port,
   setupActions,
   runActionsOnStartup,
+  waitForMessage,
   publishInternalMessage,
   publishExternalMessage,
   listActions,

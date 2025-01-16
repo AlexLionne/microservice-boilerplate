@@ -4,6 +4,7 @@ const {
   listActions,
   publishInternalMessage,
   publishExternalMessage,
+  waitForMessage,
 } = require("../functions");
 
 module.exports = function http(service, route) {
@@ -80,12 +81,10 @@ module.exports = function http(service, route) {
   }
 
   function messaging(req, res, next) {
-    const { channel } = service.get("channel");
-    req.channel = channel;
     req.messaging = {
+      waitForMessage: (topic, cb) => waitForMessage(service, topic, cb),
       publishInternalMessage: (topic, message) =>
         publishInternalMessage(service, topic, message),
-
       publishExternalMessage: (topic, message) =>
         publishExternalMessage(service, topic, message),
     };
