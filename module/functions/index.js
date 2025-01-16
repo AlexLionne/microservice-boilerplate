@@ -366,7 +366,7 @@ async function messaging(service) {
                   `[${config.name}] Getting Event [${queue.name}] <- From event source`
                 );
               }
-              if (handler[queue.name])
+              if (handler[queue.name]) {
                 handler[queue.name](content, {
                   waitForMessage: (topic, cb) =>
                     waitForMessage(service, topic, cb),
@@ -375,6 +375,7 @@ async function messaging(service) {
                   publishExternalMessage: (topic, message) =>
                     publishExternalMessage(service, topic, message),
                 });
+              }
             },
             { noAck: true }
           );
