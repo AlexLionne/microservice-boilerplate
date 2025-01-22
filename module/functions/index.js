@@ -289,8 +289,10 @@ function redisSession(service) {
   const { createClient } = require("redis");
   if (process.env.NODE_ENV === "development") {
     redisClient = createClient({
-      host: process.env.REDIS_HOST || "redis",
-      port: process.env.REDIS_PORT || 6379,
+      socket: {
+        host: process.env.REDIS_HOST || "redis",
+        port: process.env.REDIS_PORT || 6379,
+      },
     });
   } else {
     redisClient = createClient({
