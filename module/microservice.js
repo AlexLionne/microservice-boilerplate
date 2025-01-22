@@ -9,6 +9,11 @@ if (process.env.LOGTAIL_TOKEN) {
     format: combine(colorize({ message: true })),
     transports: [new LogtailTransport(logtail)],
   });
+} else {
+  logger = winston.createLogger({
+    format: combine(colorize({ message: true })),
+    transports: [new winston.transports.Console()],
+  });
 }
 
 const formData = require("express-form-data");
