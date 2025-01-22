@@ -2,6 +2,7 @@ const amqp = require("amqplib");
 const CronJob = require("cron").CronJob;
 const path = require("path");
 const rateLimiter = require("express-rate-limit");
+const { createClient } = require("redis");
 
 /**
  * Setup the port if needed
@@ -279,18 +280,25 @@ async function request(microservice, route) {
 function redisSession(service) {
   const config = service.get("config");
   const logger = service.get("logger");
+  let redisClient;
   if (!config.session) return;
 
   const app = service.get("app");
   const session = require("express-session");
   const RedisStore = require("connect-redis")(session);
   const { createClient } = require("redis");
-  const redisClient = createClient({
-    host: process.env.REDIS_HOST || "localhost",
-    port: 6379,
-    password: process.env.REDIS_PASSWORD || "",
-    legacyMode: true, // NOTE: important
-  });
+  if (process.env.NODE_ENV === "development") {
+    redisClient = createClient({
+      url: process.env.REDIS_URL || "redis://redis:6379",
+    });
+  } else {
+    redisClient = createClient({
+      host: process.env.REDIS_HOST || "localhost",
+      port: 6379,
+      password: process.env.REDIS_PASSWORD || "",
+      legacyMode: true, // NOTE: important
+    });
+  }
   redisClient
     .connect()
     .then(() => logger.info("Redis connected"))
