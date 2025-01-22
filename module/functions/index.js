@@ -2,7 +2,6 @@ const amqp = require("amqplib");
 const CronJob = require("cron").CronJob;
 const path = require("path");
 const rateLimiter = require("express-rate-limit");
-const { createClient } = require("redis");
 
 /**
  * Setup the port if needed
@@ -292,6 +291,7 @@ function redisSession(service) {
       socket: {
         host: process.env.REDIS_HOST || "redis",
         port: process.env.REDIS_PORT || 6379,
+        legacyMode: true,
       },
     });
   } else {
@@ -299,7 +299,7 @@ function redisSession(service) {
       host: process.env.REDIS_HOST || "localhost",
       port: process.env.REDIS_PORT || 6379,
       password: process.env.REDIS_PASSWORD || "",
-      legacyMode: true, // NOTE: important
+      legacyMode: true,
     });
   }
   redisClient
