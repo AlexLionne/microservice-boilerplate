@@ -289,12 +289,13 @@ function redisSession(service) {
   const { createClient } = require("redis");
   if (process.env.NODE_ENV === "development") {
     redisClient = createClient({
-      url: process.env.REDIS_URL || "redis://redis:6379",
+      host: process.env.REDIS_HOST || "redis",
+      port: process.env.REDIS_PORT || 6379,
     });
   } else {
     redisClient = createClient({
       host: process.env.REDIS_HOST || "localhost",
-      port: 6379,
+      port: process.env.REDIS_PORT || 6379,
       password: process.env.REDIS_PASSWORD || "",
       legacyMode: true, // NOTE: important
     });
