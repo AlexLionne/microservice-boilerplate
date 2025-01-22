@@ -11,7 +11,7 @@ if (process.env.LOGTAIL_TOKEN) {
   });
 } else {
   logger = winston.createLogger({
-    format: combine(colorize({ message: true })),
+    level: "info",
     transports: [new winston.transports.Console()],
   });
 }
