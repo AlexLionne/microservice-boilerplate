@@ -500,6 +500,7 @@ function waitForMessage(service, topic, cb) {
   const channel = service.get("channel");
   const logger = service.get("logger");
 
+  channel.assertQueue(topic);
   if (!topic) {
     logger.error("No topic provided");
     return;
