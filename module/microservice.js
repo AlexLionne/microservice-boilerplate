@@ -1,9 +1,20 @@
 const winston = require("winston");
+const cors = require("cors");
 const { Logtail } = require("@logtail/node");
 const { LogtailTransport } = require("@logtail/winston");
 const { createLogger, transports, format } = require("winston");
 const { combine, colorize, timestamp, printf } = winston.format;
-
+const whitelist = ["http://localhost:3000"];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
 let logger = {};
 
 logger = createLogger({
@@ -55,7 +66,7 @@ const {
 } = require("./functions");
 
 currentRoute(app, logger);
-
+app.use(cors(corsOptions));
 app.use(body.urlencoded({ limit: "5mb", extended: true }));
 app.use(body.json({ limit: "5mb" }));
 app.use(formData.parse({ autoClean: true }));
@@ -67,19 +78,6 @@ app.use(compression());
 /// todo handle session
 if (process.env.NODE_ENV === "development") app.disable("etag");
 
-app.use((req, res, next) => {
-  res.header(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With, Content-Type, Accept, Authorization, Origin"
-  );
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-  );
-  res.header("Access-Control-Allow-Credentials", true);
-  next();
-});
 const { http } = require("./http");
 
 /**
