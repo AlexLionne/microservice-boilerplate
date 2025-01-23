@@ -1,19 +1,46 @@
 const winston = require("winston");
 const { Logtail } = require("@logtail/node");
 const { LogtailTransport } = require("@logtail/winston");
+const { createLogger, transports, format } = require("winston");
+const { combine, colorize, timestamp, prettyPrint } = winston.format;
+
 let logger = {};
-const { combine, colorize } = winston.format;
-if (process.env.LOGTAIL_TOKEN) {
-  const logtail = new Logtail(process.env.LOGTAIL_TOKEN);
-  logger = winston.createLogger({
-    format: combine(colorize({ message: true })),
-    transports: [new LogtailTransport(logtail)],
-  });
+
+logger = createLogger({
+  level: "info",
+  format: format.json(),
+});
+
+if (process.env.NODE_ENV !== "production") {
+  logger.add(
+    new transports.Console({
+      format: combine(
+        colorize({ message: true }),
+        format.simple(),
+        timestamp(),
+        prettyPrint()
+      ),
+    })
+  );
 } else {
-  logger = winston.createLogger({
-    level: "info",
-    transports: [new winston.transports.Console()],
-  });
+  if (process.env.LOGTAIL_TOKEN) {
+    const logtail = new Logtail(process.env.LOGTAIL_TOKEN);
+    logger = winston.createLogger({
+      format: combine(colorize({ message: true })),
+      transports: [new LogtailTransport(logtail)],
+    });
+  } else {
+    logger.add(
+      new transports.Console({
+        format: combine(
+          colorize({ message: true }),
+          format.simple(),
+          timestamp(),
+          prettyPrint()
+        ),
+      })
+    );
+  }
 }
 
 const formData = require("express-form-data");
