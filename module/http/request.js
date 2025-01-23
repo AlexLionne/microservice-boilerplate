@@ -65,17 +65,6 @@ module.exports = function http(service, route) {
   }
 
   function socketServer(req, res, next) {
-    res.header(
-      "Access-Control-Allow-Headers",
-      "X-Requested-With, Content-Type, Accept, Authorization, Origin"
-    );
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-    );
-    res.header("Access-Control-Allow-Credentials", true);
-
     req.socketServer = service.get("socket");
     next();
   }
