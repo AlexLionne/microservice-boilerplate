@@ -601,7 +601,7 @@ async function publishExternalMessage(
   topic = "socket/event:event",
   message = {}
 ) {
-  const [serviceType, target] = service.get(topic.split("/")[0]);
+  const [serviceType, target] = topic.split("/");
   try {
     if (!serviceType) return;
     if (serviceType === "mqtt")
