@@ -463,6 +463,7 @@ async function messaging(service) {
               );
             }
           }
+          service.set("mqtt", client);
         }
 
         if (config.messaging.external.socket) {
@@ -598,7 +599,7 @@ async function publishSocketMessage(service, topic = "event", message = {}) {
 
 async function publishExternalMessage(
   service,
-  topic = "socket@:event:event",
+  topic = "socket://event:event",
   message = {}
 ) {
   const [serviceType, target] = topic.split("://");
