@@ -481,18 +481,36 @@ async function messaging(service) {
   }
 }
 
-async function publishExternalMessage(service, topic = "event", message = {}) {
+async function publishExternalMessage(
+  service,
+  topic = "event:event",
+  message = {}
+) {
   const socket = service.get("socket");
   const config = service.get("config");
 
   if (!socket) return;
 
+  if (!topic) throw new Error("No topic provided");
+
+  const payload = {
+    ...message,
+    source: config.name,
+    sentAt: new Date().toISOString(),
+  };
+
+  if (topic.includes(":")) {
+    const [type, room, event] = topic.split(":");
+    if (type === "room") {
+      socket.to(room).emit(event, payload);
+    } else {
+      socket.emit(event, payload);
+    }
+  } else {
+    socket.emit(topic, payload);
+  }
+
   try {
-    socket.emit(topic, {
-      ...message,
-      source: config.name,
-      createdAt: new Date().toISOString(),
-    });
   } catch (e) {
     console.log(e);
   }
