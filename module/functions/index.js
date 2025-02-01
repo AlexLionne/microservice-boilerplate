@@ -447,7 +447,9 @@ async function messaging(service) {
                 (config.messaging.external.events &&
                   config.messaging.external.events.length) > 0
               ) {
-                logger.info(`${config.events.length} events to register`);
+                logger.info(
+                  `${config.messaging.external.events.length} events to register`
+                );
                 for (const event of config.messaging.external.events) {
                   logger.info(`Registering event ${event.name}`);
                   connected.on(event.name, (data) =>
