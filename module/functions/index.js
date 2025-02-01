@@ -435,7 +435,7 @@ async function messaging(service) {
         if (config.messaging.external.mqtt) {
           // setup Mqtt
           const client = require("mqtt").connect(process.env.MQTT_URL, {
-            hostname: "mqtt",
+            hostname: process.env.MQTT_HOST || "localhost",
             clean: true,
             connectTimeout: 4000,
             reconnectPeriod: 1000,

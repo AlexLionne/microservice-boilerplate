@@ -7,7 +7,7 @@ const { combine, colorize, timestamp, printf } = winston.format;
 const whitelist = ["http://localhost:3000", "http://192.168.1.12"];
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error(`${origin} Blocked`));
