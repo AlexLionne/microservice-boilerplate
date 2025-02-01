@@ -4,7 +4,7 @@ const { Logtail } = require("@logtail/node");
 const { LogtailTransport } = require("@logtail/winston");
 const { createLogger, transports, format } = require("winston");
 const { combine, colorize, timestamp, printf } = winston.format;
-const whitelist = ["http://localhost:3000"];
+const whitelist = ["http://localhost:3000", "http://192.168.1.12"];
 const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
