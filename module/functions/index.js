@@ -503,7 +503,7 @@ async function publishExternalMessage(
     if (topic.includes(":")) {
       const [type, room, event] = topic.split(":");
       if (type === "room") {
-        socket.to(room).emit(event, payload);
+        socket.sockets.in(room).emit(event, payload);
       } else {
         socket.emit(event, payload);
       }
