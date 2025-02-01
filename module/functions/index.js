@@ -486,31 +486,30 @@ async function publishExternalMessage(
   topic = "event:event",
   message = {}
 ) {
-  const socket = service.get("socket");
-  const config = service.get("config");
-
-  if (!socket) return;
-
-  if (!topic) throw new Error("No topic provided");
-
-  const payload = {
-    ...message,
-    source: config.name,
-    sentAt: new Date().toISOString(),
-  };
-
-  if (topic.includes(":")) {
-    const [type, room, event] = topic.split(":");
-    if (type === "room") {
-      socket.to(room).emit(event, payload);
-    } else {
-      socket.emit(event, payload);
-    }
-  } else {
-    socket.emit(topic, payload);
-  }
-
   try {
+    const socket = service.get("socket");
+    const config = service.get("config");
+
+    if (!socket) return;
+
+    if (!topic) throw new Error("No topic provided");
+
+    const payload = {
+      ...message,
+      source: config.name,
+      sentAt: new Date().toISOString(),
+    };
+
+    if (topic.includes(":")) {
+      const [type, room, event] = topic.split(":");
+      if (type === "room") {
+        socket.to(room).emit(event, payload);
+      } else {
+        socket.emit(event, payload);
+      }
+    } else {
+      socket.emit(topic, payload);
+    }
   } catch (e) {
     console.log(e);
   }
