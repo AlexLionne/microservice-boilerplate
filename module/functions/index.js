@@ -229,21 +229,41 @@ function tree(service) {
       }
     }
     if (messaging.external) {
-      if (messaging.external.events) {
-        if (!messaging.external.events.length) {
-          logger.info.error("No events external defined");
-          return;
+      if (messaging.external.mqtt) {
+        if (messaging.external.mqtt.events) {
+          if (!messaging.external.mqtt.events.length) {
+            logger.info.error("No mqtt events defined");
+            return;
+          }
+          messaging.external.mqtt.events.forEach((event) =>
+            logger.info(
+              [
+                event.name,
+                event.description
+                  ? "\n" + event.description
+                  : "\n" + "No description provided" + "\n",
+              ].join(" ")
+            )
+          );
         }
-        messaging.internal.events.forEach((event) =>
-          logger.info(
-            [
-              event.name,
-              event.description
-                ? "\n" + event.description
-                : "\n" + "No description provided" + "\n",
-            ].join(" ")
-          )
-        );
+      }
+      if (messaging.external.socket) {
+        if (messaging.external.socket.events) {
+          if (!messaging.external.socket.events.length) {
+            logger.info.error("No socket events defined");
+            return;
+          }
+          messaging.external.socket.events.forEach((event) =>
+            logger.info(
+              [
+                event.name,
+                event.description
+                  ? "\n" + event.description
+                  : "\n" + "No description provided" + "\n",
+              ].join(" ")
+            )
+          );
+        }
       }
     }
   }
@@ -276,6 +296,17 @@ async function request(microservice, route) {
   }
 }
 
+async function mqttClient(service) {
+  const config = service.get("config");
+  const logger = service.get("logger");
+
+  if (!config.messaging.external) return;
+
+  return new Promise((resolve) => {
+    if (!config.messaging.external) return resolve();
+  });
+}
+
 function redisSession(service) {
   const config = service.get("config");
   const logger = service.get("logger");
@@ -304,7 +335,7 @@ function redisSession(service) {
   }
   redisClient
     .connect()
-    .then(() => logger.info("Redis connected"))
+    .then(() => logger.info("[SERVER] Redis connected"))
     .catch(console.error);
 
   const sess = {
@@ -381,8 +412,8 @@ async function messaging(service) {
               }
               if (handler[queue.name]) {
                 handler[queue.name](
-                  content,
                   {
+                    logger,
                     waitForMessage: (topic, cb) =>
                       waitForMessage(service, topic, cb),
                     publishInternalMessage: (topic, message) =>
@@ -390,7 +421,7 @@ async function messaging(service) {
                     publishExternalMessage: (topic, message) =>
                       publishExternalMessage(service, topic, message),
                   },
-                  { logger }
+                  content
                 );
               }
             },
@@ -398,82 +429,131 @@ async function messaging(service) {
           );
         }
       }
+
       // setup websockets
       if (config.messaging.external) {
-        const io = require("socket.io")(server, {
-          transports: ["websocket"],
-          cookie: true,
-          secure: true,
-          cors: {
-            origin: "*",
-            methods: ["GET", "POST"],
-          },
-        });
-
-        io.on("connection", (client) => {
-          logger.info(`New connection`);
-          const query = client.handshake.query;
-
-          const { clientType, client: name } = query;
-
-          if (clientType) {
-            if (
-              query &&
-              (clientType === "service" ||
-                clientType === "application" ||
-                clientType === "service-" ||
-                clientType === "application-")
-            ) {
-              // add client to connections
-
-              clients.set(name, client);
-              const connected = clients.get(name);
-
-              if (connected) {
-                logger.info(
-                  `Client ${name} not connected, update client reference (connection update)`
-                );
-                logger.info(
-                  ["Connected clients", clients.size, clients.keys()].join(" ")
-                );
-                connected.leave("event-room");
-              }
-
-              // update client
-              connected.join("event-room");
-
-              // PubSub to be used in the app
-              if (
-                (config.messaging.external.events &&
-                  config.messaging.external.events.length) > 0
-              ) {
-                logger.info(
-                  `${config.messaging.external.events.length} events to register`
-                );
-                for (const event of config.messaging.external.events) {
-                  logger.info(`Registering event ${event.name}`);
-                  connected.on(event.name, (data) =>
-                    handler[event.name](io, client, data)
-                  );
-                }
-              }
-
-              connected.on("disconnect", (reason) => {
-                // remove client to connections
-                if (name) {
-                  connected.leave("event-room");
-                  logger.info(
-                    ["Disconnected", name, "reason", reason].join(" ")
-                  );
-                  clients.delete(name);
-                  service.set("clients", clients.keys());
-                  logger.info(["Connected clients", clients.size].join(" "));
-                }
-              });
+        if (config.messaging.external.mqtt) {
+          // setup Mqtt
+          const client = require("mqtt").connect(process.env.MQTT_URL, {
+            hostname: "mqtt",
+            clean: true,
+            connectTimeout: 4000,
+            reconnectPeriod: 1000,
+          });
+          client.on("connect", () => {
+            logger.info("[SERVER] Mqtt connected");
+            service.set("mqtt", client);
+          });
+          // PubSub to be used in the app
+          if (
+            (config.messaging.external.mqtt.events &&
+              config.messaging.external.mqtt.events.length) > 0
+          ) {
+            logger.info(
+              `${config.messaging.external.mqtt.events.length} mqtt events to register`
+            );
+            for (const event of config.messaging.external.mqtt.events) {
+              logger.info(`Registering event ${event.name}`);
+              client.on(event.name, (topic, message) =>
+                handler[event.name](
+                  {
+                    server: client,
+                    publishExternalMessage: (topic, message) =>
+                      publishExternalMessage(service, topic, message),
+                  },
+                  topic,
+                  message
+                )
+              );
             }
           }
-        });
-        service.set("socket", io);
+        }
+
+        if (config.messaging.external.socket) {
+          const io = require("socket.io")(server, {
+            transports: ["websocket"],
+            cookie: true,
+            secure: true,
+            cors: {
+              origin: "*",
+              methods: ["GET", "POST"],
+            },
+          });
+
+          io.on("connection", (client) => {
+            logger.info(`[SERVER] New connection`);
+            const query = client.handshake.query;
+
+            const { clientType, client: name } = query;
+
+            if (clientType) {
+              if (
+                query &&
+                (clientType === "service" ||
+                  clientType === "application" ||
+                  clientType === "service-" ||
+                  clientType === "application-")
+              ) {
+                // add client to connections
+
+                clients.set(name, client);
+                const connected = clients.get(name);
+
+                if (connected) {
+                  logger.info(
+                    `Client ${name} not connected, update client reference (connection update)`
+                  );
+                  logger.info(
+                    ["Connected clients", clients.size, clients.keys()].join(
+                      " "
+                    )
+                  );
+                  connected.leave("event-room");
+                }
+
+                // update client
+                connected.join("event-room");
+
+                if (
+                  (config.messaging.external.socket.events &&
+                    config.messaging.external.socket.events.length) > 0
+                ) {
+                  logger.info(
+                    `${config.messaging.external.socket.events.length} socket events to register`
+                  );
+                  for (const event of config.messaging.external.socket.events) {
+                    logger.info(`Registering event ${event.name}`);
+                    connected.on(event.name, (data) =>
+                      handler[event.name](
+                        {
+                          server: io,
+                          socket: client,
+                          publishExternalMessage: (topic, message) =>
+                            publishExternalMessage(service, topic, message),
+                        },
+                        data
+                      )
+                    );
+                  }
+                }
+
+                connected.on("disconnect", (reason) => {
+                  // remove client to connections
+                  if (name) {
+                    connected.leave("event-room");
+                    logger.info(
+                      ["Disconnected", name, "reason", reason].join(" ")
+                    );
+                    clients.delete(name);
+                    service.set("clients", clients.keys());
+                    logger.info(["Connected clients", clients.size].join(" "));
+                  }
+                });
+              }
+            }
+          });
+          service.set("socket", io);
+        }
       }
     }
   } catch (e) {
@@ -481,35 +561,57 @@ async function messaging(service) {
   }
 }
 
+async function publishMQTTtMessage(service, topic = "event", message = {}) {
+  const mqtt = service.get("mqtt");
+  const config = service.get("config");
+  if (!mqtt) return;
+
+  const payload = {
+    ...message,
+    source: config.name,
+    sentAt: new Date().toISOString(),
+  };
+  mqtt.publish(topic, JSON.stringify(payload));
+}
+
+async function publishSocketMessage(service, topic = "event", message = {}) {
+  const socket = service.get("socket");
+  const config = service.get("config");
+
+  if (!socket) return;
+
+  if (!topic) throw new Error("No topic provided");
+
+  const payload = {
+    ...message,
+    source: config.name,
+    sentAt: new Date().toISOString(),
+  };
+
+  if (topic.includes(":")) {
+    const [type, room, event] = topic.split(":");
+    if (type === "room") {
+      socket.sockets.in(room).emit(event, payload);
+    } else {
+      socket.emit(event, payload);
+    }
+  } else {
+    socket.emit(topic, payload);
+  }
+}
+
 async function publishExternalMessage(
   service,
-  topic = "event:event",
+  topic = "socket/event:event",
   message = {}
 ) {
+  const serviceType = service.get(topic.split("/")[0]);
   try {
-    const socket = service.get("socket");
-    const config = service.get("config");
-
-    if (!socket) return;
-
-    if (!topic) throw new Error("No topic provided");
-
-    const payload = {
-      ...message,
-      source: config.name,
-      sentAt: new Date().toISOString(),
-    };
-
-    if (topic.includes(":")) {
-      const [type, room, event] = topic.split(":");
-      if (type === "room") {
-        socket.sockets.in(room).emit(event, payload);
-      } else {
-        socket.emit(event, payload);
-      }
-    } else {
-      socket.emit(topic, payload);
-    }
+    if (!serviceType) return;
+    if (serviceType === "mqtt")
+      return publishMQTTtMessage(service, topic, message);
+    if (serviceType === "socket")
+      return publishSocketMessage(service, topic, message);
   } catch (e) {
     console.log(e);
   }
