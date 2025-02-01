@@ -440,10 +440,6 @@ async function messaging(service) {
             connectTimeout: 4000,
             reconnectPeriod: 1000,
           });
-          client.on("connect", () => {
-            logger.info("[SERVER] Mqtt connected");
-            service.set("mqtt", client);
-          });
           // PubSub to be used in the app
           if (
             (config.messaging.external.mqtt.events &&
@@ -605,13 +601,13 @@ async function publishExternalMessage(
   topic = "socket/event:event",
   message = {}
 ) {
-  const serviceType = service.get(topic.split("/")[0]);
+  const [serviceType, target] = service.get(topic.split("/")[0]);
   try {
     if (!serviceType) return;
     if (serviceType === "mqtt")
-      return publishMQTTtMessage(service, topic, message);
+      return publishMQTTtMessage(service, target, message);
     if (serviceType === "socket")
-      return publishSocketMessage(service, topic, message);
+      return publishSocketMessage(service, target, message);
   } catch (e) {
     console.log(e);
   }
