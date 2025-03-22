@@ -296,9 +296,3 @@ var http = require("./http").http;
     };
 }
 module.exports = microservice;
-start: start,
-        stop: stop,
-        get: get
-    };
-}
-module.exports = microservice;

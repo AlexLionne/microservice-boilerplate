@@ -1,31 +1,10 @@
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-    try {
-        var info = gen[key](arg);
-        var value = info.value;
-    } catch (error) {
-        reject(error);
-        return;
-    }
-    if (info.done) {
-        resolve(value);
+"use strict";
+function _instanceof(left, right) {
+    if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
+        return !!right[Symbol.hasInstance](left);
     } else {
-        Promise.resolve(value).then(_next, _throw);
+        return left instanceof right;
     }
-}
-function _async_to_generator(fn) {
-    return function() {
-        var self = this, args = arguments;
-        return new Promise(function(resolve, reject) {
-            var gen = fn.apply(self, args);
-            function _next(value) {
-                asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-            }
-            function _throw(err) {
-                asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-            }
-            _next(undefined);
-        });
-    };
 }
 function _ts_generator(thisArg, body) {
     var f, y, t, g, _ = {
@@ -122,6 +101,33 @@ function _ts_generator(thisArg, body) {
         };
     }
 }
+var __awaiter = this && this.__awaiter || function(thisArg, _arguments, P, generator) {
+    function adopt(value) {
+        return _instanceof(value, P) ? value : new P(function(resolve) {
+            resolve(value);
+        });
+    }
+    return new (P || (P = Promise))(function(resolve, reject) {
+        function fulfilled(value) {
+            try {
+                step(generator.next(value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function rejected(value) {
+            try {
+                step(generator["throw"](value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function step(result) {
+            result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var _require = require("../functions"), startAction = _require.startAction, stopAction = _require.stopAction, listActions = _require.listActions, publishInternalMessage = _require.publishInternalMessage, publishExternalMessage = _require.publishExternalMessage, waitForMessage = _require.waitForMessage;
 module.exports = function http(service, route) {
     var microservice = service.get("app");
@@ -166,10 +172,7 @@ module.exports = function http(service, route) {
         }
     }
     function middleware(req, res, next) {
-        return _middleware.apply(this, arguments);
-    }
-    function _middleware() {
-        _middleware = _async_to_generator(function(req, res, next) {
+        return __awaiter(this, void 0, void 0, function() {
             var e;
             return _ts_generator(this, function(_state) {
                 switch(_state.label){
@@ -208,7 +211,6 @@ module.exports = function http(service, route) {
                 }
             });
         });
-        return _middleware.apply(this, arguments);
     }
     function loggerMiddleware(req, res, next) {
         var logger = service.get("logger");
@@ -233,15 +235,6 @@ module.exports = function http(service, route) {
         req.socketServer = service.get("socket");
         next();
     }
-    /**
-   * Global variables tat can be set in the app
-   * @param req
-   * @param res
-   * @param next
-   */ function variables(req, res, next) {
-        req.variables = service.get("variables");
-        next();
-    }
     function messaging(req, res, next) {
         req.messaging = {
             waitForMessage: function(topic, cb) {
@@ -258,10 +251,10 @@ module.exports = function http(service, route) {
     }
     // send event
     try {
-        if (method.toLowerCase() === "get") microservice.get(endpoint, variables, loggerMiddleware, socketServer, actionManager, messaging, actions, middleware);
-        if (method.toLowerCase() === "post") microservice.post(endpoint, variables, loggerMiddleware, socketServer, actionManager, messaging, actions, middleware);
-        if (method.toLowerCase() === "put") microservice.put(endpoint, variables, loggerMiddleware, socketServer, actionManager, messaging, actions, middleware);
-        if (method.toLowerCase() === "delete") microservice.delete(endpoint, variables, loggerMiddleware, socketServer, actionManager, messaging, actions, middleware);
+        if (method.toLowerCase() === "get") microservice.get(endpoint, loggerMiddleware, socketServer, actionManager, messaging, actions, middleware);
+        if (method.toLowerCase() === "post") microservice.post(endpoint, loggerMiddleware, socketServer, actionManager, messaging, actions, middleware);
+        if (method.toLowerCase() === "put") microservice.put(endpoint, loggerMiddleware, socketServer, actionManager, messaging, actions, middleware);
+        if (method.toLowerCase() === "delete") microservice.delete(endpoint, loggerMiddleware, socketServer, actionManager, messaging, actions, middleware);
     } catch (e) {
         logger.error(e);
         return e.message;
