@@ -107,6 +107,8 @@ function microservice(options) {
   /**
    * State Manager
    */
+  // app variables
+  microservice.set("variables", new Map());
   // logtail loger
   microservice.set("logger", logger);
   // express app instance

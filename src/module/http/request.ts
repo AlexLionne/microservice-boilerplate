@@ -69,6 +69,17 @@ module.exports = function http(service, route) {
     next();
   }
 
+  /**
+   * Global variables tat can be set in the app
+   * @param req
+   * @param res
+   * @param next
+   */
+  function variables(req, res, next) {
+    req.variables = service.get("variables");
+    next();
+  }
+
   function messaging(req, res, next) {
     req.messaging = {
       waitForMessage: (topic, cb) => waitForMessage(service, topic, cb),
@@ -86,6 +97,7 @@ module.exports = function http(service, route) {
     if (method.toLowerCase() === "get")
       microservice.get(
         endpoint,
+        variables,
         loggerMiddleware,
         socketServer,
         actionManager,
@@ -96,6 +108,7 @@ module.exports = function http(service, route) {
     if (method.toLowerCase() === "post")
       microservice.post(
         endpoint,
+        variables,
         loggerMiddleware,
         socketServer,
         actionManager,
@@ -106,6 +119,7 @@ module.exports = function http(service, route) {
     if (method.toLowerCase() === "put")
       microservice.put(
         endpoint,
+        variables,
         loggerMiddleware,
         socketServer,
         actionManager,
@@ -116,6 +130,7 @@ module.exports = function http(service, route) {
     if (method.toLowerCase() === "delete")
       microservice.delete(
         endpoint,
+        variables,
         loggerMiddleware,
         socketServer,
         actionManager,
@@ -123,7 +138,7 @@ module.exports = function http(service, route) {
         actions,
         middleware
       );
-  } catch (e) {
+  } catch (e: Error | any) {
     logger.error(e);
     return e.message;
   }

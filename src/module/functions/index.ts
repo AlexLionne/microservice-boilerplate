@@ -64,6 +64,7 @@ function setupActions(service) {
   const handler = service.get("handler");
   const config = service.get("config");
   const logger = service.get("logger");
+  const variables = service.get("variables");
 
   let actions = [];
   let actionsState = [];
@@ -78,6 +79,7 @@ function setupActions(service) {
           ? new CronJob(action.cron, async () => {
               await handler[action.name]({
                 action,
+                variables,
                 waitForMessage: (topic, cb) =>
                   waitForMessage(service, topic, cb),
                 publishInternalMessage: (topic, message) =>
@@ -90,6 +92,7 @@ function setupActions(service) {
               start: async () =>
                 await handler[action.name]({
                   action,
+                  variables,
                   waitForMessage: (topic, cb) =>
                     waitForMessage(service, topic, cb),
                   publishInternalMessage: (topic, message) =>
@@ -296,17 +299,6 @@ async function request(microservice, route) {
   }
 }
 
-async function mqttClient(service) {
-  const config = service.get("config");
-  const logger = service.get("logger");
-
-  if (!config.messaging.external) return;
-
-  return new Promise((resolve) => {
-    if (!config.messaging.external) return resolve();
-  });
-}
-
 function redisSession(service) {
   const config = service.get("config");
   const logger = service.get("logger");
@@ -348,6 +340,7 @@ function redisSession(service) {
       ttl: 10, // in seconds
     }),
     cookie: {
+      secure: false,
       maxAge: 10000,
     },
   };
@@ -378,6 +371,7 @@ async function messaging(service) {
     const server = service.get("server");
     const config = service.get("config");
     const clients = service.get("clients");
+    const variables = service.get("variables");
     const connection = await amqp.connect({
       protocol: "amqp",
       hostname: process.env.RABBITMQ_HOST || "localhost",
@@ -414,6 +408,7 @@ async function messaging(service) {
                 handler[queue.name](
                   {
                     logger,
+                    variables,
                     waitForMessage: (topic, cb) =>
                       waitForMessage(service, topic, cb),
                     publishInternalMessage: (topic, message) =>
@@ -454,6 +449,7 @@ async function messaging(service) {
                 handler[event.name](
                   {
                     server: client,
+                    variables,
                     publishExternalMessage: (topic, message) =>
                       publishExternalMessage(service, topic, message),
                   },
@@ -525,6 +521,7 @@ async function messaging(service) {
                         {
                           server: io,
                           socket: client,
+                          variables,
                           publishExternalMessage: (topic, message) =>
                             publishExternalMessage(service, topic, message),
                         },
