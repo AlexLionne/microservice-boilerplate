@@ -1,31 +1,10 @@
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-    try {
-        var info = gen[key](arg);
-        var value = info.value;
-    } catch (error) {
-        reject(error);
-        return;
-    }
-    if (info.done) {
-        resolve(value);
+"use strict";
+function _instanceof(left, right) {
+    if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
+        return !!right[Symbol.hasInstance](left);
     } else {
-        Promise.resolve(value).then(_next, _throw);
+        return left instanceof right;
     }
-}
-function _async_to_generator(fn) {
-    return function() {
-        var self = this, args = arguments;
-        return new Promise(function(resolve, reject) {
-            var gen = fn.apply(self, args);
-            function _next(value) {
-                asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-            }
-            function _throw(err) {
-                asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-            }
-            _next(undefined);
-        });
-    };
 }
 function _ts_generator(thisArg, body) {
     var f, y, t, g, _ = {
@@ -122,6 +101,33 @@ function _ts_generator(thisArg, body) {
         };
     }
 }
+var __awaiter = this && this.__awaiter || function(thisArg, _arguments, P, generator) {
+    function adopt(value) {
+        return _instanceof(value, P) ? value : new P(function(resolve) {
+            resolve(value);
+        });
+    }
+    return new (P || (P = Promise))(function(resolve, reject) {
+        function fulfilled(value) {
+            try {
+                step(generator.next(value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function rejected(value) {
+            try {
+                step(generator["throw"](value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function step(result) {
+            result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var winston = require("winston");
 var cors = require("cors");
 var Logtail = require("@logtail/node").Logtail;
@@ -209,10 +215,8 @@ var http = require("./http").http;
     var handler = require(path.join(require.main.filename, config.functions));
     var _$microservice = new Map();
     /**
-   * State Manager
-   */ // app variables
-    _$microservice.set("variables", new Map());
-    // logtail loger
+     * State Manager
+     */ // logtail loger
     _$microservice.set("logger", logger);
     // express app instance
     _$microservice.set("app", app);
@@ -248,12 +252,9 @@ var http = require("./http").http;
             return _$microservice.get(tag);
         }
     }
+    // start server
     function start() {
-        return _start.apply(this, arguments);
-    }
-    function _start() {
-        _start = // start server
-        _async_to_generator(function() {
+        return __awaiter(this, void 0, void 0, function() {
             var appPort;
             return _ts_generator(this, function(_state) {
                 switch(_state.label){
@@ -287,16 +288,9 @@ var http = require("./http").http;
                 }
             });
         });
-        return _start.apply(this, arguments);
     }
     return {
         start: start,
-        stop: stop,
-        get: get
-    };
-}
-module.exports = microservice;
-start: start,
         stop: stop,
         get: get
     };
