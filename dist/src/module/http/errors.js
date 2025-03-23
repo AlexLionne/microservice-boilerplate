@@ -3,5 +3,3 @@ module.exports = {
     InvalidRequestMethod: 'InvalidRequestMethod',
     InvalidRequest: 'InvalidRequest'
 };
-idRequest'
-};
