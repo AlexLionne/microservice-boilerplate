@@ -843,7 +843,7 @@ function _messaging() {
                                                 var _loop = function() {
                                                     var event = _step.value;
                                                     logger.info("Registering event ".concat(event.name));
-                                                    connected.on(event.name, function(data) {
+                                                    connected.on(event.name, function(data, callback) {
                                                         return handler[event.name]({
                                                             server: io,
                                                             socket: client,
@@ -851,7 +851,7 @@ function _messaging() {
                                                             publishExternalMessage: function(topic, message) {
                                                                 return publishExternalMessage(service, topic, message);
                                                             }
-                                                        }, data);
+                                                        }, data, callback);
                                                     });
                                                 };
                                                 for(var _iterator = config.messaging.external.socket.events[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true)_loop();

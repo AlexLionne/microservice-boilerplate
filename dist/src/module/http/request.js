@@ -260,3 +260,9 @@ module.exports = function http(service, route) {
         return e.message;
     }
 };
+are, socketServer, actionManager, messaging, actions, middleware);
+    } catch (e) {
+        logger.error(e);
+        return e.message;
+    }
+};
