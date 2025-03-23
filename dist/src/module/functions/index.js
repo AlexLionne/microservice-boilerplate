@@ -844,9 +844,9 @@ function _messaging() {
                                                     var event = _step.value;
                                                     logger.info("Registering event ".concat(event.name));
                                                     connected.on(event.name, function(data, callback) {
-                                                        console.log("recieved event", event.name);
-                                                        console.log("hasData", data === undefined);
-                                                        console.log("hasCallback", callback === undefined);
+                                                        logger.info("recieved event", event.name);
+                                                        logger.info("hasData", data === undefined);
+                                                        logger.info("hasCallback", callback === undefined);
                                                         handler[event.name]({
                                                             server: io,
                                                             socket: client,
