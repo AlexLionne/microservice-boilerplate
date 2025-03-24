@@ -1,4 +1,3 @@
-"use strict";
 function _array_like_to_array(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
     for(var i = 0, arr2 = new Array(len); i < len; i++)arr2[i] = arr[i];
@@ -7,12 +6,47 @@ function _array_like_to_array(arr, len) {
 function _array_with_holes(arr) {
     if (Array.isArray(arr)) return arr;
 }
-function _instanceof(left, right) {
-    if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
-        return !!right[Symbol.hasInstance](left);
-    } else {
-        return left instanceof right;
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
     }
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function _async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
+function _define_property(obj, key, value) {
+    if (key in obj) {
+        Object.defineProperty(obj, key, {
+            value: value,
+            enumerable: true,
+            configurable: true,
+            writable: true
+        });
+    } else {
+        obj[key] = value;
+    }
+    return obj;
 }
 function _iterable_to_array_limit(arr, i) {
     var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
@@ -40,6 +74,45 @@ function _iterable_to_array_limit(arr, i) {
 }
 function _non_iterable_rest() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+function _object_spread(target) {
+    for(var i = 1; i < arguments.length; i++){
+        var source = arguments[i] != null ? arguments[i] : {};
+        var ownKeys = Object.keys(source);
+        if (typeof Object.getOwnPropertySymbols === "function") {
+            ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function(sym) {
+                return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+            }));
+        }
+        ownKeys.forEach(function(key) {
+            _define_property(target, key, source[key]);
+        });
+    }
+    return target;
+}
+function ownKeys(object, enumerableOnly) {
+    var keys = Object.keys(object);
+    if (Object.getOwnPropertySymbols) {
+        var symbols = Object.getOwnPropertySymbols(object);
+        if (enumerableOnly) {
+            symbols = symbols.filter(function(sym) {
+                return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+            });
+        }
+        keys.push.apply(keys, symbols);
+    }
+    return keys;
+}
+function _object_spread_props(target, source) {
+    source = source != null ? source : {};
+    if (Object.getOwnPropertyDescriptors) {
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    } else {
+        ownKeys(Object(source)).forEach(function(key) {
+            Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+        });
+    }
+    return target;
 }
 function _sliced_to_array(arr, i) {
     return _array_with_holes(arr) || _iterable_to_array_limit(arr, i) || _unsupported_iterable_to_array(arr, i) || _non_iterable_rest();
@@ -161,33 +234,6 @@ function _ts_values(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 }
-var __awaiter = this && this.__awaiter || function(thisArg, _arguments, P, generator) {
-    function adopt(value) {
-        return _instanceof(value, P) ? value : new P(function(resolve) {
-            resolve(value);
-        });
-    }
-    return new (P || (P = Promise))(function(resolve, reject) {
-        function fulfilled(value) {
-            try {
-                step(generator.next(value));
-            } catch (e) {
-                reject(e);
-            }
-        }
-        function rejected(value) {
-            try {
-                step(generator["throw"](value));
-            } catch (e) {
-                reject(e);
-            }
-        }
-        function step(result) {
-            result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-        }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var amqp = require("amqplib");
 var CronJob = require("cron").CronJob;
 var path = require("path");
@@ -235,10 +281,10 @@ function runActionsOnStartup(service) {
     }
 }
 function setupActions(service) {
-    var _this = this;
     var handler = service.get("handler");
     var config = service.get("config");
     var logger = service.get("logger");
+    var variables = service.get("variables");
     var actions = [];
     var actionsState = [];
     if (config.actions) {
@@ -247,8 +293,35 @@ function setupActions(service) {
             if (!action.name) throw "No function provided !";
             actions.push({
                 id: index,
-                action: action.cron ? new CronJob(action.cron, function() {
-                    return __awaiter(_this, void 0, void 0, function() {
+                action: action.cron ? new CronJob(action.cron, /*#__PURE__*/ _async_to_generator(function() {
+                    return _ts_generator(this, function(_state) {
+                        switch(_state.label){
+                            case 0:
+                                return [
+                                    4,
+                                    handler[action.name]({
+                                        action: action,
+                                        variables: variables,
+                                        waitForMessage: function(topic, cb) {
+                                            return waitForMessage(service, topic, cb);
+                                        },
+                                        publishInternalMessage: function(topic, message) {
+                                            return publishInternalMessage(service, topic, message);
+                                        },
+                                        publishExternalMessage: function(topic, message) {
+                                            return publishExternalMessage(service, topic, message);
+                                        }
+                                    })
+                                ];
+                            case 1:
+                                _state.sent();
+                                return [
+                                    2
+                                ];
+                        }
+                    });
+                })) : {
+                    start: /*#__PURE__*/ _async_to_generator(function() {
                         return _ts_generator(this, function(_state) {
                             switch(_state.label){
                                 case 0:
@@ -256,6 +329,7 @@ function setupActions(service) {
                                         4,
                                         handler[action.name]({
                                             action: action,
+                                            variables: variables,
                                             waitForMessage: function(topic, cb) {
                                                 return waitForMessage(service, topic, cb);
                                             },
@@ -268,43 +342,13 @@ function setupActions(service) {
                                         })
                                     ];
                                 case 1:
-                                    _state.sent();
                                     return [
-                                        2
+                                        2,
+                                        _state.sent()
                                     ];
                             }
                         });
-                    });
-                }) : {
-                    start: function() {
-                        return __awaiter(_this, void 0, void 0, function() {
-                            return _ts_generator(this, function(_state) {
-                                switch(_state.label){
-                                    case 0:
-                                        return [
-                                            4,
-                                            handler[action.name]({
-                                                action: action,
-                                                waitForMessage: function(topic, cb) {
-                                                    return waitForMessage(service, topic, cb);
-                                                },
-                                                publishInternalMessage: function(topic, message) {
-                                                    return publishInternalMessage(service, topic, message);
-                                                },
-                                                publishExternalMessage: function(topic, message) {
-                                                    return publishExternalMessage(service, topic, message);
-                                                }
-                                            })
-                                        ];
-                                    case 1:
-                                        return [
-                                            2,
-                                            _state.sent()
-                                        ];
-                                }
-                            });
-                        });
-                    }
+                    })
                 }
             });
             actionsState.push({
@@ -451,7 +495,10 @@ function params(params) {
     return log;
 }
 function request(microservice, route) {
-    return __awaiter(this, void 0, void 0, function() {
+    return _request.apply(this, arguments);
+}
+function _request() {
+    _request = _async_to_generator(function(microservice, route) {
         var logger, http, e;
         return _ts_generator(this, function(_state) {
             switch(_state.label){
@@ -489,6 +536,7 @@ function request(microservice, route) {
             }
         });
     });
+    return _request.apply(this, arguments);
 }
 function redisSession(service) {
     var config = service.get("config");
@@ -528,6 +576,7 @@ function redisSession(service) {
             ttl: 10
         }),
         cookie: {
+            secure: false,
             maxAge: 10000
         }
     };
@@ -549,8 +598,11 @@ function rateLimit(service) {
     app.use(limiter);
 }
 function messaging(service) {
-    return __awaiter(this, void 0, void 0, function() {
-        var logger, handler, server, config, clients, connection, channel, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step, err, client, _iteratorNormalCompletion1, _didIteratorError1, _iteratorError1, _loop1, _iterator1, _step1, io, e;
+    return _messaging.apply(this, arguments);
+}
+function _messaging() {
+    _messaging = _async_to_generator(function(service) {
+        var logger, handler, server, config, clients, variables, connection, channel, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step, err, client, _iteratorNormalCompletion1, _didIteratorError1, _iteratorError1, _loop1, _iterator1, _step1, io, e;
         return _ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
@@ -567,6 +619,7 @@ function messaging(service) {
                     server = service.get("server");
                     config = service.get("config");
                     clients = service.get("clients");
+                    variables = service.get("variables");
                     return [
                         4,
                         amqp.connect({
@@ -631,6 +684,7 @@ function messaging(service) {
                                             if (handler[queue.name]) {
                                                 handler[queue.name]({
                                                     logger: logger,
+                                                    variables: variables,
                                                     waitForMessage: function(topic, cb) {
                                                         return waitForMessage(service, topic, cb);
                                                     },
@@ -722,6 +776,7 @@ function messaging(service) {
                                         client.on(event.name, function(topic, message) {
                                             return handler[event.name]({
                                                 server: client,
+                                                variables: variables,
                                                 publishExternalMessage: function(topic, message) {
                                                     return publishExternalMessage(service, topic, message);
                                                 }
@@ -788,14 +843,18 @@ function messaging(service) {
                                                 var _loop = function() {
                                                     var event = _step.value;
                                                     logger.info("Registering event ".concat(event.name));
-                                                    connected.on(event.name, function(data) {
-                                                        return handler[event.name]({
+                                                    connected.on(event.name, function(data, callback) {
+                                                        logger.info("recieved event ".concat(event.name));
+                                                        logger.info("hasData ".concat(data === undefined));
+                                                        logger.info("hasCallback ".concat(callback === undefined));
+                                                        handler[event.name]({
                                                             server: io,
                                                             socket: client,
+                                                            variables: variables,
                                                             publishExternalMessage: function(topic, message) {
                                                                 return publishExternalMessage(service, topic, message);
                                                             }
-                                                        }, data);
+                                                        }, data, callback);
                                                     });
                                                 };
                                                 for(var _iterator = config.messaging.external.socket.events[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true)_loop();
@@ -858,18 +917,23 @@ function messaging(service) {
             }
         });
     });
+    return _messaging.apply(this, arguments);
 }
 function publishMQTTtMessage(service) {
-    var topic = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "event", message = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    return __awaiter(this, void 0, void 0, function() {
-        var mqtt, config, payload;
+    return _publishMQTTtMessage.apply(this, arguments);
+}
+function _publishMQTTtMessage() {
+    _publishMQTTtMessage = _async_to_generator(function(service) {
+        var topic, message, mqtt, config, payload;
+        var _arguments = arguments;
         return _ts_generator(this, function(_state) {
+            topic = _arguments.length > 1 && _arguments[1] !== void 0 ? _arguments[1] : "event", message = _arguments.length > 2 && _arguments[2] !== void 0 ? _arguments[2] : {};
             mqtt = service.get("mqtt");
             config = service.get("config");
             if (!mqtt) return [
                 2
             ];
-            payload = Object.assign(Object.assign({}, message), {
+            payload = _object_spread_props(_object_spread({}, message), {
                 source: config.name,
                 sentAt: new Date().toISOString()
             });
@@ -879,19 +943,24 @@ function publishMQTTtMessage(service) {
             ];
         });
     });
+    return _publishMQTTtMessage.apply(this, arguments);
 }
 function publishSocketMessage(service) {
-    var topic = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "event", message = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    return __awaiter(this, void 0, void 0, function() {
-        var socket, config, payload, _topic_split, type, room, event;
+    return _publishSocketMessage.apply(this, arguments);
+}
+function _publishSocketMessage() {
+    _publishSocketMessage = _async_to_generator(function(service) {
+        var topic, message, socket, config, payload, _topic_split, type, room, event;
+        var _arguments = arguments;
         return _ts_generator(this, function(_state) {
+            topic = _arguments.length > 1 && _arguments[1] !== void 0 ? _arguments[1] : "event", message = _arguments.length > 2 && _arguments[2] !== void 0 ? _arguments[2] : {};
             socket = service.get("socket");
             config = service.get("config");
             if (!socket) return [
                 2
             ];
             if (!topic) throw new Error("No topic provided");
-            payload = Object.assign(Object.assign({}, message), {
+            payload = _object_spread_props(_object_spread({}, message), {
                 source: config.name,
                 sentAt: new Date().toISOString()
             });
@@ -910,12 +979,17 @@ function publishSocketMessage(service) {
             ];
         });
     });
+    return _publishSocketMessage.apply(this, arguments);
 }
 function publishExternalMessage(service) {
-    var topic = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "socket://event:event", message = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    return __awaiter(this, void 0, void 0, function() {
-        var _topic_split, serviceType, target;
+    return _publishExternalMessage.apply(this, arguments);
+}
+function _publishExternalMessage() {
+    _publishExternalMessage = _async_to_generator(function(service) {
+        var topic, message, _topic_split, serviceType, target;
+        var _arguments = arguments;
         return _ts_generator(this, function(_state) {
+            topic = _arguments.length > 1 && _arguments[1] !== void 0 ? _arguments[1] : "socket://event:event", message = _arguments.length > 2 && _arguments[2] !== void 0 ? _arguments[2] : {};
             _topic_split = _sliced_to_array(topic.split("://"), 2), serviceType = _topic_split[0], target = _topic_split[1];
             try {
                 if (!serviceType) return [
@@ -937,6 +1011,7 @@ function publishExternalMessage(service) {
             ];
         });
     });
+    return _publishExternalMessage.apply(this, arguments);
 }
 function waitForMessage(service, topic, cb) {
     var channel = service.get("channel");
@@ -958,12 +1033,16 @@ function waitForMessage(service, topic, cb) {
     }
 }
 function publishInternalMessage(service) {
-    var topic = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "event", message = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    return __awaiter(this, void 0, void 0, function() {
-        var channel, e;
+    return _publishInternalMessage.apply(this, arguments);
+}
+function _publishInternalMessage() {
+    _publishInternalMessage = _async_to_generator(function(service) {
+        var topic, message, channel, e;
+        var _arguments = arguments;
         return _ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
+                    topic = _arguments.length > 1 && _arguments[1] !== void 0 ? _arguments[1] : "event", message = _arguments.length > 2 && _arguments[2] !== void 0 ? _arguments[2] : {};
                     channel = service.get("channel");
                     _state.label = 1;
                 case 1:
@@ -998,6 +1077,7 @@ function publishInternalMessage(service) {
             }
         });
     });
+    return _publishInternalMessage.apply(this, arguments);
 }
 function routes(service) {
     var config = service.get("config");

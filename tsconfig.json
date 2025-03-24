@@ -18,7 +18,7 @@
     "moduleResolution": "Node",
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/*"],
   "exclude": ["node_modules"],
   "baseUrl":"./",
   "paths":{

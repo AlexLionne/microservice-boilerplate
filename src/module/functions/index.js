@@ -497,7 +497,7 @@ function messaging(service) {
                     for (const event of config.messaging.external.socket
                       .events) {
                       logger.info(`Registering event ${event.name}`);
-                      connected.on(event.name, (data) =>
+                      connected.on(event.name, (data, callback) =>
                         handler[event.name](
                           {
                             server: io,
@@ -505,7 +505,8 @@ function messaging(service) {
                             publishExternalMessage: (topic, message) =>
                               publishExternalMessage(service, topic, message),
                           },
-                          data
+                          data,
+                          callback
                         )
                       );
                     }
