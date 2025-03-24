@@ -1,41 +1,8 @@
-"use strict";
-var __awaiter =
-  (this && this.__awaiter) ||
-  function (thisArg, _arguments, P, generator) {
-    function adopt(value) {
-      return value instanceof P
-        ? value
-        : new P(function (resolve) {
-            resolve(value);
-          });
-    }
-    return new (P || (P = Promise))(function (resolve, reject) {
-      function fulfilled(value) {
-        try {
-          step(generator.next(value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function rejected(value) {
-        try {
-          step(generator["throw"](value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
-      }
-      step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-  };
 const amqp = require("amqplib");
 const CronJob = require("cron").CronJob;
 const path = require("path");
 const rateLimiter = require("express-rate-limit");
+
 /**
  * Setup the port if needed
  * @param config yaml config
@@ -50,13 +17,16 @@ function port(config) {
   }
   return port;
 }
+
 function resources(service) {
   const app = service.get("app");
   const express = service.get("express");
   const config = service.get("config");
+
   if (!config.resources) return;
   if (config.resources.viewEngine)
     app.set("view engine", config.resources.viewEngine);
+
   if (config.resources.storage) {
     Object.keys(config.resources.storage).forEach((key) => {
       app.use(
@@ -66,10 +36,12 @@ function resources(service) {
     });
   }
 }
+
 function runActionsOnStartup(service) {
   const actions = service.get("actions");
   const actionsState = service.get("actionsState");
   const logger = service.get("logger");
+
   try {
     actionsState.forEach(({ name, id }) => {
       if (actionsState[id].runOnStartup) {
@@ -77,7 +49,9 @@ function runActionsOnStartup(service) {
           logger.error(
             `Action ${name} already running, stop it to start it again`
           );
+
         logger.info(`Action ${name} started`);
+
         startAction(service, id);
       }
     });
@@ -85,44 +59,46 @@ function runActionsOnStartup(service) {
     console.log(e);
   }
 }
+
 function setupActions(service) {
   const handler = service.get("handler");
   const config = service.get("config");
   const logger = service.get("logger");
+  const variables = service.get("variables");
+
   let actions = [];
   let actionsState = [];
   if (config.actions) {
     config.actions.forEach((action, index) => {
       if (!action.cron) logger.warn("No periodicity provided !");
       if (!action.name) throw "No function provided !";
+
       actions.push({
         id: index,
         action: action.cron
-          ? new CronJob(action.cron, () =>
-              __awaiter(this, void 0, void 0, function* () {
-                yield handler[action.name]({
+          ? new CronJob(action.cron, async () => {
+              await handler[action.name]({
+                action,
+                variables,
+                waitForMessage: (topic, cb) =>
+                  waitForMessage(service, topic, cb),
+                publishInternalMessage: (topic, message) =>
+                  publishInternalMessage(service, topic, message),
+                publishExternalMessage: (topic, message) =>
+                  publishExternalMessage(service, topic, message),
+              });
+            })
+          : {
+              start: async () =>
+                await handler[action.name]({
                   action,
+                  variables,
                   waitForMessage: (topic, cb) =>
                     waitForMessage(service, topic, cb),
                   publishInternalMessage: (topic, message) =>
                     publishInternalMessage(service, topic, message),
                   publishExternalMessage: (topic, message) =>
                     publishExternalMessage(service, topic, message),
-                });
-              })
-            )
-          : {
-              start: () =>
-                __awaiter(this, void 0, void 0, function* () {
-                  return yield handler[action.name]({
-                    action,
-                    waitForMessage: (topic, cb) =>
-                      waitForMessage(service, topic, cb),
-                    publishInternalMessage: (topic, message) =>
-                      publishInternalMessage(service, topic, message),
-                    publishExternalMessage: (topic, message) =>
-                      publishExternalMessage(service, topic, message),
-                  });
                 }),
             },
       });
@@ -135,41 +111,52 @@ function setupActions(service) {
       });
     });
   }
+
   service.set("actions", actions);
   service.set("actionsState", actionsState);
 }
+
 function startAction(service, id) {
   try {
     let actions = service.get("actions");
     let actionsState = service.get("actionsState");
     const { action } = actions[id];
+
     if (actionsState[id].running)
       throw "Action already running, stop it to start it again";
+
     action.start();
     actionsState[id].running = true;
+
     service.set("actionsState", actionsState);
   } catch (e) {
     console.log(e);
     throw e;
   }
 }
+
 function stopAction(service, id) {
   try {
     const actions = service.get("actions");
     let actionsState = service.get("actionsState");
     const { action } = actions[id];
+
     if (!actionsState[id].running)
       throw "Action not running, start it to stop it again";
+
     action.stop();
     actionsState[id].running = false;
+
     service.set("actionsState", actionsState);
   } catch (e) {
     throw e;
   }
 }
+
 function listActions(service) {
   return service.get("actionsState");
 }
+
 function currentRoute(microservice, logger) {
   microservice.use((req, res, next) => {
     logger.info(`${req.method} ${req.path}`);
@@ -177,18 +164,24 @@ function currentRoute(microservice, logger) {
     return next();
   });
 }
+
 function tree(service) {
   const config = service.get("config");
   const logger = service.get("logger");
+
   const { actions, routes, messaging } = config;
+
   if (actions) {
     if (!actions.length) {
       logger.error("No actions defined");
       return;
     }
+
     logger.info("Available scheduled actions (" + actions.length + ")");
+
     actions.forEach((action) => {
       if (!action) throw "No name specified for scheduled Function !";
+
       logger.info(
         [
           "Action ",
@@ -204,6 +197,7 @@ function tree(service) {
       return;
     }
     logger.info("Available routes (" + Object.keys(routes).length + ")");
+
     routes.forEach((route) =>
       logger.info(
         [
@@ -217,6 +211,7 @@ function tree(service) {
       )
     );
   }
+
   if (messaging) {
     if (messaging.internal) {
       if (messaging.internal.events) {
@@ -276,33 +271,40 @@ function tree(service) {
     }
   }
 }
+
 function params(params) {
   if (!params) return "";
+
   let log = "";
   if (params.required && params.required.length) log += "\n" + "required : ";
   if (params.required && params.required.length)
     params.required.forEach((param) => (log += param + " "));
+
   if (params.optional && params.optional.length) log += "\n" + "optional : ";
   if (params.optional && params.optional.length)
     params.optional.forEach((param) => (log += param + " "));
+
   return log;
 }
-function request(microservice, route) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const logger = microservice.get("logger");
-    try {
-      const http = microservice.get("http");
-      return yield http(microservice, route);
-    } catch (e) {
-      logger.error(e.toString());
-    }
-  });
+
+async function request(microservice, route) {
+  const logger = microservice.get("logger");
+
+  try {
+    const http = microservice.get("http");
+
+    return await http(microservice, route);
+  } catch (e) {
+    logger.error(e.toString());
+  }
 }
+
 function redisSession(service) {
   const config = service.get("config");
   const logger = service.get("logger");
   let redisClient;
   if (!config.session) return;
+
   const app = service.get("app");
   const session = require("express-session");
   const RedisStore = require("connect-redis")(session);
@@ -327,6 +329,7 @@ function redisSession(service) {
     .connect()
     .then(() => logger.info("[SERVER] Redis connected"))
     .catch(console.error);
+
   const sess = {
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
@@ -337,6 +340,7 @@ function redisSession(service) {
       ttl: 10, // in seconds
     }),
     cookie: {
+      secure: false,
       maxAge: 10000,
     },
   };
@@ -344,10 +348,13 @@ function redisSession(service) {
     app.set("trust proxy", 1); // trust first proxy
     sess.cookie.secure = true; // serve secure cookies
   }
+
   app.use(session(sess));
 }
+
 function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
   const app = service.get("app");
+
   const limiter = rateLimiter({
     windowMs: duration,
     max: limit,
@@ -356,242 +363,262 @@ function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
   });
   app.use(limiter);
 }
-function messaging(service) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const logger = service.get("logger");
-    try {
-      const handler = service.get("handler");
-      const server = service.get("server");
-      const config = service.get("config");
-      const clients = service.get("clients");
-      const connection = yield amqp.connect({
-        protocol: "amqp",
-        hostname: process.env.RABBITMQ_HOST || "localhost",
-        port: process.env.RABBITMQ_PORT || 5672,
-        username: process.env.RABBITMQ_USER || "guest",
-        password: process.env.RABBITMQ_PASSWORD || "<PASSWORD>",
-        vhost: process.env.RABBITMQ_VHOST || "/",
-        heartbeat: 10,
-        connectionTimeout: 10000,
-        socketTimeout: 10000,
-      });
-      logger.info("Amqp connected");
-      const channel = yield connection.createChannel();
-      service.set("channel", channel);
-      if (config.messaging) {
-        // setup amqp
-        if (config.messaging.internal) {
-          for (const queue of config.messaging.internal.events) {
-            yield channel.assertQueue(queue.name);
-            yield channel.consume(
-              queue.name,
-              (message) => {
-                const content = message.content.toString();
-                logger.info(
+
+async function messaging(service) {
+  const logger = service.get("logger");
+  try {
+    const handler = service.get("handler");
+    const server = service.get("server");
+    const config = service.get("config");
+    const clients = service.get("clients");
+    const variables = service.get("variables");
+    const connection = await amqp.connect({
+      protocol: "amqp",
+      hostname: process.env.RABBITMQ_HOST || "localhost",
+      port: process.env.RABBITMQ_PORT || 5672,
+      username: process.env.RABBITMQ_USER || "guest",
+      password: process.env.RABBITMQ_PASSWORD || "<PASSWORD>",
+      vhost: process.env.RABBITMQ_VHOST || "/",
+      heartbeat: 10,
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
+    });
+    logger.info("Amqp connected");
+    const channel = await connection.createChannel();
+    service.set("channel", channel);
+
+    if (config.messaging) {
+      // setup amqp
+      if (config.messaging.internal) {
+        for (const queue of config.messaging.internal.events) {
+          await channel.assertQueue(queue.name);
+          await channel.consume(
+            queue.name,
+            (message) => {
+              const content = message.content.toString();
+              logger.info(
+                `[${config.name}] Getting Event [${queue.name}] <- From event source`
+              );
+              if (!handler[queue.name]) {
+                logger.error(
                   `[${config.name}] Getting Event [${queue.name}] <- From event source`
                 );
-                if (!handler[queue.name]) {
-                  logger.error(
-                    `[${config.name}] Getting Event [${queue.name}] <- From event source`
-                  );
-                }
-                if (handler[queue.name]) {
-                  handler[queue.name](
-                    {
-                      logger,
-                      waitForMessage: (topic, cb) =>
-                        waitForMessage(service, topic, cb),
-                      publishInternalMessage: (topic, message) =>
-                        publishInternalMessage(service, topic, message),
-                      publishExternalMessage: (topic, message) =>
-                        publishExternalMessage(service, topic, message),
-                    },
-                    content
-                  );
-                }
-              },
-              { noAck: true }
-            );
-          }
-        }
-        // setup websockets
-        if (config.messaging.external) {
-          if (config.messaging.external.mqtt) {
-            // setup Mqtt
-            const client = require("mqtt").connect(process.env.MQTT_URL, {
-              hostname: process.env.MQTT_HOST || "localhost",
-              clean: true,
-              connectTimeout: 4000,
-              reconnectPeriod: 1000,
-            });
-            // PubSub to be used in the app
-            if (
-              (config.messaging.external.mqtt.events &&
-                config.messaging.external.mqtt.events.length) > 0
-            ) {
-              logger.info(
-                `${config.messaging.external.mqtt.events.length} mqtt events to register`
-              );
-              for (const event of config.messaging.external.mqtt.events) {
-                logger.info(`Registering event ${event.name}`);
-                client.on(event.name, (topic, message) =>
-                  handler[event.name](
-                    {
-                      server: client,
-                      publishExternalMessage: (topic, message) =>
-                        publishExternalMessage(service, topic, message),
-                    },
-                    topic,
-                    message
-                  )
+              }
+              if (handler[queue.name]) {
+                handler[queue.name](
+                  {
+                    logger,
+                    variables,
+                    waitForMessage: (topic, cb) =>
+                      waitForMessage(service, topic, cb),
+                    publishInternalMessage: (topic, message) =>
+                      publishInternalMessage(service, topic, message),
+                    publishExternalMessage: (topic, message) =>
+                      publishExternalMessage(service, topic, message),
+                  },
+                  content
                 );
               }
-            }
-            service.set("mqtt", client);
-          }
-          if (config.messaging.external.socket) {
-            const io = require("socket.io")(server, {
-              transports: ["websocket"],
-              cookie: true,
-              secure: true,
-              cors: {
-                origin: "*",
-                methods: ["GET", "POST"],
-              },
-            });
-            io.on("connection", (client) => {
-              logger.info(`[SERVER] New connection`);
-              const query = client.handshake.query;
-              const { clientType, client: name } = query;
-              if (clientType) {
-                if (
-                  query &&
-                  (clientType === "service" ||
-                    clientType === "application" ||
-                    clientType === "service-" ||
-                    clientType === "application-")
-                ) {
-                  // add client to connections
-                  clients.set(name, client);
-                  const connected = clients.get(name);
-                  if (connected) {
-                    logger.info(
-                      `Client ${name} not connected, update client reference (connection update)`
-                    );
-                    logger.info(
-                      ["Connected clients", clients.size, clients.keys()].join(
-                        " "
-                      )
-                    );
-                    connected.leave("event-room");
-                  }
-                  // update client
-                  connected.join("event-room");
-                  if (
-                    (config.messaging.external.socket.events &&
-                      config.messaging.external.socket.events.length) > 0
-                  ) {
-                    logger.info(
-                      `${config.messaging.external.socket.events.length} socket events to register`
-                    );
-                    for (const event of config.messaging.external.socket
-                      .events) {
-                      logger.info(`Registering event ${event.name}`);
-                      connected.on(event.name, (data, callback) =>
-                        handler[event.name](
-                          {
-                            server: io,
-                            socket: client,
-                            publishExternalMessage: (topic, message) =>
-                              publishExternalMessage(service, topic, message),
-                          },
-                          data,
-                          callback
-                        )
-                      );
-                    }
-                  }
-                  connected.on("disconnect", (reason) => {
-                    // remove client to connections
-                    if (name) {
-                      connected.leave("event-room");
-                      logger.info(
-                        ["Disconnected", name, "reason", reason].join(" ")
-                      );
-                      clients.delete(name);
-                      service.set("clients", clients.keys());
-                      logger.info(
-                        ["Connected clients", clients.size].join(" ")
-                      );
-                    }
-                  });
-                }
-              }
-            });
-            service.set("socket", io);
-          }
+            },
+            { noAck: true }
+          );
         }
       }
-    } catch (e) {
-      logger.error(e);
-    }
-  });
-}
-function publishMQTTtMessage(service, topic = "event", message = {}) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const mqtt = service.get("mqtt");
-    const config = service.get("config");
-    if (!mqtt) return;
-    const payload = Object.assign(Object.assign({}, message), {
-      source: config.name,
-      sentAt: new Date().toISOString(),
-    });
-    mqtt.publish(topic, JSON.stringify(payload));
-  });
-}
-function publishSocketMessage(service, topic = "event", message = {}) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const socket = service.get("socket");
-    const config = service.get("config");
-    if (!socket) return;
-    if (!topic) throw new Error("No topic provided");
-    const payload = Object.assign(Object.assign({}, message), {
-      source: config.name,
-      sentAt: new Date().toISOString(),
-    });
-    if (topic.includes(":")) {
-      const [type, room, event] = topic.split(":");
-      if (type === "room") {
-        socket.sockets.in(room).emit(event, payload);
-      } else {
-        socket.emit(event, payload);
+
+      // setup websockets
+      if (config.messaging.external) {
+        if (config.messaging.external.mqtt) {
+          // setup Mqtt
+          const client = require("mqtt").connect(process.env.MQTT_URL, {
+            hostname: process.env.MQTT_HOST || "localhost",
+            clean: true,
+            connectTimeout: 4000,
+            reconnectPeriod: 1000,
+          });
+          // PubSub to be used in the app
+          if (
+            (config.messaging.external.mqtt.events &&
+              config.messaging.external.mqtt.events.length) > 0
+          ) {
+            logger.info(
+              `${config.messaging.external.mqtt.events.length} mqtt events to register`
+            );
+            for (const event of config.messaging.external.mqtt.events) {
+              logger.info(`Registering event ${event.name}`);
+              client.on(event.name, (topic, message) =>
+                handler[event.name](
+                  {
+                    server: client,
+                    variables,
+                    publishExternalMessage: (topic, message) =>
+                      publishExternalMessage(service, topic, message),
+                  },
+                  topic,
+                  message
+                )
+              );
+            }
+          }
+          service.set("mqtt", client);
+        }
+
+        if (config.messaging.external.socket) {
+          const io = require("socket.io")(server, {
+            transports: ["websocket"],
+            cookie: true,
+            secure: true,
+            cors: {
+              origin: "*",
+              methods: ["GET", "POST"],
+            },
+          });
+
+          io.on("connection", (client) => {
+            logger.info(`[SERVER] New connection`);
+            const query = client.handshake.query;
+
+            const { clientType, client: name } = query;
+
+            if (clientType) {
+              if (
+                query &&
+                (clientType === "service" ||
+                  clientType === "application" ||
+                  clientType === "service-" ||
+                  clientType === "application-")
+              ) {
+                // add client to connections
+
+                clients.set(name, client);
+                const connected = clients.get(name);
+
+                if (connected) {
+                  logger.info(
+                    `Client ${name} not connected, update client reference (connection update)`
+                  );
+                  logger.info(
+                    ["Connected clients", clients.size, clients.keys()].join(
+                      " "
+                    )
+                  );
+                  connected.leave("event-room");
+                }
+
+                // update client
+                connected.join("event-room");
+
+                if (
+                  (config.messaging.external.socket.events &&
+                    config.messaging.external.socket.events.length) > 0
+                ) {
+                  logger.info(
+                    `${config.messaging.external.socket.events.length} socket events to register`
+                  );
+                  for (const event of config.messaging.external.socket.events) {
+                    logger.info(`Registering event ${event.name}`);
+                    connected.on(event.name, (data, callback) => {
+                      logger.info(`recieved event ${event.name}`);
+                      logger.info(`hasData ${data === undefined}`);
+                      logger.info(`hasCallback ${callback === undefined}`);
+                      handler[event.name](
+                        {
+                          server: io,
+                          socket: client,
+                          variables,
+                          publishExternalMessage: (topic, message) =>
+                            publishExternalMessage(service, topic, message),
+                        },
+                        data,
+                        callback
+                      );
+                    });
+                  }
+                }
+
+                connected.on("disconnect", (reason) => {
+                  // remove client to connections
+                  if (name) {
+                    connected.leave("event-room");
+                    logger.info(
+                      ["Disconnected", name, "reason", reason].join(" ")
+                    );
+                    clients.delete(name);
+                    service.set("clients", clients.keys());
+                    logger.info(["Connected clients", clients.size].join(" "));
+                  }
+                });
+              }
+            }
+          });
+          service.set("socket", io);
+        }
       }
-    } else {
-      socket.emit(topic, payload);
     }
-  });
+  } catch (e) {
+    logger.error(e);
+  }
 }
-function publishExternalMessage(
+
+async function publishMQTTtMessage(service, topic = "event", message = {}) {
+  const mqtt = service.get("mqtt");
+  const config = service.get("config");
+  if (!mqtt) return;
+
+  const payload = {
+    ...message,
+    source: config.name,
+    sentAt: new Date().toISOString(),
+  };
+  mqtt.publish(topic, JSON.stringify(payload));
+}
+
+async function publishSocketMessage(service, topic = "event", message = {}) {
+  const socket = service.get("socket");
+  const config = service.get("config");
+
+  if (!socket) return;
+
+  if (!topic) throw new Error("No topic provided");
+
+  const payload = {
+    ...message,
+    source: config.name,
+    sentAt: new Date().toISOString(),
+  };
+
+  if (topic.includes(":")) {
+    const [type, room, event] = topic.split(":");
+    if (type === "room") {
+      socket.sockets.in(room).emit(event, payload);
+    } else {
+      socket.emit(event, payload);
+    }
+  } else {
+    socket.emit(topic, payload);
+  }
+}
+
+async function publishExternalMessage(
   service,
   topic = "socket://event:event",
   message = {}
 ) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const [serviceType, target] = topic.split("://");
-    try {
-      if (!serviceType) return;
-      if (serviceType === "mqtt")
-        return publishMQTTtMessage(service, target, message);
-      if (serviceType === "socket")
-        return publishSocketMessage(service, target, message);
-    } catch (e) {
-      console.log(e);
-    }
-  });
+  const [serviceType, target] = topic.split("://");
+  try {
+    if (!serviceType) return;
+    if (serviceType === "mqtt")
+      return publishMQTTtMessage(service, target, message);
+    if (serviceType === "socket")
+      return publishSocketMessage(service, target, message);
+  } catch (e) {
+    console.log(e);
+  }
 }
+
 function waitForMessage(service, topic, cb) {
   const channel = service.get("channel");
   const logger = service.get("logger");
+
   channel.assertQueue(topic);
   if (!topic) {
     logger.error("No topic provided");
@@ -612,23 +639,25 @@ function waitForMessage(service, topic, cb) {
     console.log(e);
   }
 }
-function publishInternalMessage(service, topic = "event", message = {}) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const channel = service.get("channel");
-    try {
-      yield channel.assertQueue(topic);
-      channel.sendToQueue(topic, Buffer.from(JSON.stringify(message)));
-    } catch (e) {
-      console.log(e);
-    }
-  });
+
+async function publishInternalMessage(service, topic = "event", message = {}) {
+  const channel = service.get("channel");
+
+  try {
+    await channel.assertQueue(topic);
+    channel.sendToQueue(topic, Buffer.from(JSON.stringify(message)));
+  } catch (e) {
+    console.log(e);
+  }
 }
+
 function routes(service) {
   const config = service.get("config");
   const logger = service.get("logger");
   if (config.routes) config.routes.forEach((route) => request(service, route));
   else logger.error("no appRoutes");
 }
+
 module.exports = {
   rateLimit,
   redisSession,
