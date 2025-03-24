@@ -516,7 +516,7 @@ async function messaging(service) {
                   );
                   for (const event of config.messaging.external.socket.events) {
                     logger.info(`Registering event ${event.name}`);
-                    connected.on(event.name, (data, callback) => {
+                    client.on(event.name, (data, callback) => {
                       logger.info(`recieved event ${event.name}`);
                       logger.info(`hasData ${data === undefined}`);
                       logger.info(`hasCallback ${callback === undefined}`);
