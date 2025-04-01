@@ -450,6 +450,10 @@ async function messaging(service) {
                   {
                     server: client,
                     variables,
+                    waitForMessage: (topic, cb) =>
+                      waitForMessage(service, topic, cb),
+                    publishInternalMessage: (topic, message) =>
+                      publishInternalMessage(service, topic, message),
                     publishExternalMessage: (topic, message) =>
                       publishExternalMessage(service, topic, message),
                   },
@@ -525,6 +529,10 @@ async function messaging(service) {
                           server: io,
                           socket: client,
                           variables,
+                          waitForMessage: (topic, cb) =>
+                            waitForMessage(service, topic, cb),
+                          publishInternalMessage: (topic, message) =>
+                            publishInternalMessage(service, topic, message),
                           publishExternalMessage: (topic, message) =>
                             publishExternalMessage(service, topic, message),
                         },
