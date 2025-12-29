@@ -352,7 +352,7 @@ function redisSession(service) {
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,  // en ms pour cookie
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
     },
   };
   if (app.get("env") === "production") {
