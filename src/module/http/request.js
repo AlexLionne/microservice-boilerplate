@@ -91,7 +91,9 @@ module.exports = function http(service, route) {
       },
       credentials: true,
     };
-    return security(corsOptions);
+
+    const corsMiddleware = security(corsOptions);
+    return corsMiddleware(req, res, next);
   }
   /**
    * Global variables tat can be set in the app
