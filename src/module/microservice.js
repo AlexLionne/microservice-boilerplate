@@ -1,27 +1,9 @@
 const winston = require("winston");
-const cors = require("cors");
 const { Logtail } = require("@logtail/node");
 const { LogtailTransport } = require("@logtail/winston");
 const { createLogger, transports, format } = require("winston");
 const { combine, colorize, timestamp, printf } = winston.format;
-const whitelist = [
-  "http://192.168.1.12",
-  "https://lnl2131a.com",
-  "https://api.auth.lnl2131a.com",
-  "https://api.home.lnl2131a.com",
-  "https://portal.lnl2131a.com",
-  "https://jade.lnl2131a.com",
-];
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error(`${origin} Blocked`));
-    }
-  },
-  credentials: true,
-};
+
 let logger = {};
 
 logger = createLogger({
@@ -73,7 +55,6 @@ const {
 } = require("./functions");
 
 currentRoute(app, logger);
-//app.use(cors(corsOptions));
 app.use(body.urlencoded({ limit: "5mb", extended: true }));
 app.use(body.json({ limit: "5mb" }));
 app.use(formData.parse({ autoClean: true }));
