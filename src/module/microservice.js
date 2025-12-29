@@ -5,10 +5,12 @@ const { LogtailTransport } = require("@logtail/winston");
 const { createLogger, transports, format } = require("winston");
 const { combine, colorize, timestamp, printf } = winston.format;
 const whitelist = [
-  "http://localhost:3000",
   "http://192.168.1.12",
-  "http://lnl2131a.com",
   "https://lnl2131a.com",
+  "https://api.auth.lnl2131a.com",
+  "https://api.home.lnl2131a.com",
+  "https://portal.lnl2131a.com",
+  "https://jade.lnl2131a.com",
 ];
 const corsOptions = {
   origin: function (origin, callback) {
