@@ -350,6 +350,7 @@ function redisSession(service) {
     }),
     proxy: true,
     cookie: {
+      name: 'connect.sid',
       domain: '.lnl2131a.com',
       path: '/',
       httpOnly: true,
