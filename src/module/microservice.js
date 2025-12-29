@@ -69,13 +69,6 @@ app.use(cors({
   optionsSuccessStatus: 204,
 }));
 app.options('*', cors());
-app.use((req, res, next) => {
-  console.log(`[REQ] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
-  console.log("Cookies reçus :", req.headers.cookie || "AUCUN COOKIE");
-  console.log("Session ID :", req.sessionID || "AUCUN ID");
-  console.log("Session actuelle :", req.session);
-  next();
-});
 app.use(body.urlencoded({ limit: '5mb', extended: true }))
 app.use(body.json({ limit: '5mb' }))
 app.use(formData.parse({ autoClean: true }))
@@ -156,6 +149,13 @@ function microservice (options) {
     const appPort = port(config)
     await messaging(microservice)
     redisSession(microservice)
+    app.use((req, res, next) => {
+      console.log(`[REQ] ${req.method} ${req.url}`);
+      console.log("Cookies reçus :", req.headers.cookie || "AUCUN COOKIE");
+      console.log("Session ID :", req.sessionID || "AUCUN ID");
+      console.log("Session actuelle :", req.session);
+      next();
+    });
     rateLimit(microservice)
     resources(microservice)
     setupActions(microservice)
