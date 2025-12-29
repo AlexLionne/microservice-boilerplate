@@ -57,15 +57,18 @@ const {
 currentRoute(app, logger)
 app.use(cors({
   origin: [
-    "https://portal.lnl2131a.com",
-    "https://jade.lnl2131a.com",
-    "http://localhost:3000",
-    "http://localhost:5173"
+    'https://portal.lnl2131a.com',
+    'https://jade.lnl2131a.com',
+    'http://localhost:3000',
+    'http://localhost:5173'
   ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 }));
+app.options('*', cors());
 app.use(body.urlencoded({ limit: '5mb', extended: true }))
 app.use(body.json({ limit: '5mb' }))
 app.use(formData.parse({ autoClean: true }))
