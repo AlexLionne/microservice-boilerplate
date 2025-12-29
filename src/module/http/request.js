@@ -6,26 +6,7 @@ const {
   publishExternalMessage,
   waitForMessage,
 } = require('../functions')
-const security = require('cors')
 
-const whitelist = [
-  'https://portal.lnl2131a.com',
-  'https://jade.lnl2131a.com',
-]
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.includes(origin)) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-}
 module.exports = function http (service, route) {
   const microservice = service.get('app')
   const handler = service.get('handler')
@@ -89,11 +70,6 @@ module.exports = function http (service, route) {
     next()
   }
 
-  function corsHandler (req, res, next) {
-    if (cors === false) return next()
-    cors(corsOptions)(req, res, next)
-  }
-
   /**
    * Global variables tat can be set in the app
    * @param req
@@ -119,10 +95,9 @@ module.exports = function http (service, route) {
 
   // send event
   try {
-    if (method.toLowerCase() === 'options') microservice.options('*', security(corsOptions))
+    if (method.toLowerCase() === 'options') microservice.options(endpoint)
     else microservice[method.toLowerCase()](
         endpoint,
-        corsHandler,
         variables,
         loggerMiddleware,
         socketServer,
