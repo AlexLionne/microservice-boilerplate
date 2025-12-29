@@ -71,9 +71,9 @@ module.exports = function http(service, route) {
     next();
   }
 
-  function corsHandler() {
+  function corsHandler(req, res, next) {
     if (cors === false) {
-      return (req, res, next) => next();
+      return next();
     }
 
     const whitelist = [
@@ -92,7 +92,7 @@ module.exports = function http(service, route) {
       methods: ["GET", "POST", "OPTIONS"],
     };
 
-    return security(corsOptions);
+    return security(corsOptions)
   }
   /**
    * Global variables tat can be set in the app
