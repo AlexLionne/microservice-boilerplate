@@ -8,6 +8,10 @@ const {
 } = require('../functions')
 const security = require('cors')
 
+const whitelist = [
+  'https://portal.lnl2131a.com',
+  'https://jade.lnl2131a.com',
+]
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || whitelist.includes(origin)) {
@@ -87,13 +91,6 @@ module.exports = function http (service, route) {
 
   function corsHandler (req, res, next) {
     if (cors === false) return next()
-
-    const whitelist = [
-      'https://portal.lnl2131a.com',
-      'https://jade.lnl2131a.com',
-    ]
-
-
     cors(corsOptions)(req, res, next)
   }
 
