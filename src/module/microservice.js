@@ -73,7 +73,7 @@ const {
 } = require("./functions");
 
 currentRoute(app, logger);
-app.use(cors(corsOptions));
+//app.use(cors(corsOptions));
 app.use(body.urlencoded({ limit: "5mb", extended: true }));
 app.use(body.json({ limit: "5mb" }));
 app.use(formData.parse({ autoClean: true }));
