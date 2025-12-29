@@ -302,15 +302,13 @@ async function request(microservice, route) {
 function redisSession(service) {
   const config = service.get("config");
   const logger = service.get("logger");
-  const app = service.get("app");
-
+  let redisClient;
   if (!config.session) return;
 
+  const app = service.get("app");
   const session = require("express-session");
   const RedisStore = require("connect-redis")(session);
   const { createClient } = require("redis");
-
-  let redisClient;
   if (process.env.NODE_ENV === "development") {
     redisClient = createClient({
       legacyMode: true,
@@ -321,24 +319,21 @@ function redisSession(service) {
     });
   } else {
     redisClient = createClient({
-      legacyMode: true,
-      socket: {
-        host: process.env.REDIS_HOST || "localhost",
-        port: process.env.REDIS_PORT || 6379,
-      },
+      host: process.env.REDIS_HOST || "localhost",
+      port: process.env.REDIS_PORT || 6379,
       password: process.env.REDIS_PASSWORD || "",
+      legacyMode: true,
     });
   }
-
   redisClient
     .connect()
     .then(() => logger.info("[SERVER] Redis connected"))
-    .catch((err) => logger.error("[SERVER] Redis connection failed:", err));
+    .catch(console.error);
 
   const sess = {
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     store: new RedisStore({
       client: redisClient,
       logErrors: true,
@@ -346,15 +341,12 @@ function redisSession(service) {
     }),
     cookie: {
       secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60,
     },
   };
-
   if (app.get("env") === "production") {
-    app.set("trust proxy", 1);
-    sess.cookie.secure = true;
+    app.set("trust proxy", 1); // trust first proxy
+    sess.cookie.secure = true; // serve secure cookies
   }
 
   app.use(session(sess));
