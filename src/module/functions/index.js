@@ -302,16 +302,17 @@ async function request(microservice, route) {
 function redisSession(service) {
   const config = service.get("config");
   const logger = service.get("logger");
-  let redisClient;
+  const app = service.get("app");
+
   if (!config.session) return;
 
-  const app = service.get("app");
   const session = require("express-session");
   const RedisStore = require("connect-redis")(session);
   const { createClient } = require("redis");
+
+  let redisClient;
   if (process.env.NODE_ENV === "development") {
     redisClient = createClient({
-      legacyMode: true,
       socket: {
         host: process.env.REDIS_HOST || "redis",
         port: process.env.REDIS_PORT || 6379,
@@ -319,34 +320,39 @@ function redisSession(service) {
     });
   } else {
     redisClient = createClient({
-      host: process.env.REDIS_HOST || "localhost",
-      port: process.env.REDIS_PORT || 6379,
+      socket: {
+        host: process.env.REDIS_HOST || "localhost",
+        port: process.env.REDIS_PORT || 6379,
+      },
       password: process.env.REDIS_PASSWORD || "",
-      legacyMode: true,
     });
   }
+
   redisClient
     .connect()
     .then(() => logger.info("[SERVER] Redis connected"))
-    .catch(console.error);
+    .catch((err) => logger.error("[SERVER] Redis connection failed:", err));
 
   const sess = {
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: new RedisStore({
       client: redisClient,
       logErrors: true,
-      ttl: 10, // in seconds
+      ttl: 7 * 24 * 60 * 60,
     }),
     cookie: {
-      secure: false,
-      maxAge: 10000,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "lax",
     },
   };
+
   if (app.get("env") === "production") {
-    app.set("trust proxy", 1); // trust first proxy
-    sess.cookie.secure = true; // serve secure cookies
+    app.set("trust proxy", 1);
+    sess.cookie.secure = true;
   }
 
   app.use(session(sess));
