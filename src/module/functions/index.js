@@ -333,15 +333,26 @@ function redisSession(service) {
   const sess = {
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: new RedisStore({
       client: redisClient,
       logErrors: true,
       ttl: 7 * 24 * 60 * 60,
+      stringify: (data) => {
+        try {
+          return JSON.stringify(data);
+        } catch (e) {
+          logger.error("Erreur sérialisation session:", e);
+          return "{}";
+        }
+      },
+      parse: JSON.parse,
     }),
     cookie: {
       secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 7 * 24 * 60 * 60 * 1000,  // en ms pour cookie
+      httpOnly: true,
+      sameSite: "lax",
     },
   };
   if (app.get("env") === "production") {
