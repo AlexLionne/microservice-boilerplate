@@ -332,7 +332,7 @@ function redisSession(service) {
 
   const sess = {
     secret: process.env.SESSION_SECRET || "secret",
-    resave: false,
+    resave: true,
     saveUninitialized: false,
     store: new RedisStore({
       client: redisClient,
