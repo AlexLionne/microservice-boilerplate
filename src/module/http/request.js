@@ -83,6 +83,7 @@ module.exports = function http(service, route) {
 
     const corsOptions = {
       origin(origin, callback) {
+        console.log('wtf cors again', origin)
         if (!origin) return callback(null, true); // browser always has origin
         if (whitelist.includes(origin)) return callback(null, true);
         return callback(new Error(`CORS blocked: ${origin}`));
