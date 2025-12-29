@@ -15,6 +15,7 @@ module.exports = function http(service, route) {
 
   const { endpoint, method, name, middlewares, cors } = route;
 
+  console.log(method, endpoint, cors)
   if (
     !endpoint ||
     !endpoint.includes("/") ||
