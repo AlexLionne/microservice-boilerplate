@@ -72,7 +72,7 @@ module.exports = function http(service, route) {
   }
 
   function corsHandler(req, res, next) {
-    if (cors === false) return (req, res, next) => next();
+    if (cors === false) return next();
     const whitelist = [
       "http://192.168.1.12",
       "https://lnl2131a.com",
