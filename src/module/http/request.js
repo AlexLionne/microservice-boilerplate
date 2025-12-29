@@ -92,7 +92,7 @@ module.exports = function http(service, route) {
       methods: ["GET", "POST", "OPTIONS"],
     };
 
-    return security(corsOptions)
+    return security(corsOptions)(req, res, next);
   }
   /**
    * Global variables tat can be set in the app
