@@ -332,7 +332,7 @@ function redisSession(service) {
 
   const sess = {
     secret: process.env.SESSION_SECRET || "secret",
-    resave: true,
+    resave: false,
     saveUninitialized: false,
     store: new RedisStore({
       client: redisClient,
@@ -348,16 +348,18 @@ function redisSession(service) {
       },
       parse: JSON.parse,
     }),
+    proxy: true,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000,  // en ms pour cookie
+      domain: '.lnl2131a.com',
+      path: '/',
       httpOnly: true,
-      sameSite: "none",
-    },
+      secure: true,
+      sameSite: 'none',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    }
   };
   if (app.get("env") === "production") {
     app.set("trust proxy", 1); // trust first proxy
-    sess.cookie.secure = true; // serve secure cookies
   }
 
   app.use(session(sess));
