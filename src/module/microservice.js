@@ -34,6 +34,7 @@ if (process.env.NODE_ENV === 'production' && process.env.LOGTAIL_TOKEN) {
 const formData = require('express-form-data')
 const express = require('express')
 const body = require('body-parser')
+const cookieParser = require('cookie-parser');
 const path = require('path')
 const app = express()
 const compression = require('compression')
@@ -69,6 +70,7 @@ app.use(cors({
   optionsSuccessStatus: 204,
 }));
 app.options('*', cors());
+app.use(cookieParser());
 app.use(body.urlencoded({ limit: '5mb', extended: true }))
 app.use(body.json({ limit: '5mb' }))
 app.use(formData.parse({ autoClean: true }))
