@@ -313,6 +313,7 @@ function redisSession(service) {
   let redisClient;
   if (process.env.NODE_ENV === "development") {
     redisClient = createClient({
+      legacyMode: true,
       socket: {
         host: process.env.REDIS_HOST || "redis",
         port: process.env.REDIS_PORT || 6379,
@@ -320,6 +321,7 @@ function redisSession(service) {
     });
   } else {
     redisClient = createClient({
+      legacyMode: true,
       socket: {
         host: process.env.REDIS_HOST || "localhost",
         port: process.env.REDIS_PORT || 6379,
