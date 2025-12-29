@@ -100,7 +100,6 @@ function microservice (options) {
   }
 
   const handler = require(path.join(require.main.filename, config.functions))
-
   let microservice = new Map()
 
   /**
@@ -151,13 +150,6 @@ function microservice (options) {
     const appPort = port(config)
     await messaging(microservice)
     redisSession(microservice)
-    app.use((req, res, next) => {
-      console.log(`[REQ] ${req.method} ${req.url}`);
-      console.log("Cookies reçus :", req.headers.cookie || "AUCUN COOKIE");
-      console.log("Session ID :", req.sessionID || "AUCUN ID");
-      console.log("Session actuelle :", req.session);
-      next();
-    });
     rateLimit(microservice)
     resources(microservice)
     setupActions(microservice)
