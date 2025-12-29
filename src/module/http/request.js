@@ -71,29 +71,27 @@ module.exports = function http(service, route) {
     next();
   }
 
-  function corsHandler(req, res, next) {
-    if (cors === false) return next();
+  function corsHandler() {
+    if (cors === false) {
+      return (req, res, next) => next();
+    }
+
     const whitelist = [
-      "http://192.168.1.12",
-      "https://lnl2131a.com",
-      "https://api.auth.lnl2131a.com",
-      "https://api.home.lnl2131a.com",
       "https://portal.lnl2131a.com",
       "https://jade.lnl2131a.com",
     ];
+
     const corsOptions = {
-      origin: function (origin, callback) {
-        if (!origin || whitelist.indexOf(origin) !== -1) {
-          callback(null, true);
-        } else {
-          callback(new Error(`${origin} Blocked`));
-        }
+      origin(origin, callback) {
+        if (!origin) return callback(null, true); // browser always has origin
+        if (whitelist.includes(origin)) return callback(null, true);
+        return callback(new Error(`CORS blocked: ${origin}`));
       },
       credentials: true,
+      methods: ["GET", "POST", "OPTIONS"],
     };
 
-    const corsMiddleware = security(corsOptions);
-    return corsMiddleware(req, res, next);
+    return security(corsOptions);
   }
   /**
    * Global variables tat can be set in the app
@@ -120,17 +118,54 @@ module.exports = function http(service, route) {
 
   // send event
   try {
-    microservice[method.toLowerCase()](
-      endpoint,
-      corsHandler,
-      variables,
-      loggerMiddleware,
-      socketServer,
-      actionManager,
-      messaging,
-      actions,
-      middleware
-    );
+    if (method.toLowerCase() === "get")
+      microservice.get(
+        endpoint,
+        corsHandler,
+        variables,
+        loggerMiddleware,
+        socketServer,
+        actionManager,
+        messaging,
+        actions,
+        middleware
+      );
+    if (method.toLowerCase() === "post")
+      microservice.post(
+        endpoint,
+        corsHandler,
+        variables,
+        loggerMiddleware,
+        socketServer,
+        actionManager,
+        messaging,
+        actions,
+        middleware
+      );
+    if (method.toLowerCase() === "put")
+      microservice.put(
+        endpoint,
+        corsHandler,
+        variables,
+        loggerMiddleware,
+        socketServer,
+        actionManager,
+        messaging,
+        actions,
+        middleware
+      );
+    if (method.toLowerCase() === "delete")
+      microservice.delete(
+        endpoint,
+        corsHandler,
+        variables,
+        loggerMiddleware,
+        socketServer,
+        actionManager,
+        messaging,
+        actions,
+        middleware
+      );
   } catch (e) {
     logger.error(e);
     return e.message;
