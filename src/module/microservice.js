@@ -1,6 +1,4 @@
 const winston = require('winston')
-const { Logtail } = require('@logtail/node')
-const { LogtailTransport } = require('@logtail/winston')
 const { createLogger, transports, format } = require('winston')
 const { combine, colorize, timestamp, printf } = winston.format
 const cors = require('cors')
@@ -23,13 +21,6 @@ logger = createLogger({
   transports: [new transports.Console()],
 })
 
-if (process.env.NODE_ENV === 'production' && process.env.LOGTAIL_TOKEN) {
-  const logtail = new Logtail(process.env.LOGTAIL_TOKEN)
-  logger = winston.createLogger({
-    format: combine(colorize({ message: true })),
-    transports: [new LogtailTransport(logtail)],
-  })
-}
 
 const formData = require('express-form-data')
 const express = require('express')
