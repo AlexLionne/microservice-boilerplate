@@ -60,6 +60,7 @@ app.use(cors({
   origin: [
     'https://portal.lnl2131a.com',
     'https://jade.lnl2131a.com',
+    'https://admin.lnl2131a.com',
     'http://localhost:3000',
     'http://localhost:5173'
   ],
