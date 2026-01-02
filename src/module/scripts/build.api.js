@@ -13,7 +13,7 @@ module.exports.buildApi = (config, options = {}) => {
     .filter(route => !route.endpoint.startsWith('/socket.io')) // exclut WS
     .map(route => {
       const ep = {
-        endpoint: route.endpoint,
+        endpoint: `${options.prefix}/${route.endpoint}`,
         method: route.method,
         backend: [
           {
