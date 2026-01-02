@@ -7,7 +7,7 @@ const path = require('path')
  * @param {Object} options - options globales (jwtKey, hostPort)
  */
 module.exports.buildApi = (config, options = {}) => {
-  const jwtKey = process.env.SECRET
+  const { jwtKey = null } = options
 
   const endpoints = config.routes
     .filter(route => !route.endpoint.startsWith('/socket.io')) // exclut WS
