@@ -158,11 +158,18 @@ function listActions(service) {
 }
 
 function currentRoute(microservice, logger) {
-  microservice.use((req, res, next) => {
-    logger.info(`${req.method} ${req.path}`);
-    if (req.path === "/") return res.sendStatus(403);
-    return next();
-  });
+    microservice.use((req, res, next) => {
+        const ip =
+            req.ip ||
+            req.headers["x-forwarded-for"]?.split(",")[0] ||
+            req.socket?.remoteAddress ||
+            "unknown";
+
+        logger.info(`[${ip}] ${req.method} ${req.path}`);
+
+        if (req.path === "/") return res.sendStatus(403);
+        return next();
+    });
 }
 
 function tree(service) {
