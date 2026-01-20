@@ -364,7 +364,13 @@ function redisSession(service) {
   app.use(session(sess));
 }
 
-function rateLimit(service, duration = 15 * 60 * 1000, limit = 10000) {
+/**
+ * 10 request per minute
+ * @param service
+ * @param duration
+ * @param limit
+ */
+function rateLimit(service, duration = 60 * 1000, limit = 10) {
   const app = service.get("app");
 
   const limiter = rateLimiter({
