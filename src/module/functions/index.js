@@ -377,7 +377,7 @@ function redisSession(service) {
  * @param duration
  * @param limit
  */
-function rateLimit(service, duration = 60 * 1000, limit = 10) {
+function rateLimit(service, duration = 60 * 1000, limit = 100) {
   const app = service.get("app");
 
   const limiter = rateLimiter({
