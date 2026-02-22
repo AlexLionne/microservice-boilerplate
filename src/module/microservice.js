@@ -136,6 +136,9 @@ function microservice (options) {
       return microservice.get(tag)
     }
   }
+    function set (tag, value) {
+        microservice.set(tag, value)
+    }
 
   // start server
   async function start () {
